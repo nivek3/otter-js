@@ -1,10 +1,9 @@
 import { Worker } from '../services/worker';
 import { Api } from '../services/api';
-import { Event } from '../services/event';
 import cluster = require('cluster');
 import parseArgv from '../utils/parseArgv';
 import '../utils/polyfills';
-require('heapdump');
+import 'heapdump';
 
 let args = parseArgv([], ['DEBUG', 'CLUSTER']);
 const services: Array<any> = [];
@@ -17,7 +16,6 @@ export const ClusteredApiWorker = async () => {
   process.on('SIGTERM', stop);
   process.on('SIGINT', stop);
 
-  services.push(Event);
   if (cluster.isMaster) {
     if (args.DEBUG || !args.CLUSTER) {
       services.push(Api);
