@@ -4,12 +4,12 @@ package common;
 option go_package = "./common";
 
 message NetWork {
-    message NetworkParams {
+    message Params {
         string rpcURI = 1;
         string chainId = 2;
     }
     string platform = 1;
-    NetworkParams params = 2;
+    Params params = 2;
 }
 
 enum GRpcResponseCode {
