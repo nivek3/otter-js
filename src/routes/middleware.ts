@@ -1,5 +1,5 @@
-import logger from '../logger';
 import * as express from 'express';
+import logger from '../logger';
 
 type TimedRequest = {
   startTime?: Date;
@@ -59,6 +59,7 @@ export enum CacheTimes {
   Month = CacheTimes.Day * 30,
   Year = CacheTimes.Day * 365
 }
+
 export function SetCache(res: express.Response, serverSeconds: number, browserSeconds: number = 0) {
   res.setHeader('Cache-Control', `s-maxage=${serverSeconds}, max-age=${browserSeconds}`);
 }

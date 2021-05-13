@@ -32,16 +32,6 @@ function bootstrap(path?: string) {
   return router;
 }
 
-// function getRouterFromFile(path) {
-//   const router = express.Router({
-//     mergeParams: true
-//   });
-
-//   var route = require('./' + path);
-//   router.use(route.path, route.router);
-//   return router;
-// }
-
 app.use(cors());
 // app.use(LogMiddleware());
 app.use(CacheMiddleware(CacheTimes.Second, CacheTimes.Second));
@@ -68,7 +58,7 @@ app.use(function (_, res) {
 app.use(function (err, req, res, _) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.errzor = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
   res.status(err.statusCode || 500);

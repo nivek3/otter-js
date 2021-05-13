@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package account;
+option go_package = "./account";
+import "common.proto";
+
+message DeployAccountNetWork {
+    message NetworkParams {
+        string rpcURI = 1;
+    }
+    string platform = 1;
+    NetworkParams params = 2;
+}
+
+message DeployAccountPayload {
+    repeated string keys = 1;
+}
+
+message DeployAccountRequest {
+    DeployAccountPayload payload = 1;
+    DeployAccountNetWork network = 2;
+}
+
+message DeployAccountResponse {
+    GRpcResponseCode code = 1;
+    string address = 2;
+}
+
+service Account {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountResponse) {}
+}

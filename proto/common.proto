@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package common;
+option go_package = "./common";
+
+message NetWork {
+    message NetworkParams {
+        string rpcURI = 1;
+        string chainId = 2;
+    }
+    string platform = 1;
+    NetworkParams params = 2;
+}
+
+enum GRpcResponseCode {
+    SUCCESS = 0;
+    UNKNOWN_ERROR = 1;
+}

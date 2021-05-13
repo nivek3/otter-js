@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package transaction;
+option go_package = "./transaction";
+import "common.proto";
+
+message BuildTransactionPayload {
+    message Data {
+        string to = 1;
+        string from = 2;
+        double quantity = 3; 
+    }
+    string type = 1;
+    Data data = 2;
+}
+
+message BuildTransactionRequest {
+    BuildTransactionPayload payload = 1;
+    NetWork network = 2;
+}
+
+message BuildTransactionResponse {
+    GRpcResponseCode code = 1;
+    string serialized = 2;
+    repeated string hashForSignature = 3;
+}
+
+message SignTransactionPayload {
+    message Signature {
+        string r = 1;
+        string s = 2;
+        int32 recoveryParam = 3;
+    }
+    string serialized = 1;
+    repeated Signature signature = 2;
+}
+
+message SignTransactionRequest {
+   SignTransactionPayload payload = 1;
+   NetWork network = 2; 
+}
+
+
+message SignTransactionResponse {
+   GRpcResponseCode code = 1;
+   string serialized = 2;
+   string hashForSignature = 3; 
+}
+
+
+service Transaction {
+    rpc BuildTransaction(BuildTransactionRequest) returns (BuildTransactionResponse) {}
+    rpc SignTransaction(SignTransactionRequest) returns (SignTransactionResponse) {}
+}

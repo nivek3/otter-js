@@ -25,3 +25,5 @@ build-test/
 config.json
 #*node.config.*
 .bcoin
+
+src/__proto__/
