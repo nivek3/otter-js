@@ -19,10 +19,14 @@ message BuildTransactionRequest {
     NetWork network = 2;
 }
 
+message BuildTransactionResponseData {
+    string serialized = 1;
+    repeated string hashForSignature = 2;
+}
+
 message BuildTransactionResponse {
-    GRpcResponseCode code = 1;
-    string serialized = 2;
-    repeated string hashForSignature = 3;
+    GRpcError error = 1;
+    BuildTransactionResponseData data = 2;  
 }
 
 message SignTransactionPayload {
@@ -41,10 +45,14 @@ message SignTransactionRequest {
 }
 
 
+message SignTransactionResponseData {
+    string serialized = 2;
+    string hashForSignature = 3; 
+}
+
 message SignTransactionResponse {
-   GRpcResponseCode code = 1;
-   string serialized = 2;
-   string hashForSignature = 3; 
+    GRpcError error = 1;
+    SignTransactionResponseData data = 2;
 }
 
 

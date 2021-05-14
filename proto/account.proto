@@ -13,9 +13,12 @@ message DeployAccountRequest {
     NetWork network = 2;
 }
 
+message DeployAccountResponseData {
+    string address = 1;
+}
 message DeployAccountResponse {
-    GRpcResponseCode code = 1;
-    string address = 2;
+    GRpcError error = 1;
+    DeployAccountResponseData data = 2;
 }
 
 service Account {

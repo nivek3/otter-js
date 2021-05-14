@@ -4,8 +4,9 @@ import * as protoLoader from '@grpc/proto-loader';
 import { ChainStateProvider } from '../../providers/chain-state';
 
 import { ProtoGrpcType } from '../../__proto__/account';
-import { DeployAccountRequest, DeployAccountResponse } from '../../__proto__/account/index';
-import { GRpcResponseCode } from '../../__proto__/common/index';
+import { DeployAccountRequest, DeployAccountResponseData } from '../../__proto__/account/index';
+import { ImplContext } from '../utils/context';
+
 
 const filename = path.join(__dirname, '../../../proto/account.proto');
 const options = {
@@ -20,24 +21,15 @@ export const accountService = protoDescriptor.account.Account.service;
 
 export const accountImplementation = {
   DeployAccount: async function (
-    call: grpc.ServerUnaryCall<DeployAccountRequest>,
-    callback: grpc.sendUnaryData<DeployAccountResponse>,
+    ctx: ImplContext<DeployAccountRequest, DeployAccountResponseData>
   ): Promise<void> {
-    const req = call.request;
-    try {
-      const account = await ChainStateProvider.deployAccount({
-        payload: req.payload,
-        network: req.network,
-      });
-      callback(null, {
-        code: GRpcResponseCode.SUCCESS,
-        address: account,
-      });
-    } catch (err) {
-      console.error(err);
-      callback(err, {
-        code: GRpcResponseCode.UNKNOWN_ERROR,
-      });
-    }
+    const req = ctx.call.request;
+    const address = await ChainStateProvider.deployAccount({
+      payload: req.payload,
+      network: req.network,
+    });
+    ctx.body = {
+      address
+    } 
   },
 };

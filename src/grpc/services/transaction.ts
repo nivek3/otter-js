@@ -2,10 +2,10 @@ import path from 'path';
 import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
 import { ChainStateProvider } from '../../providers/chain-state';
+import { ImplContext } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/transaction';
-import { BuildTransactionRequest, BuildTransactionResponse, SignTransactionRequest, SignTransactionResponse  } from '../../__proto__/transaction/index';
-import { GRpcResponseCode } from '../../__proto__/common/index';
+import { BuildTransactionRequest, BuildTransactionResponseData, SignTransactionRequest, SignTransactionResponseData  } from '../../__proto__/transaction/index';
 
 const filename = path.join(__dirname, '../../../proto/transaction.proto');
 const options = {
@@ -20,41 +20,24 @@ export const transactionService = protoDescriptor.transaction.Transaction.servic
 
 export const transactionImplementation  = {
   BuildTransaction: async function (
-    call: grpc.ServerUnaryCall<BuildTransactionRequest>,
-    callback: grpc.sendUnaryData<BuildTransactionResponse>,
+    ctx: ImplContext<BuildTransactionRequest, BuildTransactionResponseData> 
   ): Promise<void> {
-    const req = call.request;
-    try {
-      const data = await ChainStateProvider.buildTransaction({
-        payload: req.payload,
-        network: req.network,
-      });
-      callback(null, data);
-    } catch (err) {
-      callback(err, {
-        code: GRpcResponseCode.UNKNOWN_ERROR,
-      });
-    }
+    const req = ctx.call.request;
+    const data = await ChainStateProvider.buildTransaction({
+      payload: req.payload,
+      network: req.network,
+    });
+    ctx.body = data;
   },
-
 
   SignTransaction: async function (
-    call: grpc.ServerUnaryCall<SignTransactionRequest>,
-    callback: grpc.sendUnaryData<SignTransactionResponse>,
+    ctx: ImplContext<SignTransactionRequest, SignTransactionResponseData>,
   ): Promise<void> {
-    const req = call.request;
-    console.log(JSON.stringify(req, null, 2));
-    try {
-      const data = await ChainStateProvider.signTransaction({
-        payload: req.payload,
-        network: req.network,
-      });
-      callback(null, data);
-    } catch (err) {
-      callback(err, {
-        code: GRpcResponseCode.UNKNOWN_ERROR,
-      });
-    }
+    const req = ctx.call.request;
+    const data = await ChainStateProvider.signTransaction({
+      payload: req.payload,
+      network: req.network,
+    });
+    ctx.body = data;
   },
-
 };

@@ -1,19 +1,22 @@
 import 'dotenv/config';
 import * as grpc from 'grpc';
 import { LoggifyClass } from '../decorators/Loggify';
+import { loggerInterceptor } from '../grpc/interceptors/logger';
+import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
 import { accountService, accountImplementation } from '../grpc/services/account';
 import { transactionService, transactionImplementation } from '../grpc/services/transaction';
 
 @LoggifyClass
-export class GRPCServer {
+export class GRPCServer extends GrpcInterceptorProxy {
     name: string;
     private server: grpc.Server;
     private serviceName: string;
 
     constructor(serviceName: string) {
+        super();
+        this.interceptors = [];
         this.name = 'gRPC Server';
         this.serviceName = serviceName;
-
         const server = new grpc.Server({
             "grpc.keepalive_permit_without_calls": parseInt(
               process.env.GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS || "0"
@@ -22,11 +25,15 @@ export class GRPCServer {
               process.env.GRPC_ARG_HTTP2_MAX_PINGS_WITHOUT_DATA || "2"
             ),
           });
-        this.server = server;
+        this.server = this.proxy(server);
     }
 
-    addService(service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, implementation: grpc.UntypedServiceImplementation) {
+    addService(service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, implementation: Record<string, Function>) {
         this.server.addService(service, implementation);
+    }
+
+    use(interceptor: any) {
+        this.interceptors.push(interceptor)
     }
 
     start(port: string) {
@@ -51,4 +58,7 @@ const GRPC_SERVER_NAME = process.env.GRPC_SERVER_NAME || 'Wallet';
 export const grpcServer = new GRPCServer(GRPC_SERVER_NAME);
 grpcServer.addService(accountService, accountImplementation);
 grpcServer.addService(transactionService, transactionImplementation);
+
+grpcServer.use(loggerInterceptor);
+
 grpcServer.start(GRPC_PORT);
