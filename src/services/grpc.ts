@@ -11,13 +11,15 @@ import logger from '../logger';
 @LoggifyClass
 export class GRPCServer extends GrpcInterceptorProxy {
   name: string;
+  port: string;
   private server: grpc.Server;
   private serviceName: string;
 
-  constructor(serviceName: string) {
+  constructor(serviceName: string, GRPC_PORT: string) {
     super();
     this.interceptors = [];
     this.name = 'gRPC Server';
+    this.port = GRPC_PORT;
     this.serviceName = serviceName;
     const server = new grpc.Server({
       'grpc.keepalive_permit_without_calls': parseInt(process.env.GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS || '0'),
@@ -42,24 +44,20 @@ export class GRPCServer extends GrpcInterceptorProxy {
     this.interceptors.push(interceptor);
   }
 
-  start(port: string) {
-    this.server.bindAsync(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure(), () => {
-      logger.info(`🚀 ${this.serviceName} server ready at port ${port}, pid ${process.pid}`);
-      this.server.start();
+  start(): Promise<void> {
+    return new Promise((resolve) => {
+      this.server.bindAsync(`0.0.0.0:${this.port}`, grpc.ServerCredentials.createInsecure(), () => {
+        logger.info(`🚀 ${this.serviceName} server ready at port ${this.port}, pid ${process.pid}`);
+        this.server.start();
+        resolve();
+      });
     });
-    
   }
 
   async stop() {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       try {
-        this.server.tryShutdown((err?: Error) => {
-          if(err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        });
+        this.server.tryShutdown(resolve);
       } catch (error) {
         reject(error);
       }
@@ -67,12 +65,12 @@ export class GRPCServer extends GrpcInterceptorProxy {
   }
 }
 
-const GRPC_PORT = process.env.GRPC_PORT || '3309';
+if (!Number.parseInt(process.env.GRPC_PORT || '', 10)) {
+  throw new Error('Unknown grpc port');
+}
 const GRPC_SERVER_NAME = process.env.GRPC_SERVER_NAME || 'Wallet';
-export const grpcServer = new GRPCServer(GRPC_SERVER_NAME);
+export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, process.env.GRPC_PORT as string);
 grpcServer.addService(accountService, accountImplementation);
 grpcServer.addService(transactionService, transactionImplementation);
 
 grpcServer.use(loggerInterceptor);
-
-grpcServer.start(GRPC_PORT);
