@@ -7,18 +7,11 @@ export class GrpcInterceptorProxy {
   interceptors: Middleware<unknown>[] = [];
 
   success(ctx: ImplContext<any, any>, callback: grpc.sendUnaryData<any>) {
-    callback(null, { data: ctx.body });
+    callback(null, ctx.body);
   }
 
-  fail(err: any, callback: grpc.sendUnaryData<any>, ctx?: ImplContext<any, any>) {
-    callback(null, {
-      error: {
-        requestId: ctx?.state?.requestId,
-        code: err.code,
-        msg: err.message,
-        detail: err.detail || err,
-      },
-    });
+  fail(err: Error, callback: grpc.sendUnaryData<any>, _ctx?: ImplContext<any, any>) {
+    callback(null, err);
   }
   
   proxy(server: grpc.Server) {
