@@ -1,17 +1,17 @@
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
 import compose, { Middleware } from 'koa-compose';
-
 import { ImplContext } from '../utils/context';
+import { GRpcError } from './error';
 
 export class GrpcInterceptorProxy {
   interceptors: Middleware<unknown>[] = [];
 
   success(ctx: ImplContext<any, any>, callback: grpc.sendUnaryData<any>) {
-    callback(null, ctx.body);
+    callback(null, ctx.body, ctx.call.metadata);
   }
 
-  fail(err: Error, callback: grpc.sendUnaryData<any>, _ctx?: ImplContext<any, any>) {
-    callback(null, err);
+  fail(err: grpc.ServiceError, callback: grpc.sendUnaryData<any>, ctx?: ImplContext<any, any>) {
+    callback(err, err.message, ctx?.call.metadata);
   }
   
   proxy(server: grpc.Server) {
@@ -23,22 +23,21 @@ export class GrpcInterceptorProxy {
         if (propKey !== 'addService') {
           return target[propKey];
         }
-        return function(service: grpc.Server, implementation: Record<string, Middleware<unknown>>) {
+        return function(service: grpc.ServiceDefinition, implementation: Record<string, Middleware<unknown>>) {
           const newImplementation = {};
           for (const prop in implementation) {
             const originFn = implementation[prop];
-            newImplementation[prop] = async function (call: grpc.ServerUnaryCall<any>, callback: grpc.sendUnaryData<any>) {
+            newImplementation[prop] = async function (call: grpc.ServerUnaryCall<any, any>, callback: grpc.sendUnaryData<any>) {
               const ctx: ImplContext<any, any> = {
                 call,
                 body: {},
                 state: {},
               };
               try {
-                const run = compose([...interceptors, originFn]);
-                await run(ctx);
+                await compose([...interceptors, originFn])(ctx);
                 success(ctx, callback);
               } catch (err) {
-                fail(err, callback, ctx);
+                fail(err instanceof GRpcError ? err.toJSON() : err, callback, ctx);
               }
             };
           }
