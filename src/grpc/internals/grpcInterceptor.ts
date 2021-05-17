@@ -1,12 +1,12 @@
 import * as grpc from 'grpc';
-import compose from 'koa-compose';
+import compose, { Middleware } from 'koa-compose';
 
 import { ImplContext } from '../utils/context';
 
 export class GrpcInterceptorProxy {
-  interceptors: any[] = [];
+  interceptors: Middleware<unknown>[] = [];
 
-  success(ctx, callback: grpc.sendUnaryData<any>) {
+  success(ctx: ImplContext<any, any>, callback: grpc.sendUnaryData<any>) {
     callback(null, { data: ctx.body });
   }
 
@@ -20,6 +20,7 @@ export class GrpcInterceptorProxy {
       },
     });
   }
+  
   proxy(server: grpc.Server) {
     const interceptors = this?.interceptors || [];
     const success = this.success;
@@ -29,7 +30,7 @@ export class GrpcInterceptorProxy {
         if (propKey !== 'addService') {
           return target[propKey];
         }
-        return function (service: grpc.Server, implementation: Record<string, Function>) {
+        return function(service: grpc.Server, implementation: Record<string, Middleware<unknown>>) {
           const newImplementation = {};
           for (const prop in implementation) {
             const originFn = implementation[prop];
