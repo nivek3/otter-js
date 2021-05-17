@@ -31,7 +31,7 @@ export class GRPCServer extends GrpcInterceptorProxy {
   }
 
   fail(err: grpc.StatusObject, callback: grpc.sendUnaryData<any>, ctx?: ImplContext<any, any>) {
-    callback(err, err.details,  err.metadata || ctx?.call.metadata);
+    callback(err, err.details, err.metadata || ctx?.call.metadata);
   }
 
   addService(service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, implementation: Record<string, Function>) {
