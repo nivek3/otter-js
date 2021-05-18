@@ -1,6 +1,6 @@
 import * as http from 'http';
 
-import app from '../routes';
+import app from '../rest';
 import logger from '../logger';
 import { LoggifyClass } from '../decorators/Loggify';
 

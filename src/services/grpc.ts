@@ -65,12 +65,14 @@ export class GRPCServer extends GrpcInterceptorProxy {
   }
 }
 
-if (!Number.parseInt(process.env.GRPC_PORT || '', 10)) {
-  throw new Error('Unknown grpc port');
-}
 const GRPC_SERVER_NAME = process.env.GRPC_SERVER_NAME || 'Wallet';
-export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, process.env.GRPC_PORT as string);
+const GRPC_PORT = process.env.GRPC_PORT || '50051';
+
+export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
+
+// services
 grpcServer.addService(accountService, accountImplementation);
 grpcServer.addService(transactionService, transactionImplementation);
 
+// interceptors
 grpcServer.use(loggerInterceptor);
