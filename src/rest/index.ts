@@ -7,22 +7,22 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(
   bodyParser.json({
-    limit: 100000000
-  })
+    limit: 100000000,
+  }),
 );
 app.use(
   bodyParser.raw({
-    limit: 100000000
-  })
+    limit: 100000000,
+  }),
 );
 
 function bootstrap(path?: string) {
   const fs = require('fs');
   const router = express.Router({
-    mergeParams: true
+    mergeParams: true,
   });
   const folder = path ? path + '/' : '';
-  fs.readdirSync(__dirname + '/' + path).forEach(function(file: string) {
+  fs.readdirSync(__dirname + '/' + path).forEach(function (file: string) {
     if (file.match(/\.js$/) !== null && file !== 'index.js') {
       var route = require('./' + folder + file);
       router.use(route.path, route.router);
@@ -64,7 +64,7 @@ app.use(function (err, req, res, _) {
   res.status(err.statusCode || 500);
   res.send({
     code: err.code || err.statusCode || 500,
-    message: err.message || err
+    message: err.message || err,
   });
 });
 

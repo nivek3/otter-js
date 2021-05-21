@@ -6,6 +6,8 @@ import "common.proto";
 
 message DeployAccountPayload {
     repeated string keys = 1;
+    
+    int32 requiredConfirmations = 2;
 }
 
 message DeployAccountRequest {

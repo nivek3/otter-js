@@ -6,8 +6,15 @@ import "google/protobuf/any.proto";
 
 message NetWork {
     message Params {
+        // ETH
         string rpcURI = 1;
         string chainId = 2;
+
+        // BTC 
+        string pubKeyHash = 3;
+        string scriptHash = 4;
+        string bitcoreURI = 5;
+
     }
     string platform = 1;
     Params params = 2;

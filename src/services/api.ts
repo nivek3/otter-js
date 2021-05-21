@@ -11,10 +11,7 @@ export class ApiService {
   httpServer: http.Server;
   stopped = true;
 
-  constructor({
-    port = 3000,
-    timeout = 600000,
-  } = {}) {
+  constructor({ port = 3000, timeout = 600000 } = {}) {
     this.port = port;
     this.timeout = timeout;
     this.httpServer = new http.Server(app);
@@ -33,7 +30,7 @@ export class ApiService {
 
   stop() {
     this.stopped = true;
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.httpServer.close(resolve);
     });
   }
@@ -41,5 +38,5 @@ export class ApiService {
 
 // TODO: choose a place in the config for the API timeout and include it here
 export const Api = new ApiService({
-  port: process.env.port ? Number.parseInt(process.env.port, 10) : undefined
+  port: process.env.port ? Number.parseInt(process.env.port, 10) : undefined,
 });
