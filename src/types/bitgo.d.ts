@@ -1,1 +1,1 @@
-declare module 'bitgo-utxo-lib';
+declare module '@bitgo/utxo-lib';

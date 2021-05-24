@@ -1,7 +1,7 @@
 import { CSP } from '../../../types/namespaces/ChainStateProvider';
 import rp from 'request-promise';
 import BigNumber from 'bignumber.js';
-import bitGoUTXO from 'bitgo-utxo-lib';
+import bitGoUTXO from '@bitgo/utxo-lib';
 import coinSelect from 'coinselect';
 
 export class BitcoinStateProvider implements CSP.IChainStateService {
@@ -39,8 +39,8 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
     ];
 
     if (redeem) {
-      const { additionalKeys = [], signatures } = redeem;
-      const pubKeys = [pubKey, ...additionalKeys].map((key: string) => Buffer.from(key, 'hex'));
+      const { additionalPubKeys = [], signatures } = redeem;
+      const pubKeys = [pubKey, ...additionalPubKeys].map((key: string) => Buffer.from(key, 'hex'));
       redeemScript = bitGoUTXO.script.multisig.output.encode(signatures, pubKeys);
     }
     const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
@@ -74,21 +74,27 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
   }
 
   async signTransaction(params: CSP.RequestParams): Promise<any> {
+    const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
     const { serialized, signature } = params.payload;
     const network = bitGoUTXO.networks.testnet;
     const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
     const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
     const hashForSignature: string[] = [];
     for (let i = 0; i < txb.inputs.length; i++) {
-      const input = txb.inputs[i];
-      const sin = input.signatures.findIndex((s: number) => !s) + 1;
       const r = Buffer.from(signature[i].r, 'hex');
       const s = Buffer.from(signature[i].s, 'hex');
       const ecSignature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.concat([r, s]));
-      const parsed = bitGoUTXO.ECSignature.parseScriptSignature(signature);
-      txb.trySign(i, sin, ecSignature, parsed.hashType);
-      if (sin === 0) {
-        const signatureHash = txb.tx.hashForSignature(i, input.signScript, parsed.hashType).toString('hex');
+
+      const input = txb.inputs[i];
+      let m = 0;
+      if (input?.redeemScript) {
+        const decodeScript = bitGoUTXO.script.multisig.output.decode(input.redeemScript);
+        m = decodeScript.m;
+      }
+      const sin = input.signatures.findIndex((s: number) => s) + 1;
+      txb.signInput(i, sin, ecSignature, hashType);
+      if (sin < m) {
+        const signatureHash = txb.tx.hashForSignature(i, input.signScript, hashType).toString('hex');
         hashForSignature.push(signatureHash);
       }
     }
