@@ -73,7 +73,7 @@
     "express": "^4.16.3",
     "heapdump": "^0.3.15",
     "koa-compose": "^4.1.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "ontology-ts-sdk": "^1.1.0",
     "progress": "^2.0.0",
     "request": "^2.88.0",
