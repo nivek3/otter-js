@@ -21,11 +21,10 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
 
   async buildTransaction(params: CSP.RequestParams): Promise<any> {
     const { type, data, extra } = params.payload;
-    const { coin } = params.network.params;
-    const network = bitGoUTXO.networks[coin];
+    const network = this.getNetWork(params.network.params);
 
     if (type != 'transfer') throw new Error(`Do not support such ${type}`);
-    if (!network) throw new Error(`Do not support such ${coin}`);
+    if (!network) throw new Error('Do not support such network');
 
     const { from, to, quantity } = data;
     let { utxos, feeRate, pubKey } = extra;
@@ -81,7 +80,9 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
   async signTransaction(params: CSP.RequestParams): Promise<any> {
     const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
     const { serialized, signature } = params.payload;
-    const network = bitGoUTXO.networks.testnet;
+    const network = this.getNetWork(params.network.params);
+    if (!network) throw new Error('Do not support such network');
+
     const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
     const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
 
@@ -144,5 +145,11 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
       qs: opts.qs || {},
       body: opts.data || {},
     });
+  }
+
+  getNetWork({ scriptHash, pubKeyHash }) {
+    return Object.values(bitGoUTXO.networks).find(
+      (network: any) => network.scriptHash === Number(scriptHash) && network.pubKeyHash === Number(pubKeyHash),
+    );
   }
 }
