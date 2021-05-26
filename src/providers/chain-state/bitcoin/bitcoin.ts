@@ -29,9 +29,6 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
     const { from, to, quantity } = data;
     let { utxos, feeRate, pubKey } = extra;
     if (!pubKey) throw new Error('Please provider publicKey');
-    if (!utxos) {
-      throw new Error('Should provider the utxos');
-    }
 
     const hashType = data.hashType || bitGoUTXO.Transaction.SIGHASH_ALL;
     utxos.forEach((utxo) => {
@@ -39,6 +36,9 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
       utxo.vout = utxo.vout || utxo.mintIndex;
       utxo.value = utxo.value || utxo.amount;
     });
+    if (!utxos) {
+      throw new Error('Should provider the utxos');
+    }
 
     const recipients = [
       {
@@ -61,6 +61,7 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
     outputs.forEach((output: { address: string; value: number }) => {
       txb.addOutput(output.address || from, output.value);
     });
+
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const { redeemScript } = input;
@@ -147,9 +148,9 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
     });
   }
 
-  getNetWork({ scriptHash, pubKeyHash }) {
+  getNetWork({ scriptHash, pubKeyHash, coin }) {
     return Object.values(bitGoUTXO.networks).find(
-      (network: any) => network.scriptHash === Number(scriptHash) && network.pubKeyHash === Number(pubKeyHash),
+      (network: any) => network.scriptHash === scriptHash && network.pubKeyHash === pubKeyHash && network.coin === coin,
     );
   }
 }
