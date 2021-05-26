@@ -29,6 +29,9 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
     const { from, to, quantity } = data;
     let { utxos, feeRate, pubKey } = extra;
     if (!pubKey) throw new Error('Please provider publicKey');
+    if (!utxos) {
+      throw new Error('Should provider the utxos');
+    }
 
     const hashType = data.hashType || bitGoUTXO.Transaction.SIGHASH_ALL;
     utxos.forEach((utxo) => {
@@ -36,9 +39,6 @@ export class BitcoinStateProvider implements CSP.IChainStateService {
       utxo.vout = utxo.vout || utxo.mintIndex;
       utxo.value = utxo.value || utxo.amount;
     });
-    if (!utxos) {
-      throw new Error('Should provider the utxos');
-    }
 
     const recipients = [
       {

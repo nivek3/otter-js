@@ -4,14 +4,31 @@ package transaction;
 option go_package = "./transaction";
 import "common.proto";
 
+message PayloadData {
+    string to = 1;
+    string from = 2;
+    double quantity = 3; 
+}
+
+message PayloadExtraUTXO {
+    int32 vout = 1;
+    string txid = 2;
+    string scriptPubKey = 3;  
+    string redeemScript = 4; 
+    string witnessScript = 5;
+    int32 amount = 6;
+}
+
+message PayloadExtra {
+    repeated PayloadExtraUTXO utxos = 1;
+    int32 feeRate = 2;
+    string pubKey = 3;
+}
+
 message BuildTransactionPayload {
-    message Data {
-        string to = 1;
-        string from = 2;
-        double quantity = 3; 
-    }
     string type = 1;
-    Data data = 2;
+    PayloadData data = 2;
+    PayloadExtra extra = 3;
 }
 
 message BuildTransactionRequest {
@@ -29,6 +46,8 @@ message SignTransactionPayload {
         string r = 1;
         string s = 2;
         int32 recoveryParam = 3;
+
+        string pubKey = 4;
     }
     string serialized = 1;
     repeated Signature signature = 2;

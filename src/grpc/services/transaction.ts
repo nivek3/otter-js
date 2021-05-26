@@ -5,23 +5,26 @@ import { ChainStateProvider } from '../../providers/chain-state';
 import { ImplContext } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/transaction';
-import { BuildTransactionRequest, BuildTransactionResponse, SignTransactionRequest, SignTransactionResponse  } from '../../__proto__/transaction/index';
+import {
+  BuildTransactionRequest,
+  BuildTransactionResponse,
+  SignTransactionRequest,
+  SignTransactionResponse,
+} from '../../__proto__/transaction/index';
 
 const filename = path.join(__dirname, '../../../proto/transaction.proto');
 const options = {
   longs: String,
   defaults: false,
   oneofs: true,
-}
+};
 const packageDefinition = protoLoader.loadSync(filename, options);
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown as ProtoGrpcType;
 
 export const transactionService = protoDescriptor.transaction.Transaction.service;
 
-export const transactionImplementation  = {
-  BuildTransaction: async function (
-    ctx: ImplContext<BuildTransactionRequest, BuildTransactionResponse> 
-  ): Promise<void> {
+export const transactionImplementation = {
+  BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, BuildTransactionResponse>): Promise<void> {
     const req = ctx.call.request;
     const data = await ChainStateProvider.buildTransaction({
       payload: req.payload,
@@ -30,9 +33,7 @@ export const transactionImplementation  = {
     ctx.body = data;
   },
 
-  SignTransaction: async function (
-    ctx: ImplContext<SignTransactionRequest, SignTransactionResponse>,
-  ): Promise<void> {
+  SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, SignTransactionResponse>): Promise<void> {
     const req = ctx.call.request;
     const data = await ChainStateProvider.signTransaction({
       payload: req.payload,
