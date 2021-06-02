@@ -50,7 +50,6 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
 
     const hex = sign({ api, serialized, signature });
     const extrinsic = api.createType('Extrinsic', hex);
-    const txHash = await api.rpc.author.submitExtrinsic(extrinsic);
 
     return {
       serialized: extrinsic.toHex(),
