@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
-const { formatBalance, u8aToHex, hexToU8a } = require('@polkadot/util');
 import { SignPlaceholder } from '../const';
+import { getCallHexAndHash } from '../utils';
 
 export interface TransferParams {
   api: ApiPromise;
@@ -17,13 +17,6 @@ export interface TransferParams {
   maxWeight?: number;
   nonce: number;
 }
-
-export const getCallHexAndHash = function (api: ApiPromise, to: string, amount: string) {
-  const call = api.tx.balances.transfer(to, amount);
-  const callMethodHash = call.method.hash;
-  const callMethodHex = call.method.toHex();
-  return { callMethodHash, callMethodHex };
-};
 
 export const transfer = async function ({
   api,
@@ -74,7 +67,7 @@ export const transfer = async function ({
   });
 
   tx.addSignature(sender, SignPlaceholder, payload.toPayload());
-  const serialized = tx.toHex();
+  const serialized = tx.toHex().slice(2);
   const signatureHash = payload.toRaw().data.slice(2);
   return { serialized, signatureHash };
 };

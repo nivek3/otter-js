@@ -1,8 +1,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import BigNumber from 'bignumber.js';
 import { encodeMultiAddress } from '@polkadot/util-crypto';
-import { transfer } from './multisig/transfer';
 import { sign } from './multisig/sign';
+import { getMethod } from './method';
 import { CSP } from '../../../types/namespaces/ChainStateProvider';
 
 export class PolkaDotStateProvider implements CSP.IChainStateService {
@@ -15,13 +14,16 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
   async buildTransaction(params: CSP.RequestParams): Promise<any> {
     const { type, data, extra } = params.payload;
     const { wss, ss58PREFIX } = params.network.params;
-    if (type != 'transfer') throw 'Unsupported transaction types';
     const api: ApiPromise = await this.getApi(wss);
+    const method = getMethod(type);
+
+    if (!method) throw new Error(`Unsupported transaction types ${type}`);
+
     const { from, to, quantity } = data;
-    const { addresses, signer, threshold, decimals } = extra;
+    const { addresses, signer, threshold, decimals, maxWeight = 50 } = extra;
     const { nonce } = await api.query.system.account(signer);
 
-    const { serialized, signatureHash } = await transfer({
+    const { serialized, signatureHash } = await method({
       api,
       ss58PREFIX,
       addresses,
@@ -32,11 +34,11 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
       nonce: nonce.toNumber(),
       from,
       to,
-      maxWeight: 50,
+      maxWeight,
     });
 
     return {
-      serialized: serialized.slice(2),
+      serialized,
       signatureHash,
     };
   }
@@ -48,6 +50,7 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
 
     const hex = sign({ api, serialized, signature });
     const extrinsic = api.createType('Extrinsic', hex);
+    const txHash = await api.rpc.author.submitExtrinsic(extrinsic);
 
     return {
       serialized: extrinsic.toHex(),

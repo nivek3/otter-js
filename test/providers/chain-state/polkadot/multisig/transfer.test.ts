@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import cloverTypes from '@clover-network/node-types';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { getCallHexAndHash } from './../../../../../src/providers/chain-state/polkadot/multisig/transfer';
+import { getCallHexAndHash } from '../../../../../src/providers/chain-state/polkadot/utils';
 
 let api: ApiPromise;
 

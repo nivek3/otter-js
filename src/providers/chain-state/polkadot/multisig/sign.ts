@@ -9,10 +9,11 @@ export interface SignParams {
 }
 
 export function sign({ api, serialized, signature }: SignParams) {
-  if (!serialized.startsWith('0x')) {
-    serialized = '0x' + serialized;
+  const prefix = '0x';
+  if (!serialized.startsWith(prefix)) {
+    serialized = prefix + serialized;
   }
-  if (signature.startsWith('0x')) {
+  if (signature.startsWith(prefix)) {
     signature = signature.slice(2);
   }
   const placeholder = SignPlaceholder.slice(2);
