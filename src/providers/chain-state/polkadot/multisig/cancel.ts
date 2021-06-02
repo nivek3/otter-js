@@ -44,12 +44,12 @@ export async function cancel({
   if (!info.isSome) {
     throw new Error('do not found the time point..');
   }
-  const timePoint = info.unwrap().when;
+  const timepoint = info.unwrap().when;
 
   const tx = api.tx.multisig.cancelAsMulti(
     threshold,
     otherSignatories, //
-    timePoint,
+    timepoint,
     callMethodHash,
   );
 

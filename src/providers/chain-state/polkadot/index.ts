@@ -20,7 +20,7 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
     if (!method) throw new Error(`Unsupported transaction types ${type}`);
 
     const { from, to, quantity } = data;
-    const { addresses, signer, threshold, decimals, maxWeight = 50 } = extra;
+    const { addresses, signer, threshold, decimals, maxWeight } = extra;
     const { nonce } = await api.query.system.account(signer);
 
     const { serialized, signatureHash } = await method({
@@ -50,6 +50,9 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
 
     const hex = sign({ api, serialized, signature });
     const extrinsic = api.createType('Extrinsic', hex);
+
+    const txHash = await api.rpc.author.submitExtrinsic(extrinsic);
+    console.log(`txHash : ${txHash}`);
 
     return {
       serialized: extrinsic.toHex(),

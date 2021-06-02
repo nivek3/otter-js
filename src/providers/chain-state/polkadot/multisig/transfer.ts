@@ -29,7 +29,7 @@ export const transfer = async function ({
   nonce,
   from,
   to,
-  maxWeight = 50,
+  maxWeight = 640000000,
 }: TransferParams) {
   const AMOUNT_TO_SEND = new BigNumber(quantity).shiftedBy(decimals).toString();
   const MULTISIG = encodeMultiAddress(addresses, threshold, ss58PREFIX);

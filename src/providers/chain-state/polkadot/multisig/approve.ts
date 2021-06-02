@@ -3,6 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
 import { SignPlaceholder } from '../const';
 import { getCallHexAndHash } from '../utils';
+const { u8aToHex, hexToU8a, formatBalance } = require('@polkadot/util');
 
 export interface ApproveParams {
   api: ApiPromise;
@@ -31,7 +32,7 @@ export async function approve({
   from,
   to,
   storeCall = false,
-  maxWeight = 50,
+  maxWeight = 640000000,
 }: ApproveParams) {
   const AMOUNT_TO_SEND = new BigNumber(quantity).shiftedBy(decimals).toString();
   const MULTISIG = encodeMultiAddress(addresses, threshold, ss58PREFIX);
@@ -43,7 +44,7 @@ export async function approve({
     throw new Error('multsig should be same as from');
   }
 
-  const { callMethodHash } = getCallHexAndHash(api, to, AMOUNT_TO_SEND);
+  const { callMethodHash, callMethodHex } = getCallHexAndHash(api, to, AMOUNT_TO_SEND);
   const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
   if (!info.isSome) {
     throw new Error('do not found the time point..');
@@ -55,7 +56,7 @@ export async function approve({
     threshold,
     otherSignatories, //
     timePoint,
-    callMethodHash,
+    callMethodHex,
     storeCall,
     maxWeight,
   );
@@ -70,7 +71,7 @@ export async function approve({
   });
 
   tx.addSignature(sender, SignPlaceholder, payload.toPayload());
-  const serialized = tx.toHex();
+  const serialized = tx.toHex().slice(2);
   const signatureHash = payload.toRaw().data.slice(2);
   return { serialized, signatureHash };
 }
