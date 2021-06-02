@@ -2,10 +2,12 @@ import { CSP } from '../../types/namespaces/ChainStateProvider';
 import { ChainNetwork } from '../../types/ChainNetwork';
 import { BitcoinStateProvider } from './bitcoin/bitcoin';
 import { EthereumStateProvider } from './ethereum/ethereum';
+import { PolkaDotStateProvider } from './polkadot';
 
 const services: CSP.ChainStateServices = {
   bitcoin: new BitcoinStateProvider(),
   ethereum: new EthereumStateProvider(),
+  polkadot: new PolkaDotStateProvider(),
 };
 
 class ChainStateProxy implements CSP.ChainStateProvider {
