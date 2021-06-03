@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package btc;
-option go_package = "./btc";
+package bitcoin;
+option go_package = "./bitcoin";
 import "common.proto";
 
 message Network {
@@ -33,7 +33,7 @@ message SignTransactionRequest {
     Network network = 3;
 }
 
-service BTC {
+service BitCoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}

@@ -4,16 +4,16 @@ import { ImplContext } from '../utils/context';
 import { GRpcError } from './error';
 
 export class GrpcInterceptorProxy {
-  interceptors: Middleware<unknown>[] = [];
+  interceptors: Middleware<ImplContext<unknown, unknown>>[] = [];
 
-  success(ctx: ImplContext<any, any>, callback: grpc.sendUnaryData<any>) {
+  success<T, K>(ctx: ImplContext<T, K>, callback: grpc.sendUnaryData<unknown>) {
     callback(null, ctx.body, ctx.call.metadata);
   }
 
-  fail(err: grpc.ServiceError, callback: grpc.sendUnaryData<any>, ctx?: ImplContext<any, any>) {
+  fail<T, K>(err: grpc.ServiceError, callback: grpc.sendUnaryData<string>, ctx?: ImplContext<T, K>) {
     callback(err, err.message, ctx?.call.metadata);
   }
-  
+
   proxy(server: grpc.Server) {
     const interceptors = this?.interceptors || [];
     const success = this.success;
@@ -23,14 +23,14 @@ export class GrpcInterceptorProxy {
         if (propKey !== 'addService') {
           return target[propKey];
         }
-        return function(service: grpc.ServiceDefinition, implementation: Record<string, Middleware<unknown>>) {
+        return function <Q, S>(service: grpc.ServiceDefinition, implementation: Record<string, Middleware<unknown>>) {
           const newImplementation = {};
           for (const prop in implementation) {
             const originFn = implementation[prop];
-            newImplementation[prop] = async function (call: grpc.ServerUnaryCall<any, any>, callback: grpc.sendUnaryData<any>) {
-              const ctx: ImplContext<any, any> = {
+            newImplementation[prop] = async function (call: grpc.ServerUnaryCall<Q, S>, callback: grpc.sendUnaryData<any>) {
+              const ctx: ImplContext<Q, S> = {
                 call,
-                body: {},
+                body: {} as S,
                 state: {},
               };
               try {

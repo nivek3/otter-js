@@ -1,2 +1,2 @@
-export * from './btc';
+export * from './bitcoin';
 export * from './polkadot';

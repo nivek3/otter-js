@@ -2,7 +2,7 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { polkaDotStateProvider as provider } from '../../providers/chain-state/polkadot';
-import { ImplContext } from '../utils/context';
+import { ImplContext, ProxyImp } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/polkadot';
 import { TransactionReply } from '../../__proto__/common/index';
@@ -17,9 +17,9 @@ const options = {
 const packageDefinition = protoLoader.loadSync(filename, options);
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown as ProtoGrpcType;
 
-export const polkadotService = protoDescriptor.polkadot.Polkadot.service;
+export const PolkadotService = protoDescriptor.polkadot.Polkadot.service;
 
-export const polkadotImp: Record<keyof PolkadotDefinition, any> = {
+export const PolkadotImp: ProxyImp<PolkadotDefinition> = {
   DeployAccount: async function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);

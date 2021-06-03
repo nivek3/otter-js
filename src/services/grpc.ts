@@ -1,10 +1,11 @@
 import 'dotenv/config';
 import * as grpc from '@grpc/grpc-js';
 import { LoggifyClass } from '../decorators/Loggify';
-import { ImplContext } from '../grpc/utils/context';
+import { Middleware } from 'koa-compose';
+import { ImplContext, ProxyImp } from '../grpc/utils/context';
 import { loggerInterceptor } from '../grpc/interceptors/logger';
 import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
-import { polkadotService, polkadotImp, btcService, btcImp } from '../grpc/services';
+import { PolkadotService, PolkadotImp, BitCoinService, BitCoinImp } from '../grpc/services';
 
 import logger from '../logger';
 
@@ -36,11 +37,11 @@ export class GRPCServer extends GrpcInterceptorProxy {
     callback(err, err.details, err.metadata || ctx?.call.metadata);
   }
 
-  addService(service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, implementation: Record<string, Function>) {
+  addService(service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, implementation: ProxyImp<grpc.ServiceDefinition>) {
     this.server.addService(service, implementation as any);
   }
 
-  use(interceptor: any) {
+  use(interceptor: Middleware<ImplContext<unknown, unknown>>) {
     this.interceptors.push(interceptor);
   }
 
@@ -71,8 +72,8 @@ const GRPC_PORT = process.env.GRPC_PORT || '50051';
 export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 
 // services
-grpcServer.addService(polkadotService, polkadotImp);
-grpcServer.addService(btcService, btcImp);
+grpcServer.addService(PolkadotService, PolkadotImp);
+grpcServer.addService(BitCoinService, BitCoinImp);
 
 // interceptors
 grpcServer.use(loggerInterceptor);

@@ -4,7 +4,7 @@ import coinSelect from 'coinselect';
 import BigNumber from 'bignumber.js';
 import { CSP } from '../../../types/namespaces/ChainStateProvider';
 
-import { BuildTransactionRequest, DeployAccountRequest } from '../../../__proto__/btc/index';
+import { BuildTransactionRequest, DeployAccountRequest } from '../../../__proto__/bitcoin/index';
 
 export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
