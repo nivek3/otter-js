@@ -1,0 +1,158 @@
+import rp from 'request-promise';
+import bitGoUTXO from '@bitgo/utxo-lib';
+import coinSelect from 'coinselect';
+import BigNumber from 'bignumber.js';
+import { CSP } from '../../../types/namespaces/ChainStateProvider';
+
+export class BitcoinStateProvider implements CSP.IChainStateService {
+  deployAccount(params: CSP.RequestParams): Promise<string> {
+    const { keys, requiredConfirmations } = params.payload;
+    const { pubKeyHash, scriptHash } = params.network.params;
+    var pubKeys = keys.map(function (hex) {
+      return Buffer.from(hex, 'hex');
+    });
+    var redeemScript = bitGoUTXO.script.multisig.output.encode(requiredConfirmations, pubKeys);
+    var scriptPubKey = bitGoUTXO.script.scriptHash.output.encode(bitGoUTXO.crypto.hash160(redeemScript));
+    return bitGoUTXO.address.fromOutputScript(scriptPubKey, {
+      pubKeyHash: Number(pubKeyHash),
+      scriptHash: Number(scriptHash),
+    });
+  }
+
+  async buildTransaction(params: CSP.RequestParams): Promise<any> {
+    const { type, data, extra } = params.payload;
+    const network = this.getNetWork(params.network.params);
+
+    if (type != 'transfer') throw new Error(`Do not support such ${type}`);
+    if (!network) throw new Error('Do not support such network');
+
+    const { from, to, quantity } = data;
+    let { utxos, feeRate, pubKey } = extra;
+    if (!pubKey) throw new Error('Please provider publicKey');
+
+    const hashType = data.hashType || bitGoUTXO.Transaction.SIGHASH_ALL;
+    utxos.forEach((utxo) => {
+      utxo.txId = utxo.txid || utxo.txId || utxo.mintTxid;
+      utxo.vout = utxo.vout || utxo.mintIndex;
+      utxo.value = utxo.value || utxo.amount;
+    });
+    if (!utxos) {
+      throw new Error('Should provider the utxos');
+    }
+
+    const recipients = [
+      {
+        address: to,
+        value: new BigNumber(quantity).shiftedBy(8).toNumber(),
+      },
+    ];
+
+    const { inputs, outputs } = this.selectCoins(utxos, recipients, feeRate);
+
+    if (!inputs || !outputs) throw new Error(`No enough balance`);
+
+    const hashForSignature: string[] = [];
+
+    const txb = new bitGoUTXO.TransactionBuilder(network);
+    inputs.forEach((input) => {
+      txb.addInput(input.txId, input.vout);
+    });
+
+    outputs.forEach((output: { address: string; value: number }) => {
+      txb.addOutput(output.address || from, output.value);
+    });
+
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
+      const { redeemScript } = input;
+      const publicKeyBuf = Buffer.from(pubKey, 'hex');
+      const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
+      txb.prepareInput(i, publicKeyBuf, redeemScriptBuffer);
+      const signingData = txb.getSigningData(i, publicKeyBuf, redeemScriptBuffer, hashType);
+      hashForSignature.push(signingData.toString('hex'));
+    }
+
+    return {
+      serialized: txb.buildIncomplete().toHex(),
+      hashForSignature,
+    };
+  }
+
+  async signTransaction(params: CSP.RequestParams): Promise<any> {
+    const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
+    const { serialized, signature } = params.payload;
+    const network = this.getNetWork(params.network.params);
+    if (!network) throw new Error('Do not support such network');
+
+    const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
+    const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
+
+    const hashForSignature: string[] = [];
+
+    for (let i = 0; i < txb.inputs.length; i++) {
+      const { r, s, pubKey } = signature[i];
+      if (!r || !s) continue;
+      const rBuf = Buffer.from(signature[i].r, 'hex');
+      const sBuf = Buffer.from(signature[i].s, 'hex');
+      const ecSignature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.concat([rBuf, sBuf]));
+      const input = txb.inputs[i];
+
+      let m = 0;
+      let sin = 0;
+      let signatureHash = '';
+      const { redeemScript } = input;
+      const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
+      if (redeemScriptBuffer) {
+        const decodeScript = bitGoUTXO.script.multisig.output.decode(redeemScript);
+        m = decodeScript.m;
+        sin = input?.signatures?.findIndex((s: number) => !s);
+      }
+      const publicKeyBuf = Buffer.from(pubKey, 'hex');
+      txb.prepareInput(i, publicKeyBuf, redeemScriptBuffer);
+      txb.getSigningData(i, publicKeyBuf, redeemScriptBuffer, hashType);
+      txb.signInput(i, sin, ecSignature, hashType);
+
+      if (sin + 1 < m) {
+        signatureHash = txb.tx.hashForSignature(i, input.signScript, hashType).toString('hex');
+      }
+      hashForSignature.push(signatureHash);
+    }
+
+    return {
+      serialized: txb.build().toHex(),
+      hashForSignature,
+    };
+  }
+
+  selectCoins(utxos: any[], recipients: { address: string; value: number }[], feeRate: number) {
+    return coinSelect(utxos, recipients, feeRate);
+  }
+
+  getUTXOs(bitcoreURI, address) {
+    return this.makeRequest({
+      url: `${bitcoreURI}/address/${address}?unspent=true`,
+      method: 'GET',
+    });
+  }
+
+  makeRequest(opts) {
+    return rp({
+      url: opts.url,
+      method: opts.method,
+      json: true,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      qs: opts.qs || {},
+      body: opts.data || {},
+    });
+  }
+
+  getNetWork({ scriptHash, pubKeyHash, coin }) {
+    return Object.values(bitGoUTXO.networks).find(
+      (network: any) => network.scriptHash === scriptHash && network.pubKeyHash === pubKeyHash && network.coin === coin,
+    );
+  }
+}
+
+export const bitcoinStateProvider = new BitcoinStateProvider();

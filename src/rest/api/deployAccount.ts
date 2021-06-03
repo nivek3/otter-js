@@ -10,7 +10,7 @@ router.post('/', async function (req: Request, res: Response, next) {
       address: account,
     });
   } catch (err) {
-    logger.info(`deployAccount => ${JSON.stringify(err)}`);
+    logger.info('deployAccount =>', err);
     return next(err);
   }
 });

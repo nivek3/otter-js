@@ -4,8 +4,8 @@ import { LoggifyClass } from '../decorators/Loggify';
 import { ImplContext } from '../grpc/utils/context';
 import { loggerInterceptor } from '../grpc/interceptors/logger';
 import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
-import { accountService, accountImplementation } from '../grpc/services/account';
-import { transactionService, transactionImplementation } from '../grpc/services/transaction';
+import { polkadotService, polkadotImp, btcService, btcImp } from '../grpc/services';
+
 import logger from '../logger';
 
 @LoggifyClass
@@ -71,8 +71,8 @@ const GRPC_PORT = process.env.GRPC_PORT || '50051';
 export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 
 // services
-grpcServer.addService(accountService, accountImplementation);
-grpcServer.addService(transactionService, transactionImplementation);
+grpcServer.addService(polkadotService, polkadotImp);
+grpcServer.addService(btcService, btcImp);
 
 // interceptors
 grpcServer.use(loggerInterceptor);

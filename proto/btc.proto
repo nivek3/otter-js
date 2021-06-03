@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package btc;
+option go_package = "./btc";
+import "common.proto";
+
+message Network {
+	string pubKeyHash = 1;
+	string scriptHash = 2;
+    string coin = 3;
+}
+
+message DeployAccountRequest {
+	repeated string keys = 1;
+	int32 requiredConfirmations = 2;
+	Network network = 3;
+}
+
+message DeployAccountReply {
+	string address = 1;
+}
+
+message BuildTransactionRequest {
+	string from = 1;
+	string to = 2;
+    string quantity = 3;
+    Network network = 4;
+}
+
+message SignTransactionRequest {
+    string serialized = 1;
+    repeated Signature signature = 2;
+    Network network = 3;
+}
+
+service BTC {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+}

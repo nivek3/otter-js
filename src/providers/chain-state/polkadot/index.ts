@@ -1,64 +1,59 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress } from '@polkadot/util-crypto';
-import { sign } from './multisig/sign';
-import { getMethod } from './method';
-import { CSP } from '../../../types/namespaces/ChainStateProvider';
+import { transfer as multisigTransfer } from './multisig/transfer';
 
-export class PolkaDotStateProvider implements CSP.IChainStateService {
-  deployAccount(params: CSP.RequestParams): string {
-    const { keys, requiredConfirmations } = params.payload;
-    const { ss58Format } = params.network.params;
-    return encodeMultiAddress(keys, requiredConfirmations, ss58Format);
+import { TransactionReply } from '../../../__proto__/common/index';
+import { DeployAccountRequest, MultisigTransferRequest } from '../../../__proto__/polkadot/index';
+
+export class PolkaDotStateProvider {
+  deployAccount(req: DeployAccountRequest): string {
+    const { keys, threshold, network } = req;
+    const { ss58Format } = network!;
+    return encodeMultiAddress(keys!, threshold!, ss58Format!);
   }
 
-  async buildTransaction(params: CSP.RequestParams): Promise<any> {
-    const { type, data, extra } = params.payload;
-    const { wss, ss58PREFIX } = params.network.params;
-    const api: ApiPromise = await this.getApi(wss);
-    const method = getMethod(type);
+  async buildMultisigTransaction(req: MultisigTransferRequest): Promise<TransactionReply> {
+    const { from, to, quantity, network, sender, pubkeys, threshold, maxWeight } = req;
+    const { wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!);
 
-    if (!method) throw new Error(`Unsupported transaction types ${type}`);
+    const { nonce } = (await api.query.system.account(sender)) as any;
 
-    const { from, to, quantity } = data;
-    const { addresses, signer, threshold, decimals, maxWeight } = extra;
-    const { nonce } = await api.query.system.account(signer);
-
-    const { serialized, signatureHash } = await method({
+    const { serialized, signatureHash } = await multisigTransfer({
       api,
-      ss58PREFIX,
-      addresses,
-      threshold,
+      ss58PREFIX: ss58Format,
+      addresses: pubkeys,
+      threshold: threshold,
       quantity,
-      decimals,
-      sender: signer,
+      sender,
       nonce: nonce.toNumber(),
       from,
       to,
       maxWeight,
-    });
+    } as any);
 
     return {
       serialized,
-      signatureHash,
+      signatureHashes: [signatureHash],
     };
   }
 
-  async signTransaction(params: CSP.RequestParams): Promise<any> {
-    const { serialized, signature } = params.payload;
-    const { wss } = params.network.params;
-    const api: ApiPromise = await this.getApi(wss);
+  // async signTransaction(params: CSP.RequestParams): Promise<any> {
+  //   const { serialized, signature } = params.payload;
+  //   const { wss } = params.network.params;
+  //   const api: ApiPromise = await this.getApi(wss);
 
-    const hex = sign({ api, serialized, signature });
-    const extrinsic = api.createType('Extrinsic', hex);
+  //   const hex = sign({ api, serialized, signature });
+  //   const extrinsic = api.createType('Extrinsic', hex);
 
-    const txHash = await api.rpc.author.submitExtrinsic(extrinsic);
-    console.log(`txHash : ${txHash}`);
+  //   const txHash = await api.rpc.author.submitExtrinsic(extrinsic);
+  //   console.log(`txHash : ${txHash}`);
 
-    return {
-      serialized: extrinsic.toHex(),
-      hashForSignature: '',
-    };
-  }
+  //   return {
+  //     serialized: extrinsic.toHex(),
+  //     hashForSignature: '',
+  //   };
+  // }
 
   async getApi(wss: string, autoConnectMs = 1000 * 60) {
     const cloverTypes = require('@clover-network/node-types');
@@ -69,3 +64,5 @@ export class PolkaDotStateProvider implements CSP.IChainStateService {
     });
   }
 }
+
+export const polkaDotStateProvider = new PolkaDotStateProvider();

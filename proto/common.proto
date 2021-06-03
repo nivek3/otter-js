@@ -2,20 +2,13 @@ syntax = "proto3";
 
 package common;
 option go_package = "./common";
-import "google/protobuf/any.proto";
 
-message NetWork {
-    message Params {
-        // ETH
-        string rpcURI = 1;
-        string chainId = 2;
+message Signature {
+	string pubkey = 1;
+	string data = 2;
+}
 
-        // BTC 
-        string pubKeyHash = 3;
-        string scriptHash = 4;
-        string bitcoreURI = 5;
-
-    }
-    string platform = 1;
-    Params params = 2;
+message TransactionReply {
+    string serialized = 1;
+    repeated string signature_hashes = 2;	
 }
