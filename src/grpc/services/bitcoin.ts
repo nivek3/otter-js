@@ -6,7 +6,13 @@ import { ImplContext, ProxyImp } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
 import { TransactionReply } from '../../__proto__/common/index';
-import { BitCoinDefinition, DeployAccountRequest, DeployAccountReply } from '../../__proto__/bitcoin/index';
+import {
+  BitCoinDefinition,
+  DeployAccountRequest,
+  DeployAccountReply,
+  BuildTransactionRequest,
+  SignTransactionRequest,
+} from '../../__proto__/bitcoin/index';
 
 const filename = path.join(__dirname, '../../../proto/bitcoin.proto');
 const options = {
@@ -26,9 +32,15 @@ export const BitCoinImp: ProxyImp<BitCoinDefinition> = {
     ctx.body = { address };
   },
 
-  // BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
-  //   const req = ctx.call.request;
-  //   const data = await provider.buildTransaction(req);
-  //   ctx.body = data;
-  // },
+  BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.buildTransaction(req);
+    ctx.body = data;
+  },
+
+  SignTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.signTransaction(req);
+    ctx.body = data;
+  },
 };

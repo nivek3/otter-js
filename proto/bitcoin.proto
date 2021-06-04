@@ -20,11 +20,28 @@ message DeployAccountReply {
 	string address = 1;
 }
 
+message UTXO {
+    int32 vout = 1;
+    string txid = 2;
+    string scriptPubKey = 3;  
+    string redeemScript = 4; 
+    string witnessScript = 5;
+    int32 amount = 6;
+}
+
+message Target {
+    string address = 1;
+    int32 value = 2;
+}
+
 message BuildTransactionRequest {
-	string from = 1;
-	string to = 2;
-    string quantity = 3;
-    Network network = 4;
+	string pubkey = 1;
+    string changer = 2;
+    repeated Target targets = 3;
+    repeated UTXO utxos = 4;
+    double feeRate = 5;
+    string redeemScript = 6;
+    Network network = 7;
 }
 
 message SignTransactionRequest {
