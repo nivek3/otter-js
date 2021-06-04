@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { SignPlaceholder } from '../const';
+import { SignPlaceholder } from './const';
 
 export interface SignParams {
   api: ApiPromise;

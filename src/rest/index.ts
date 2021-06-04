@@ -35,17 +35,6 @@ function bootstrap(path?: string) {
 app.use(cors());
 // app.use(LogMiddleware());
 app.use(CacheMiddleware(CacheTimes.Second, CacheTimes.Second));
-// app.use('/api', getRouterFromFile('status'));
-
-// app.use('/api/:chain/:network', (req: Request, resp: Response, next: NextFunction) => {
-//   let { payload, network } = req.body;
-//   const hasPayload = payload != null;
-//   const hasNetwork = network != null;
-//   // if (!hasPayload || !hasNetwork) {
-//   //   return resp.status(500).send(`This node is not configured`);
-//   // }
-//   return next();
-// });
 
 app.use('/api', bootstrap('api'));
 

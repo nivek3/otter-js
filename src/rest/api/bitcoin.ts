@@ -17,5 +17,5 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
 
 module.exports = {
   router: router,
-  path: '/btc',
+  path: '/bitcoin',
 };

@@ -45,7 +45,8 @@ message MultisigApproveRequest {
     string sender = 4;
     repeated string pubkeys = 5;
     int32 threshold = 6;
-    Network network = 7;
+    int32 max_weight = 7;
+    Network network = 8;
 }
 
 message MultisigCancelRequest {
@@ -68,7 +69,7 @@ service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildTransferTransaction(TransferRequest) returns (TransactionReply) {}
     rpc BuildMultisigTransaction(MultisigTransferRequest) returns (TransactionReply) {}
-    rpc ApproveMultisigTransaction(MultisigTransferRequest) returns (TransactionReply) {}
-    rpc CancelMultisigTransaction(MultisigCancelRequest) returns (TransactionReply) {}
+    rpc MultisigApproveTransaction(MultisigApproveRequest) returns (TransactionReply) {}
+    rpc MultisigCancelTransaction(MultisigCancelRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
 }

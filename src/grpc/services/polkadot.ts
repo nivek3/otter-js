@@ -6,7 +6,15 @@ import { ImplContext, ProxyImp } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/polkadot';
 import { TransactionReply } from '../../__proto__/common/index';
-import { PolkadotDefinition, DeployAccountRequest, DeployAccountReply, MultisigTransferRequest } from '../../__proto__/polkadot/index';
+import {
+  PolkadotDefinition,
+  DeployAccountRequest,
+  DeployAccountReply,
+  TransferRequest,
+  MultisigTransferRequest,
+  MultisigApproveRequest,
+  MultisigCancelRequest,
+} from '../../__proto__/polkadot/index';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
 const options = {
@@ -29,6 +37,24 @@ export const PolkadotImp: ProxyImp<PolkadotDefinition> = {
   BuildMultisigTransaction: async function (ctx: ImplContext<MultisigTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.buildMultisigTransaction(req);
+    ctx.body = data;
+  },
+
+  MultisigApproveTransaction: async function (ctx: ImplContext<MultisigApproveRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.multisigApproveTransaction(req);
+    ctx.body = data;
+  },
+
+  MultisigCancelTransaction: async function (ctx: ImplContext<MultisigCancelRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.multisigCancelTransaction(req);
+    ctx.body = data;
+  },
+
+  SignTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.signTransaction(req);
     ctx.body = data;
   },
 };

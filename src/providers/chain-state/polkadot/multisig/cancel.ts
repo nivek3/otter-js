@@ -9,8 +9,7 @@ export interface CancelParams {
   ss58PREFIX: number;
   addresses: string[];
   threshold: number;
-  quantity: number;
-  decimals: number;
+  quantity: string;
   from: string;
   to: string;
   sender: string;
@@ -23,13 +22,11 @@ export async function cancel({
   addresses,
   threshold,
   quantity,
-  decimals,
   sender,
   nonce,
   from,
   to,
 }: CancelParams) {
-  const AMOUNT_TO_SEND = new BigNumber(quantity).shiftedBy(decimals).toString();
   const MULTISIG = encodeMultiAddress(addresses, threshold, ss58PREFIX);
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
@@ -39,7 +36,7 @@ export async function cancel({
     throw new Error('multsig should be same as from');
   }
 
-  const { callMethodHash } = getCallHexAndHash(api, to, AMOUNT_TO_SEND);
+  const { callMethodHash } = getCallHexAndHash(api, to, quantity);
   const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
   if (!info.isSome) {
     throw new Error('do not found the time point..');
