@@ -28,7 +28,7 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 export const PolkadotService = protoDescriptor.polkadot.Polkadot.service;
 
 export const PolkadotImp: ProxyImp<PolkadotDefinition> = {
-  DeployAccount: async function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+  DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
