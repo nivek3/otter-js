@@ -7,7 +7,7 @@ import { TransactionReply } from '../../../__proto__/common/index';
 import {
   Network,
   UTXO,
-  Target,
+  Recipient,
   BuildTransactionRequest,
   DeployAccountRequest,
   SignTransactionRequest,
@@ -27,7 +27,7 @@ export class BitcoinStateProvider {
   }
 
   buildTransaction(req: BuildTransactionRequest): TransactionReply {
-    const { pubKey, changer, utxos, targets, network: reqNetWork, feeRate } = req as Required<BuildTransactionRequest>;
+    const { pubKey, changer, utxos, recipients, network: reqNetWork, feeRate } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
     const feePerKb = new BigNumber(feeRate).toNumber();
     if (!network) throw new Error('Do not support such network');
@@ -44,7 +44,7 @@ export class BitcoinStateProvider {
       delete utxo.amount;
     });
 
-    const { inputs, outputs } = this.selectCoins(utxos, targets, feePerKb);
+    const { inputs, outputs } = this.selectCoins(utxos, recipients, feePerKb);
     if (!inputs || !outputs) throw new Error(`No enough balance`);
     const hashForSignature: string[] = [];
     const txb = new bitGoUTXO.TransactionBuilder(network);
@@ -114,8 +114,8 @@ export class BitcoinStateProvider {
     };
   }
 
-  selectCoins(utxos: UTXO[], targets: Target[], feeRate: number) {
-    return coinSelect(utxos, targets, feeRate);
+  selectCoins(utxos: UTXO[], recipients: Recipient[], feeRate: number) {
+    return coinSelect(utxos, recipients, feeRate);
   }
 
   makeRequest(opts) {
