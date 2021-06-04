@@ -34,6 +34,12 @@ export const PolkadotImp: ProxyImp<PolkadotDefinition> = {
     ctx.body = { address };
   },
 
+  BuildTransferTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.buildTransferTransaction(req);
+    ctx.body = data;
+  },
+
   BuildMultisigTransaction: async function (ctx: ImplContext<MultisigTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.buildMultisigTransaction(req);

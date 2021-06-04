@@ -2,10 +2,12 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress } from '@polkadot/util-crypto';
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
 import { sign } from './sign';
+import { transfer } from './transfer';
 
 import { TransactionReply } from '../../../__proto__/common/index';
 import {
   DeployAccountRequest,
+  TransferRequest,
   MultisigTransferRequest,
   MultisigApproveRequest,
   SignTransactionRequest,
@@ -16,6 +18,27 @@ export class PolkaDotStateProvider {
     const { keys, threshold, network } = req;
     const { ss58Format } = network!;
     return encodeMultiAddress(keys!, threshold!, ss58Format!);
+  }
+
+  async buildTransferTransaction(req: TransferRequest): Promise<TransactionReply> {
+    const { from, to, quantity, network } = req as Required<TransferRequest>;
+    const { wss } = network!;
+    const api: ApiPromise = await this.getApi(wss!);
+
+    const { nonce } = await api.query.system.account(from);
+
+    const { serialized, signatureHash } = transfer({
+      api,
+      nonce: nonce.toNumber(),
+      quantity,
+      from,
+      to,
+    });
+
+    return {
+      serialized,
+      signatureHashes: [signatureHash],
+    };
   }
 
   async buildMultisigTransaction(req: MultisigTransferRequest): Promise<TransactionReply> {
@@ -49,7 +72,7 @@ export class PolkaDotStateProvider {
     const { wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!);
 
-    const { nonce } = (await api.query.system.account(sender)) as any;
+    const { nonce } = await api.query.system.account(sender);
 
     const { serialized, signatureHash } = await approveMultisig({
       api,
@@ -75,7 +98,7 @@ export class PolkaDotStateProvider {
     const { wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!);
 
-    const { nonce } = (await api.query.system.account(sender)) as any;
+    const { nonce } = await api.query.system.account(sender);
 
     const { serialized, signatureHash } = await cancelMultisig({
       api,

@@ -15,6 +15,16 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
+router.post('/transfer', async function (req: Request, res: Response, next) {
+  try {
+    const data = await polkaDotStateProvider.buildTransferTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('deployAccount =>', err);
+    return next(err);
+  }
+});
+
 router.post('/multisig/transfer', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.buildMultisigTransaction(req.body);
