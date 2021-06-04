@@ -4,7 +4,7 @@ package common;
 option go_package = "./common";
 
 message Signature {
-	string pubkey = 1;
+	string pub_key = 1;
 	string data = 2;
 }
 

@@ -31,7 +31,7 @@ message MultisigTransferRequest {
     string to = 2;
     string quantity = 3;
     string sender = 4;
-    repeated string pubkeys = 5;
+    repeated string pub_keys = 5;
     int32 threshold = 6;
     int32 max_weight = 7;
     Network network = 8;
@@ -43,7 +43,7 @@ message MultisigApproveRequest {
     string to = 2;
     string quantity = 3;
     string sender = 4;
-    repeated string pubkeys = 5;
+    repeated string pub_keys = 5;
     int32 threshold = 6;
     int32 max_weight = 7;
     Network network = 8;
@@ -54,7 +54,7 @@ message MultisigCancelRequest {
     string to = 2;
     string quantity = 3;
     string sender = 4;
-    repeated string pubkeys = 5;
+    repeated string pub_keys = 5;
     int32 threshold = 6;
     Network network = 7;
 }

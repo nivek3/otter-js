@@ -51,7 +51,7 @@ describe('BitCoin service', () => {
       );
     });
 
-    test.skip('generate a 2-of-3 multisig P2SH address, expect valid address', (done) => {
+    test('generate a 2-of-3 multisig P2SH address, expect valid address', (done) => {
       const address = '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL';
       client.DeployAccount(
         {

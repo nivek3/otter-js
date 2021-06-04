@@ -5,14 +5,14 @@ option go_package = "./bitcoin";
 import "common.proto";
 
 message Network {
-	string pubKeyHash = 1;
-	string scriptHash = 2;
+	string pub_key_hash = 1;
+	string script_hash = 2;
     string coin = 3;
 }
 
 message DeployAccountRequest {
 	repeated string keys = 1;
-	int32 requiredConfirmations = 2;
+	int32 required_confirmations = 2;
 	Network network = 3;
 }
 
@@ -23,9 +23,9 @@ message DeployAccountReply {
 message UTXO {
     int32 vout = 1;
     string txid = 2;
-    string scriptPubKey = 3;  
-    string redeemScript = 4; 
-    string witnessScript = 5;
+    string script_pub_key = 3;  
+    string redeem_script = 4; 
+    string witness_script = 5;
     int32 amount = 6;
 }
 
@@ -35,12 +35,12 @@ message Target {
 }
 
 message BuildTransactionRequest {
-	string pubkey = 1;
+    string pub_key = 1;
     string changer = 2;
     repeated Target targets = 3;
     repeated UTXO utxos = 4;
-    double feeRate = 5;
-    string redeemScript = 6;
+    double fee_rate = 5;
+    string redeem_script = 6;
     Network network = 7;
 }
 

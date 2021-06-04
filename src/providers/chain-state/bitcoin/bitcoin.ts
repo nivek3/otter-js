@@ -27,11 +27,11 @@ export class BitcoinStateProvider {
   }
 
   buildTransaction(req: BuildTransactionRequest): TransactionReply {
-    const { pubkey, changer, utxos, targets, network: reqNetWork, feeRate } = req as Required<BuildTransactionRequest>;
+    const { pubKey, changer, utxos, targets, network: reqNetWork, feeRate } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
     const feePerKb = new BigNumber(feeRate).toNumber();
     if (!network) throw new Error('Do not support such network');
-    if (!pubkey) throw new Error('Please provider publicKey');
+    if (!pubKey) throw new Error('Please provider publicKey');
     if (!utxos) {
       throw new Error('Should provider the utxos');
     }
@@ -58,7 +58,7 @@ export class BitcoinStateProvider {
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const { redeemScript } = input;
-      const publicKeyBuf = Buffer.from(pubkey, 'hex');
+      const publicKeyBuf = Buffer.from(pubKey, 'hex');
       const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
       txb.prepareInput(i, publicKeyBuf, redeemScriptBuffer);
       const signingData = txb.getSigningData(i, publicKeyBuf, redeemScriptBuffer, hashType);
@@ -82,8 +82,8 @@ export class BitcoinStateProvider {
     const hashForSignature: string[] = [];
 
     for (let i = 0; i < txb.inputs.length; i++) {
-      const { data, pubkey } = signature[i];
-      if (!data || !pubkey) continue;
+      const { data, pubKey } = signature[i];
+      if (!data || !pubKey) continue;
       const ecSignature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.from(data, 'hex'));
       const input = txb.inputs[i];
 
@@ -97,7 +97,7 @@ export class BitcoinStateProvider {
         m = decodeScript.m;
         sin = input?.signatures?.findIndex((s: number) => !s);
       }
-      const publicKeyBuf = Buffer.from(pubkey, 'hex');
+      const publicKeyBuf = Buffer.from(pubKey, 'hex');
       txb.prepareInput(i, publicKeyBuf, redeemScriptBuffer);
       txb.getSigningData(i, publicKeyBuf, redeemScriptBuffer, hashType);
       txb.signInput(i, sin, ecSignature, hashType);
