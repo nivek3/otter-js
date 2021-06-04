@@ -19,7 +19,7 @@ export class PolkaDotStateProvider {
   }
 
   async buildMultisigTransaction(req: MultisigTransferRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network, sender, pubkeys, threshold, maxWeight } = req;
+    const { from, to, quantity, network, sender, pubkeys, threshold, maxWeight } = req as Required<MultisigTransferRequest>;
     const { wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!);
 
@@ -45,7 +45,7 @@ export class PolkaDotStateProvider {
   }
 
   async multisigApproveTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network, sender, pubkeys, threshold, maxWeight } = req;
+    const { from, to, quantity, network, sender, pubkeys, threshold, maxWeight } = req as Required<MultisigApproveRequest>;
     const { wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!);
 
@@ -53,7 +53,7 @@ export class PolkaDotStateProvider {
 
     const { serialized, signatureHash } = await approveMultisig({
       api,
-      ss58PREFIX: ss58Format,
+      ss58Format: ss58Format!,
       addresses: pubkeys,
       threshold: threshold,
       quantity,
@@ -62,7 +62,7 @@ export class PolkaDotStateProvider {
       from,
       to,
       maxWeight,
-    } as any);
+    });
 
     return {
       serialized,

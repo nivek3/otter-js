@@ -6,10 +6,10 @@ import { getCallHexAndHash } from '../utils';
 
 export interface TransferParams {
   api: ApiPromise;
-  ss58PREFIX: number;
+  ss58Format: number;
   addresses: string[];
   threshold: number;
-  quantity: number;
+  quantity: string;
   decimals: number;
   from: string;
   to: string;
@@ -20,28 +20,26 @@ export interface TransferParams {
 
 export const transfer = async function ({
   api,
-  ss58PREFIX, //
+  ss58Format, //
   addresses,
   threshold,
   quantity,
-  decimals,
   sender,
   nonce,
   from,
   to,
   maxWeight = 640000000,
 }: TransferParams) {
-  const AMOUNT_TO_SEND = new BigNumber(quantity).shiftedBy(decimals).toString();
-  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58PREFIX);
+  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58Format);
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
-    ss58PREFIX,
+    ss58Format,
   );
   if (from !== MULTISIG) {
     throw new Error('multsig should be same as from');
   }
 
-  const { callMethodHash } = getCallHexAndHash(api, to, AMOUNT_TO_SEND);
+  const { callMethodHash } = getCallHexAndHash(api, to, quantity);
   const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
   if (info.isSome) {
     throw new Error('should be the first approval.');

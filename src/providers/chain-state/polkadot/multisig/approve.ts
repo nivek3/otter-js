@@ -7,26 +7,24 @@ const { u8aToHex, hexToU8a, formatBalance } = require('@polkadot/util');
 
 export interface ApproveParams {
   api: ApiPromise;
-  ss58PREFIX: number;
+  ss58Format: number;
   addresses: string[];
   threshold: number;
-  quantity: number;
-  decimals: number;
+  quantity: string;
   from: string;
   to: string;
   sender: string;
   maxWeight?: number;
-  storeCall: boolean;
+  storeCall?: boolean;
   nonce: number;
 }
 
 export async function approve({
   api,
-  ss58PREFIX, //
+  ss58Format, //
   addresses,
   threshold,
   quantity,
-  decimals,
   sender,
   nonce,
   from,
@@ -34,17 +32,17 @@ export async function approve({
   storeCall = false,
   maxWeight = 640000000,
 }: ApproveParams) {
-  const AMOUNT_TO_SEND = new BigNumber(quantity).shiftedBy(decimals).toString();
-  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58PREFIX);
+  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58Format);
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
-    ss58PREFIX,
+    ss58Format,
   );
+
   if (from !== MULTISIG) {
     throw new Error('multsig should be same as from');
   }
 
-  const { callMethodHash, callMethodHex } = getCallHexAndHash(api, to, AMOUNT_TO_SEND);
+  const { callMethodHash, callMethodHex } = getCallHexAndHash(api, to, quantity);
   const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
   if (!info.isSome) {
     throw new Error('do not found the time point..');

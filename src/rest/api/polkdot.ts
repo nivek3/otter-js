@@ -15,31 +15,19 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
-router.post('/deployAccount', async function (req: Request, res: Response, next) {
-  try {
-    const account = polkaDotStateProvider.deployAccount(req.body);
-    return res.json({
-      address: account,
-    });
-  } catch (err) {
-    logger.info('DeployAccount =>', err);
-    return next(err);
-  }
-});
-
 router.post('/multisig/transfer', async function (req: Request, res: Response, next) {
   try {
-    const data = polkaDotStateProvider.buildMultisigTransaction(req.body);
+    const data = await polkaDotStateProvider.buildMultisigTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('Multisig Approve =>', err);
+    logger.info('Multisig Transfer =>', err);
     return next(err);
   }
 });
 
 router.post('/multisig/approve', async function (req: Request, res: Response, next) {
   try {
-    const data = polkaDotStateProvider.multisigApproveTransaction(req.body);
+    const data = await polkaDotStateProvider.multisigApproveTransaction(req.body);
     return res.json(data);
   } catch (err) {
     logger.info('Multisig Approve =>', err);
@@ -49,10 +37,20 @@ router.post('/multisig/approve', async function (req: Request, res: Response, ne
 
 router.post('/multisig/cancel', async function (req: Request, res: Response, next) {
   try {
-    const data = polkaDotStateProvider.multisigCancelTransaction(req.body);
+    const data = await polkaDotStateProvider.multisigCancelTransaction(req.body);
     return res.json(data);
   } catch (err) {
     logger.info('Multisig Cancel =>', err);
+    return next(err);
+  }
+});
+
+router.post('/sign', async function (req: Request, res: Response, next) {
+  try {
+    const data = await polkaDotStateProvider.signTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('Sign Tx =>', err);
     return next(err);
   }
 });
