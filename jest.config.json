@@ -1,18 +1,19 @@
 {
     "bail": false,
     "verbose": true,
-    "globals": {
-        "ts-jest": {
-            "tsconfig": "tsconfig.json"
-        }
-    },
-    "moduleFileExtensions": ["ts", "js"],
+    "moduleFileExtensions": [
+        "ts",
+        "js"
+    ],
     "transform": {
+        "^.+\\.jsx?$": "babel-jest",
         "^.+\\.(ts|tsx)$": "ts-jest"
     },
-    "testMatch": ["**/test/**/*.test.(ts|js)"],
-    "collectCoverageFrom": [
-        "src/**/*.(ts|js)"
+    "transformIgnorePatterns": [
+        "node_modules/(?!@polkadot)/"
+    ],
+    "testMatch": [
+        "**/test/**/*.test.(ts|js)"
     ],
     "testEnvironment": "node"
 }
