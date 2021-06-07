@@ -15,12 +15,12 @@ import {
 
 export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
-    const { keys, requiredConfirmations, network: reqNetWork } = req;
+    const { keys, threshold, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!);
     if (!network) throw new Error('Do not support such network');
 
     const pubKeys = keys!.map((hex) => Buffer.from(hex, 'hex'));
-    const redeemScript = bitGoUTXO.script.multisig.output.encode(requiredConfirmations, pubKeys);
+    const redeemScript = bitGoUTXO.script.multisig.output.encode(threshold, pubKeys);
     const scriptPubKey = bitGoUTXO.script.scriptHash.output.encode(bitGoUTXO.crypto.hash160(redeemScript));
 
     return bitGoUTXO.address.fromOutputScript(scriptPubKey, network);

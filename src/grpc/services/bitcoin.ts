@@ -30,7 +30,7 @@ export const BitCoinService = protoDescriptor.bitcoin.BitCoin.service;
 export const BitCoinImp: ProxyImp<BitCoinDefinition> = {
   DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
-    if (!req.requiredConfirmations || req.requiredConfirmations < 1) {
+    if (!req.threshold || req.threshold < 1) {
       throw new GRpcError({
         ...errors.INVALID_ARGUMENT,
         code: grpc.status.INVALID_ARGUMENT,

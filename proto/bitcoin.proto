@@ -12,7 +12,7 @@ message Network {
 
 message DeployAccountRequest {
 	repeated string keys = 1;
-	int32 required_confirmations = 2;
+	int32 threshold = 2;
 	Network network = 3;
 }
 

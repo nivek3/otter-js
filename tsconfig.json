@@ -18,7 +18,8 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["node", "jest"],
     "esModuleInterop": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
   },
   "include": ["./src/**/*", "./test/**/*", "client.js"]
 }

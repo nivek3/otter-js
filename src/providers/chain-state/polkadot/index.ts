@@ -3,7 +3,7 @@ import { encodeMultiAddress } from '@polkadot/util-crypto';
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
 import { sign } from './sign';
 import { transfer } from './transfer';
-import { xPubKeyToAddress } from './utils';
+import { pubKeyToBlack2Address } from './utils';
 
 import { TransactionReply } from '../../../__proto__/common/index';
 import {
@@ -52,7 +52,7 @@ export class PolkaDotStateProvider {
     const { serialized, signatureHash } = await multisigTransfer({
       api,
       ss58PREFIX: ss58Format,
-      addresses: pubKeys.map(xPubKeyToAddress),
+      addresses: pubKeys.map(pubKeyToBlack2Address),
       threshold: threshold,
       quantity,
       sender,
@@ -78,7 +78,7 @@ export class PolkaDotStateProvider {
     const { serialized, signatureHash } = await approveMultisig({
       api,
       ss58Format: ss58Format!,
-      addresses: pubKeys.map(xPubKeyToAddress),
+      addresses: pubKeys.map(pubKeyToBlack2Address),
       threshold: threshold,
       quantity,
       sender,
@@ -104,7 +104,7 @@ export class PolkaDotStateProvider {
     const { serialized, signatureHash } = await cancelMultisig({
       api,
       ss58PREFIX: ss58Format!,
-      addresses: pubKeys.map(xPubKeyToAddress),
+      addresses: pubKeys.map(pubKeyToBlack2Address),
       threshold: threshold,
       quantity,
       sender,
