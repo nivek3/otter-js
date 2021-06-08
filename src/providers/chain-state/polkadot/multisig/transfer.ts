@@ -10,7 +10,6 @@ export interface TransferParams {
   addresses: string[];
   threshold: number;
   quantity: string;
-  decimals: number;
   from: string;
   to: string;
   sender: string;
