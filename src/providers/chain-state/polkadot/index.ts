@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { encodeMultiAddress } from '@polkadot/util-crypto';
+import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
 import { sign } from './sign';
 import { transfer } from './transfer';
@@ -18,7 +18,8 @@ export class PolkaDotStateProvider {
   deployAccount(req: DeployAccountRequest): string {
     const { keys, threshold, network } = req;
     const { ss58Format } = network!;
-    return encodeMultiAddress(keys!, threshold!, ss58Format!);
+    const addresses = keys!.map(pubKeyToBlack2Address);
+    return encodeMultiAddress(sortAddresses(addresses, ss58Format), threshold!, ss58Format!);
   }
 
   async buildTransferTransaction(req: TransferRequest): Promise<TransactionReply> {
