@@ -14,12 +14,11 @@ describe('ChainStateProvider Polkadot', () => {
     });
 
     test('pubKeyToBlack2Address', () => {
-      jest.setTimeout(10 * 1000);
       const pubKey = '0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624';
       const expected = '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn';
       expect(expected).toEqual(pubKeyToBlack2Address(pubKey));
 
-      expect(expected).toEqual(pubKeyToBlack2Address('0x' + pubKey));
+      expect(expected).toEqual(pubKeyToBlack2Address('0x' + pubKey, 42));
     });
   });
 });
