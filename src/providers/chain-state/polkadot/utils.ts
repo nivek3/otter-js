@@ -8,9 +8,9 @@ export const getCallHexAndHash = function (api: ApiPromise, to: string, amount: 
   return { callMethodHash, callMethodHex };
 };
 
-export const pubKeyToBlack2Address = (publicKey: string) => {
+export const pubKeyToBlack2Address = (publicKey: string, ss58Format?: number) => {
   if (!publicKey.startsWith('0x')) {
     publicKey = '0x' + publicKey;
   }
-  return encodeAddress(blake2AsU8a(publicKey));
+  return encodeAddress(blake2AsU8a(publicKey), ss58Format);
 };
