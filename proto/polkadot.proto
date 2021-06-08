@@ -23,7 +23,8 @@ message TransferRequest {
 	string from = 1;
 	string to = 2;
     string quantity = 3;
-    Network network = 4;
+    int32 nonce = 4;
+    Network network = 5;
 }
 
 message MultisigTransferRequest {

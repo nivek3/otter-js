@@ -24,14 +24,17 @@ export class PolkaDotStateProvider {
 
   async buildTransferTransaction(req: TransferRequest): Promise<TransactionReply> {
     const { from, to, quantity, network } = req as Required<TransferRequest>;
+    let nonce = req.nonce;
     const { wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-
-    const { nonce } = await api.query.system.account(from);
+    if (nonce === undefined || nonce === null) {
+      const account = await api.query.system.account(from);
+      nonce = account.nonce.toNumber();
+    }
 
     const { serialized, signatureHash } = transfer({
       api,
-      nonce: nonce.toNumber(),
+      nonce,
       quantity,
       from,
       to,
