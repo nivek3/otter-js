@@ -21,7 +21,7 @@ describe('BitCoin service', () => {
     beforeAll(async () => {
       await grpcServer.start();
       client = new BitCoin(`localhost:${process.env.GRPC_PORT}`, grpc.credentials.createInsecure());
-    }, 60 * 1000);
+    });
 
     afterAll(async () => {
       client?.close();
