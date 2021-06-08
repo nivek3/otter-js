@@ -7,6 +7,10 @@ beforeAll(async () => {
   api = await setupConnection();
 });
 
+afterAll(async () => {
+  await disconnect();
+});
+
 describe('ChainStateProvider Polkadot', () => {
   describe('Polkadot transfer', () => {
     test('getCallHexAndHash', () => {

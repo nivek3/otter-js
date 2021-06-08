@@ -27,6 +27,7 @@ export async function setupConnection(): Promise<ApiPromise> {
  */
 export async function disconnect(): Promise<void> {
   if (api && api.isConnected) {
+    // https://github.com/polkadot-js/api/issues/3428#issuecomment-825562189
     // await api?.disconnect();
   }
 }

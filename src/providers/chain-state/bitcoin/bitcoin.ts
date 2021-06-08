@@ -118,19 +118,6 @@ export class BitcoinStateProvider {
     return coinSelect(utxos, recipients, feeRate);
   }
 
-  makeRequest(opts) {
-    return rp({
-      url: opts.url,
-      method: opts.method,
-      json: true,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      qs: opts.qs || {},
-      body: opts.data || {},
-    });
-  }
-
   getNetWork({ scriptHash, pubKeyHash, coin }: Network) {
     return Object.values(bitGoUTXO.networks).find(
       (network: any) => network.scriptHash === Number(scriptHash) && network.pubKeyHash === Number(pubKeyHash) && network.coin === coin,

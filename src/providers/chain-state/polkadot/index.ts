@@ -23,8 +23,8 @@ export class PolkaDotStateProvider {
 
   async buildTransferTransaction(req: TransferRequest): Promise<TransactionReply> {
     const { from, to, quantity, network } = req as Required<TransferRequest>;
-    const { wss } = network!;
-    const api: ApiPromise = await this.getApi(wss!);
+    const { wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const { nonce } = await api.query.system.account(from);
 
@@ -45,7 +45,7 @@ export class PolkaDotStateProvider {
   async buildMultisigTransaction(req: MultisigTransferRequest): Promise<TransactionReply> {
     const { from, to, quantity, network, sender, pubKeys, threshold, maxWeight } = req as Required<MultisigTransferRequest>;
     const { wss, ss58Format } = network!;
-    const api: ApiPromise = await this.getApi(wss!);
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const { nonce } = (await api.query.system.account(sender)) as any;
 
@@ -71,7 +71,7 @@ export class PolkaDotStateProvider {
   async multisigApproveTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
     const { from, to, quantity, network, sender, pubKeys, threshold, maxWeight } = req as Required<MultisigApproveRequest>;
     const { wss, ss58Format } = network!;
-    const api: ApiPromise = await this.getApi(wss!);
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const { nonce } = await api.query.system.account(sender);
 
@@ -97,7 +97,7 @@ export class PolkaDotStateProvider {
   async multisigCancelTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
     const { from, to, quantity, network, sender, pubKeys, threshold } = req as Required<MultisigApproveRequest>;
     const { wss, ss58Format } = network!;
-    const api: ApiPromise = await this.getApi(wss!);
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const { nonce } = await api.query.system.account(sender);
 
@@ -121,8 +121,8 @@ export class PolkaDotStateProvider {
 
   async signTransaction(req: SignTransactionRequest): Promise<TransactionReply> {
     const { serialized, signature, network } = req as Required<SignTransactionRequest>;
-    const { wss } = network!;
-    const api: ApiPromise = await this.getApi(wss!);
+    const { wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     if (!(Array.isArray(signature) && signature.length)) {
       throw new Error('pleasure provider the signature');
@@ -137,12 +137,29 @@ export class PolkaDotStateProvider {
     };
   }
 
-  async getApi(wss: string, autoConnectMs = 1000 * 60) {
+  getApiTypes(ss58Format: number) {
     const cloverTypes = require('@clover-network/node-types');
+    const edgewareTypes = require('@edgeware/node-types');
+    let types;
+    // TODO use the real ss58Format
+    if ([42].indexOf(ss58Format) > -1) {
+      // Clover
+      types = cloverTypes;
+    } else if ([42].indexOf(ss58Format) > -1) {
+      // Kusama
+      types = { PalletId: 'u128' };
+    } else if ([42].indexOf(ss58Format) > -1) {
+      // Edgeware
+      types = edgewareTypes.spec;
+    }
+    return types;
+  }
+
+  async getApi(wss: string, ss58Format: number, autoConnectMs = 1000 * 60) {
     const wsProvider = new WsProvider(wss, autoConnectMs);
     return await ApiPromise.create({
       provider: wsProvider,
-      types: cloverTypes,
+      types: this.getApiTypes(ss58Format),
     });
   }
 }
