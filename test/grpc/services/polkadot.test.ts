@@ -103,5 +103,36 @@ describe('BitCoin service', () => {
       },
       30 * 1000,
     );
+
+    test(
+      'build multisig transfer transaction',
+      async () => {
+        const BuildMultisigTransaction = promisify(client.BuildMultisigTransaction.bind(client));
+        const response = await BuildMultisigTransaction({
+          pubKeys: [
+            '0x0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624',
+            '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',
+            '0x020c0ad3825f41eda2c533659a8ce891c0e4fd78e8f1c753fa85992fdfd38236bd',
+          ],
+          to: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
+          quantity: '100000',
+          nonce: 45,
+          sender: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
+          threshold: 2,
+          network: {
+            wss: 'wss://api.clover.finance',
+            ss58Format: 42,
+          },
+        });
+        const { serialized, signatureHashes } = response;
+        expect(serialized).toEqual(
+          '55038400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca461202000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100b4001d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
+        );
+        expect(signatureHashes[0]).toEqual(
+          '1d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a025260000000000b4001100000001000000dd97e5ad3f0015f2dc45c9467b0fd36a2b7f4b9a7bc65e8111d49d6cf19c8927dd97e5ad3f0015f2dc45c9467b0fd36a2b7f4b9a7bc65e8111d49d6cf19c8927',
+        );
+      },
+      30 * 1000,
+    );
   });
 });

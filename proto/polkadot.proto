@@ -35,7 +35,8 @@ message MultisigTransferRequest {
     repeated string pub_keys = 5;
     int32 threshold = 6;
     int32 max_weight = 7;
-    Network network = 8;
+    int32 nonce = 8;
+    Network network = 9;
     
 }
 

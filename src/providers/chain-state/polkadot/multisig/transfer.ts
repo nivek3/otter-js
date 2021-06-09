@@ -1,7 +1,6 @@
-import BigNumber from 'bignumber.js';
-import { ApiPromise } from '@polkadot/api';
+import type { ApiPromise } from '@polkadot/api';
 import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
-import { SignPlaceholder } from '../const';
+import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash } from '../utils';
 
 export interface TransferParams {
@@ -29,17 +28,12 @@ export const transfer = async function ({
   to,
   maxWeight = 640000000,
 }: TransferParams) {
-  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58Format);
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
     ss58Format,
   );
-  if (from !== MULTISIG) {
-    throw new Error('multsig should be same as from');
-  }
-
   const { callMethodHash } = getCallHexAndHash(api, to, quantity);
-  const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
+  const info = await api.query.multisig.multisigs(from, callMethodHash);
   if (info.isSome) {
     throw new Error('should be the first approval.');
   }
@@ -55,16 +49,19 @@ export const transfer = async function ({
 
   // // create the payload
   const payload = api.createType('SignerPayload', {
-    method: tx.method.toHex(),
+    method: tx.method,
     nonce,
     genesisHash: api.genesisHash,
     blockHash: api.genesisHash,
     runtimeVersion: api.runtimeVersion,
     version: api.extrinsicVersion,
+    address: sender,
   });
 
-  tx.addSignature(sender, SignPlaceholder, payload.toPayload());
-  const serialized = tx.toHex().slice(2);
-  const signatureHash = payload.toRaw().data.slice(2);
-  return { serialized, signatureHash };
+  tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
+
+  const serialized = tx.toHex();
+  const payloadRaw = payload.toRaw().data;
+
+  return { serialized: serialized.slice(2), signatureHash: payloadRaw.slice(2) };
 };

@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { SignPlaceholder } from './const';
+import { SIGN_PLACEHOLDER } from './const';
 
 export interface TransferParams {
   api: ApiPromise;
@@ -22,7 +22,7 @@ export const transfer = function ({ api, quantity, nonce, from, to }: TransferPa
     version: api.extrinsicVersion,
   });
 
-  tx.addSignature(from, SignPlaceholder, payload.toPayload());
+  tx.addSignature(from, SIGN_PLACEHOLDER, payload.toPayload());
 
   const serialized = tx.toHex().slice(2);
   const signatureHash = payload.toRaw().data.slice(2);
