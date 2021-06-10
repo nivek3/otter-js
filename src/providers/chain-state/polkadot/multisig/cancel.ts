@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
 import { SIGN_PLACEHOLDER } from '../const';
