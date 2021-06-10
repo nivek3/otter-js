@@ -13,14 +13,14 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   defaults: false,
   oneofs: true,
 });
-const BitCoin = (grpc.loadPackageDefinition(packageDefinition) as any)?.bitcoin.BitCoin;
+const Bitcoin = (grpc.loadPackageDefinition(packageDefinition) as any)?.bitcoin.Bitcoin;
 let client;
 
-describe('BitCoin service', () => {
+describe('Bitcoin service', () => {
   describe('BuildAccount', () => {
     beforeAll(async () => {
       await grpcServer.start();
-      client = new BitCoin(`localhost:${process.env.GRPC_PORT}`, grpc.credentials.createInsecure());
+      client = new Bitcoin(`localhost:${process.env.GRPC_PORT}`, grpc.credentials.createInsecure());
     });
 
     afterAll(async () => {

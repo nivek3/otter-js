@@ -36,7 +36,7 @@ export class GrpcInterceptorProxy {
                 signature: function (Message: protobuf.Message, data: object) {
                   const message = (Message as unknown as typeof protobuf.Message).create(data);
                   const buffer = (Message as unknown as typeof protobuf.Message).encode(message).finish();
-                  return Buffer.from(buffer).toString();
+                  return Buffer.from(buffer).toString('hex');
                 },
               };
               try {

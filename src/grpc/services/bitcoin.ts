@@ -10,7 +10,7 @@ import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
 import { TransactionReply } from '../../__proto__/common/index';
 import {
-  BitCoinDefinition,
+  BitcoinHandlers,
   DeployAccountRequest,
   DeployAccountReply,
   BuildTransactionRequest,
@@ -26,9 +26,9 @@ const options = {
 const packageDefinition = protoLoader.loadSync(filename, options);
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown as ProtoGrpcType;
 
-export const BitCoinService = protoDescriptor.bitcoin.BitCoin.service;
+export const BitcoinService = protoDescriptor.bitcoin.Bitcoin.service;
 
-export const BitCoinImp: ProxyImp<BitCoinDefinition> = {
+export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
   DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     if (!req.threshold || req.threshold < 1) {

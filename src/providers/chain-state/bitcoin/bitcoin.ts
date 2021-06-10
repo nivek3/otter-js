@@ -6,7 +6,7 @@ import coinSelect from 'coinselect';
 import { TransactionReply } from '../../../__proto__/common/index';
 import {
   Network,
-  UTXO,
+  TransactionOutput,
   Recipient,
   BuildTransactionRequest,
   DeployAccountRequest,
@@ -114,7 +114,7 @@ export class BitcoinStateProvider {
     };
   }
 
-  selectCoins(utxos: UTXO[], recipients: Recipient[], feeRate: number) {
+  selectCoins(utxos: TransactionOutput[], recipients: Recipient[], feeRate: number) {
     return coinSelect(utxos, recipients, feeRate);
   }
 

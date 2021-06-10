@@ -9,7 +9,7 @@ import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/polkadot';
 import { TransactionReply } from '../../__proto__/common/index';
 import {
-  PolkadotDefinition,
+  PolkadotHandlers,
   DeployAccountRequest,
   DeployAccountReply,
   TransferRequest,
@@ -29,7 +29,7 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 
 export const PolkadotService = protoDescriptor.polkadot.Polkadot.service;
 
-export const PolkadotImp: ProxyImp<PolkadotDefinition> = {
+export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
   DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);

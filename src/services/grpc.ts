@@ -5,7 +5,7 @@ import { Middleware } from 'koa-compose';
 import { ImplContext, ProxyImp } from '../grpc/utils/context';
 import { loggerInterceptor } from '../grpc/interceptors/logger';
 import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
-import { PolkadotService, PolkadotImp, BitCoinService, BitCoinImp } from '../grpc/services';
+import { PolkadotService, PolkadotImp, BitcoinService, BitcoinImp } from '../grpc/services';
 
 import logger from '../logger';
 
@@ -37,7 +37,10 @@ export class GRPCServer extends GrpcInterceptorProxy {
     callback(err, err.details, err.metadata || ctx?.call.metadata);
   }
 
-  addService(service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, implementation: ProxyImp<grpc.ServiceDefinition>) {
+  addService(
+    service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>,
+    implementation: ProxyImp<grpc.UntypedServiceImplementation>,
+  ) {
     this.server.addService(service, implementation as any);
   }
 
@@ -73,7 +76,7 @@ export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 
 // services
 grpcServer.addService(PolkadotService, PolkadotImp);
-grpcServer.addService(BitCoinService, BitCoinImp);
+grpcServer.addService(BitcoinService, BitcoinImp);
 
 // interceptors
 grpcServer.use(loggerInterceptor);

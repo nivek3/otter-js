@@ -20,7 +20,7 @@ message DeployAccountReply {
 	string address = 1;
 }
 
-message UTXO {
+message TransactionOutput {
     int32 vout = 1;
     string txid = 2;
     string script_pub_key = 3;  
@@ -38,7 +38,7 @@ message BuildTransactionRequest {
     string pub_key = 1;
     string changer = 2;
     repeated Recipient recipients = 3;
-    repeated UTXO utxos = 4;
+    repeated TransactionOutput utxos = 4;
     double fee_rate = 5;
     string redeem_script = 6;
     Network network = 7;
@@ -50,7 +50,7 @@ message SignTransactionRequest {
     Network network = 3;
 }
 
-service BitCoin {
+service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
