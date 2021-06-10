@@ -20,6 +20,10 @@ FILE_PATHS=`find ${PROTO_IMPORT_DIR} -name "*.proto" -type f`
     --outDir=${GEN_OUT_DIR} \
     ${FILE_PATHS}
 
+npx pbjs -t static-module -w commonjs -o $GEN_OUT_DIR/compiled.js $FILE_PATHS
+
+npx pbts -o $GEN_OUT_DIR/compiled.d.ts $GEN_OUT_DIR/compiled.js
+
 for dir in $(ls -l $GEN_OUT_DIR | awk '/^d/ {print $NF}')
 do
   ./node_modules/.bin/barrelsby -d ${GEN_OUT_DIR}/${dir}

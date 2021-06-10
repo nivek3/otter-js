@@ -1,9 +1,11 @@
+import { Signature } from './../../__proto__/common/Signature';
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { polkaDotStateProvider as provider } from '../../providers/chain-state/polkadot';
 import { ImplContext, ProxyImp } from '../utils/context';
 
+import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/polkadot';
 import { TransactionReply } from '../../__proto__/common/index';
 import {
@@ -32,35 +34,46 @@ export const PolkadotImp: ProxyImp<PolkadotDefinition> = {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
+    const signature = ctx.signature(root.polkadot.DeployAccountReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
-
   BuildTransferTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.buildTransferTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 
   BuildMultisigTransaction: async function (ctx: ImplContext<MultisigTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.buildMultisigTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 
   MultisigApproveTransaction: async function (ctx: ImplContext<MultisigApproveRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.multisigApproveTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 
   MultisigCancelTransaction: async function (ctx: ImplContext<MultisigCancelRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.multisigCancelTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 
   SignTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.signTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 };

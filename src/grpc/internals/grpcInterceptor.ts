@@ -1,4 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
+import protobuf from 'protobufjs';
 import compose, { Middleware } from 'koa-compose';
 import { ImplContext } from '../utils/context';
 import { GRpcError } from './error';
@@ -32,6 +33,11 @@ export class GrpcInterceptorProxy {
                 call,
                 body: {} as S,
                 state: {},
+                signature: function (Message: protobuf.Message, data: object) {
+                  const message = (Message as unknown as typeof protobuf.Message).create(data);
+                  const buffer = (Message as unknown as typeof protobuf.Message).encode(message).finish();
+                  return Buffer.from(buffer).toString();
+                },
               };
               try {
                 await compose([...interceptors, originFn])(ctx);

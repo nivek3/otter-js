@@ -6,6 +6,7 @@ import { ImplContext, ProxyImp } from '../utils/context';
 import { GRpcError } from '../internals/error';
 import errors from '../errors';
 
+import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
 import { TransactionReply } from '../../__proto__/common/index';
 import {
@@ -40,17 +41,23 @@ export const BitCoinImp: ProxyImp<BitCoinDefinition> = {
     }
     const address = provider.deployAccount(req);
     ctx.body = { address };
+    const signature = ctx.signature(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 
   BuildTransaction: function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
     const data = provider.buildTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 
   SignTransaction: function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
     const data = provider.signTransaction(req);
     ctx.body = data;
+    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
   },
 };
