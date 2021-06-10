@@ -1,9 +1,7 @@
-import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash } from '../utils';
-const { u8aToHex, hexToU8a, formatBalance } = require('@polkadot/util');
 
 export interface ApproveParams {
   api: ApiPromise;
@@ -69,7 +67,9 @@ export async function approve({
   });
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
+
   const serialized = tx.toHex().slice(2);
   const signatureHash = payload.toRaw().data.slice(2);
+
   return { serialized, signatureHash };
 }

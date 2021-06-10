@@ -6,7 +6,7 @@ import { getCallHexAndHash } from '../utils';
 
 export interface CancelParams {
   api: ApiPromise;
-  ss58PREFIX: number;
+  ss58Format: number;
   addresses: string[];
   threshold: number;
   quantity: string;
@@ -18,7 +18,7 @@ export interface CancelParams {
 
 export async function cancel({
   api,
-  ss58PREFIX, //
+  ss58Format, //
   addresses,
   threshold,
   quantity,
@@ -27,17 +27,13 @@ export async function cancel({
   from,
   to,
 }: CancelParams) {
-  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58PREFIX);
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
-    ss58PREFIX,
+    ss58Format,
   );
-  if (from !== MULTISIG) {
-    throw new Error('multsig should be same as from');
-  }
 
   const { callMethodHash } = getCallHexAndHash(api, to, quantity);
-  const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
+  const info = await api.query.multisig.multisigs(from, callMethodHash);
   if (!info.isSome) {
     throw new Error('do not found the time point..');
   }
@@ -57,10 +53,13 @@ export async function cancel({
     blockHash: api.genesisHash,
     runtimeVersion: api.runtimeVersion,
     version: api.extrinsicVersion,
+    address: sender,
   });
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
+
   const serialized = tx.toHex().slice(2);
   const signatureHash = payload.toRaw().data.slice(2);
+
   return { serialized, signatureHash };
 }

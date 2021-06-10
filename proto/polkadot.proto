@@ -28,34 +28,33 @@ message TransferRequest {
 }
 
 message MultisigTransferRequest {
-    string from = 1;
-    string to = 2;
-    string quantity = 3;
-    string sender = 4;
-    repeated string pub_keys = 5;
-    int32 threshold = 6;
+    string to = 1;
+    string quantity = 2;
+    repeated string pub_keys = 3;
+    int32 threshold = 4;
+    string sender = 5;
+    int32 nonce = 6;
     int32 max_weight = 7;
-    int32 nonce = 8;
-    Network network = 9;
+    Network network = 8;
     
 }
 
 message MultisigApproveRequest {
-    string from = 1;
-    string to = 2;
-    string quantity = 3;
-    string sender = 4;
-    repeated string pub_keys = 5;
-    int32 threshold = 6;
+    string to = 1;
+    string quantity = 2;
+    repeated string pub_keys = 3;
+    int32 threshold = 4;
+    string sender = 5;
+    int32 nonce = 6;
     int32 max_weight = 7;
     Network network = 8;
 }
 
 message MultisigCancelRequest {
-    string from = 1;
-    string to = 2;
-    string quantity = 3;
-    string sender = 4;
+    string to = 1;
+    string quantity = 2;
+    string sender = 3;
+    int32 nonce = 4;
     repeated string pub_keys = 5;
     int32 threshold = 6;
     Network network = 7;

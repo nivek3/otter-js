@@ -71,20 +71,22 @@ export class PolkaDotStateProvider {
   }
 
   async multisigApproveTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network, sender, pubKeys, threshold, maxWeight } = req as Required<MultisigApproveRequest>;
+    const { to, quantity, network, sender, pubKeys, threshold, maxWeight } = req as Required<MultisigApproveRequest>;
     const { wss, ss58Format } = network!;
-    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+    const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
+    const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
-    const { nonce } = await api.query.system.account(sender);
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+    const nonce = await this.getAddressNonce(api, from, req.nonce);
 
     const { serialized, signatureHash } = await approveMultisig({
       api,
       ss58Format: ss58Format!,
-      addresses: pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format)),
-      threshold: threshold,
+      addresses,
+      threshold,
       quantity,
       sender,
-      nonce: nonce.toNumber(),
+      nonce,
       from,
       to,
       maxWeight,
@@ -97,20 +99,22 @@ export class PolkaDotStateProvider {
   }
 
   async multisigCancelTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network, sender, pubKeys, threshold } = req as Required<MultisigApproveRequest>;
+    const { to, quantity, network, sender, pubKeys, threshold } = req as Required<MultisigApproveRequest>;
     const { wss, ss58Format } = network!;
-    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+    const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
+    const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
-    const { nonce } = await api.query.system.account(sender);
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+    const nonce = await this.getAddressNonce(api, from, req.nonce);
 
     const { serialized, signatureHash } = await cancelMultisig({
       api,
-      ss58PREFIX: ss58Format!,
-      addresses: pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format)),
-      threshold: threshold,
+      ss58Format: ss58Format!,
+      addresses,
+      threshold,
       quantity,
       sender,
-      nonce: nonce.toNumber(),
+      nonce: nonce,
       from,
       to,
     });
@@ -144,13 +148,13 @@ export class PolkaDotStateProvider {
     const edgewareTypes = require('@edgeware/node-types');
     let types;
     // TODO use the real ss58Format
-    if ([42].indexOf(ss58Format) > -1) {
+    if ([42].includes(ss58Format)) {
       // Clover
       types = cloverTypes;
-    } else if ([42].indexOf(ss58Format) > -1) {
+    } else if ([42].includes(ss58Format)) {
       // Kusama
       types = { PalletId: 'u128' };
-    } else if ([42].indexOf(ss58Format) > -1) {
+    } else if ([42].includes(ss58Format)) {
       // Edgeware
       types = edgewareTypes.spec;
     }

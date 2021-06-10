@@ -60,8 +60,8 @@ export const transfer = async function ({
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 
-  const serialized = tx.toHex();
-  const payloadRaw = payload.toRaw().data;
+  const serialized = tx.toHex().slice(2);
+  const signatureHash = payload.toRaw().data.slice(2);
 
-  return { serialized: serialized.slice(2), signatureHash: payloadRaw.slice(2) };
+  return { serialized, signatureHash };
 };
