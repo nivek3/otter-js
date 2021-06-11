@@ -18,7 +18,7 @@ export class PolkaDotStateProvider {
   deployAccount(req: DeployAccountRequest): string {
     const { keys, threshold, network } = req;
     const { ss58Format } = network!;
-    const addresses = keys!.map(pubKeyToBlack2Address);
+    const addresses = keys!.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     return encodeMultiAddress(sortAddresses(addresses, ss58Format), threshold!, ss58Format!);
   }
 
