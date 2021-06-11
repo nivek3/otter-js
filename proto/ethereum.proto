@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package ethereum;
+option go_package = "./ethereum";
+import "common.proto";
+
+message Network {
+    string rpc_uri = 1;
+}
+
+message DeployAccountRequest {
+    string key = 1;
+}
+
+message BuildAccountRequest {
+    repeated string keys = 1;
+    string sender = 2;
+    int32 nonce = 3;
+    int32 gas = 4;
+    int32 gas_price = 5;  
+    Network network = 6;
+}
+
+message DeployAccountReply {
+    string address = 1;
+}
+
+service Ethereum {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+}
