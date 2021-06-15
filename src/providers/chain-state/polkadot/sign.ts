@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { SIGN_PLACEHOLDER } from './const';
+import { preparePrefix, trimPrefix } from './utils';
 
 export interface SignParams {
   api: ApiPromise;
@@ -10,12 +11,8 @@ export interface SignParams {
 
 export function sign({ api, serialized, signature }: SignParams) {
   const prefix = '0x';
-  if (!serialized.startsWith(prefix)) {
-    serialized = prefix + serialized;
-  }
-  if (signature.startsWith(prefix)) {
-    signature = signature.slice(2);
-  }
+  serialized = preparePrefix(serialized, prefix);
+  signature = trimPrefix(signature, prefix);
   const placeholder = SIGN_PLACEHOLDER.slice(2);
   const hex = serialized.replace(placeholder, signature);
   return api.createType('Extrinsic', hex).toHex();

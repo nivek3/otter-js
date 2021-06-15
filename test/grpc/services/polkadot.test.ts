@@ -96,6 +96,8 @@ describe('Polkadot service', () => {
     test('build multisig transfer transaction', async () => {
       const wss = 'wss://api.clover.finance';
       const ss58Format = 42;
+      const to = '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn';
+      const quantity = '100000';
       const api = await polkaDotStateProvider.getApi(wss, ss58Format);
 
       jest.spyOn(polkaDotStateProvider, 'getApi').mockResolvedValueOnce(api);
@@ -108,8 +110,8 @@ describe('Polkadot service', () => {
           '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',
           '0x020c0ad3825f41eda2c533659a8ce891c0e4fd78e8f1c753fa85992fdfd38236bd',
         ],
-        to: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
-        quantity: '100000',
+        to,
+        quantity,
         nonce: 45,
         sender: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
         threshold: 2,
@@ -168,8 +170,11 @@ describe('Polkadot service', () => {
     });
 
     test('build multisig approve transaction', async () => {
+      const to = '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn';
+      const quantity = '100000';
       const wss = 'wss://api.clover.finance';
       const ss58Format = 42;
+
       const api = await polkaDotStateProvider.getApi(wss, ss58Format);
       const when = { height: 1231562, index: 1 };
       jest.spyOn(polkaDotStateProvider, 'getApi').mockResolvedValueOnce(api);
@@ -182,14 +187,14 @@ describe('Polkadot service', () => {
 
       const MultisigApproveTransaction = promisify(client.MultisigApproveTransaction.bind(client));
       const response = await MultisigApproveTransaction({
-        to: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
+        to,
+        quantity,
         pubKeys: [
           '0x0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624',
           '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',
           '0x020c0ad3825f41eda2c533659a8ce891c0e4fd78e8f1c753fa85992fdfd38236bd',
         ],
         threshold: 2,
-        quantity: '100000',
         sender: '5F1GPrYp5Q32Hr3hczZXoJCTxNhuQxsBbABtSjDnVK9Fn9dZ',
         nonce: 1,
         network: {

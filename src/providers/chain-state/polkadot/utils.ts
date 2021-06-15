@@ -5,12 +5,24 @@ export const getCallHexAndHash = function (api: ApiPromise, to: string, amount: 
   const call = api.tx.balances.transfer(to, amount);
   const callMethodHash = call.method.hash;
   const callMethodHex = call.method.toHex();
-  return { callMethodHash, callMethodHex };
+  return { call, callMethodHash, callMethodHex };
+};
+
+export const preparePrefix = (key: string, prefix = '0x') => {
+  if (!key.startsWith(prefix)) {
+    key = prefix + key;
+  }
+  return key;
+};
+
+export const trimPrefix = (key: string, prefix = '0x') => {
+  if (key.startsWith(prefix)) {
+    key = key.slice(prefix.length);
+  }
+  return key;
 };
 
 export const pubKeyToBlack2Address = (publicKey: string, ss58Format?: number) => {
-  if (!publicKey.startsWith('0x')) {
-    publicKey = '0x' + publicKey;
-  }
+  publicKey = preparePrefix(publicKey, '0x');
   return encodeAddress(blake2AsU8a(publicKey), ss58Format);
 };
