@@ -1,4 +1,3 @@
-import rp from 'request-promise';
 import bitGoUTXO from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
 import coinSelect from 'coinselect';
