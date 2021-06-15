@@ -3,14 +3,12 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '../../providers/chain-state/ethereum/ethereum';
 import { ImplContext, ProxyImp } from '../utils/context';
-import { GRpcError } from '../internals/error';
-import errors from '../errors';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/ethereum';
 import { DeployAccountRequest, DeployAccountReply, EthereumHandlers } from '../../__proto__/ethereum/index';
 
-const filename = path.join(__dirname, '../../../proto/bitcoin.proto');
+const filename = path.join(__dirname, '../../../proto/ethereum.proto');
 const options = {
   longs: String,
   defaults: false,
