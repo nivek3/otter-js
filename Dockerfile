@@ -20,7 +20,7 @@ ENV NODE_ENV production
 
 RUN apk add --no-cache python make gcc g++ bash
 
-USER node
+# USER node
 
 WORKDIR /home/node
 
