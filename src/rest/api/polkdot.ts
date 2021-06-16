@@ -15,6 +15,18 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
+router.post('/deployMultiAccount', async function (req: Request, res: Response, next) {
+  try {
+    const account = polkaDotStateProvider.deployMultiAccount(req.body);
+    return res.json({
+      address: account,
+    });
+  } catch (err) {
+    logger.info('deployMultiAccount =>', err);
+    return next(err);
+  }
+});
+
 router.post('/transfer', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.buildTransferTransaction(req.body);

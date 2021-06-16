@@ -37,6 +37,15 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     const signature = ctx.signature(root.polkadot.DeployAccountReply as unknown as protobuf.Message, ctx.body);
     ctx.call.metadata.set('signature', signature);
   },
+
+  DeployMultiAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+    const req = ctx.call.request;
+    const address = provider.deployMultiAccount(req);
+    ctx.body = { address };
+    const signature = ctx.signature(root.polkadot.DeployMultiAccountReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
+  },
+
   BuildTransferTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.buildTransferTransaction(req);

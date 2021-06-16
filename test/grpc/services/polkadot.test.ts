@@ -29,9 +29,22 @@ describe('Polkadot service', () => {
       await grpcServer.stop();
     });
 
+    test('generate address from publicKey', async () => {
+      const address = '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn';
+      const DeployAccount = promisify(client.DeployAccount.bind(client));
+      const response = await DeployAccount({
+        key: '0x0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624',
+        network: {
+          wss: 'wss://api.clover.finance',
+          ss58Format: 42,
+        },
+      });
+      expect(response).toHaveProperty('address', address);
+    });
+
     test('generate a 2-of-3 multisig P2SH address, expect valid address', async () => {
       const address = '5EjXLmCHWyo5SVTQEo9JBgozVNZgWYheAdENAuEZ1UvaGD3e';
-      const DeployAccount = promisify(client.DeployAccount.bind(client));
+      const DeployAccount = promisify(client.DeployMultiAccount.bind(client));
       const response = await DeployAccount({
         keys: [
           '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',
