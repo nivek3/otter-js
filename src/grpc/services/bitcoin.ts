@@ -2,7 +2,7 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { bitcoinStateProvider as provider } from '../../providers/chain-state/bitcoin/bitcoin';
-import { ImplContext, ProxyImp } from '../utils/context';
+import { ImplContext, ProxyImp, signContext } from '../utils/context';
 import { GRpcError } from '../internals/error';
 import errors from '../errors';
 
@@ -41,23 +41,20 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     }
     const address = provider.deployAccount(req);
     ctx.body = { address };
-    const signature = ctx.signature(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx.body);
-    ctx.call.metadata.set('signature', signature);
+    signContext(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx);
   },
 
   BuildTransaction: function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
     const data = provider.buildTransaction(req);
     ctx.body = data;
-    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
-    ctx.call.metadata.set('signature', signature);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
   SignTransaction: function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
     const data = provider.signTransaction(req);
     ctx.body = data;
-    const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
-    ctx.call.metadata.set('signature', signature);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 };

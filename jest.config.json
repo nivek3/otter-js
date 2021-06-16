@@ -3,7 +3,8 @@
     "verbose": true,
     "moduleFileExtensions": [
         "ts",
-        "js"
+        "js",
+        "json"
     ],
     "transform": {
         "^.+\\.jsx?$": "babel-jest",

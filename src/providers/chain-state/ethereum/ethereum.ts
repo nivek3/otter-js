@@ -1,20 +1,95 @@
-// import rp from 'request-promise';
-// import { Accounts } from 'web3-eth-accounts';
-// import { Contract } from 'web3-eth-contract';
-import { bufferToHex, pubToAddress, toChecksumAddress } from 'ethereumjs-util';
-import { ec as EC } from 'elliptic';
-const ec = new EC('secp256k1');
+import Web3 from 'web3';
+import { BigNumber } from 'bignumber.js';
+import { Transaction } from '@ethereumjs/tx';
+import Common from '@ethereumjs/common';
+import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
 
-import { DeployAccountRequest } from '../../../__proto__/ethereum/index';
+import { DeployAccountRequest, BuildAccountRequest, BuildAccountReply, SignTransactionRequest } from '../../../__proto__/ethereum/index';
+import { pubToBIP55Address } from './utils';
 
+const Contract = require('web3-eth-contract');
+const abi = require('./abis/multisig');
+const bytecode = require('./bytecodes/multisig');
+const contract = new Contract(abi);
 export class Provider {
   deployAccount(req: DeployAccountRequest): string {
     const { key } = req as Required<DeployAccountRequest>;
-    const pair = ec.keyFromPublic(key, 'hex');
-    const decompose = pair.getPublic(false, 'hex');
-    const address = bufferToHex(pubToAddress(Buffer.from(decompose, 'hex'), true));
-    const bip55 = toChecksumAddress(address);
-    return bip55;
+    return pubToBIP55Address(key);
+  }
+
+  async buildAccount(req: BuildAccountRequest): Promise<BuildAccountReply> {
+    const { keys, sender, network } = req as Required<BuildAccountRequest>;
+    const { provider, chainId } = network!;
+    let { gasLimit, gasPrice, nonce } = req;
+    const common = new Common({ chain: chainId! });
+    const txOptions = { common };
+    const addresses = keys.map(pubToBIP55Address);
+    const input = contract
+      .deploy({
+        data: bytecode,
+        arguments: [addresses],
+      })
+      .encodeABI();
+    const web3 = new Web3(provider!);
+
+    if (nonce === undefined) {
+      nonce = await web3.eth.getTransactionCount('0xd73d9aa55abbd6cfbed3e9ad7f8be2f6d83c70dc');
+    }
+
+    if (!gasPrice) {
+      gasPrice = await web3.eth.getGasPrice();
+    }
+
+    if (!gasLimit) {
+      const estimateGas = await web3.eth.estimateGas({
+        from: sender,
+        gasPrice,
+        nonce,
+        data: input,
+      });
+      gasLimit = '0x' + new BigNumber(estimateGas).multipliedBy(2).toString(16);
+    }
+    const txData = {
+      nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
+      gasPrice: '0x' + new BigNumber(gasPrice).toString(16),
+      gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
+      data: input,
+    };
+    const tx = Transaction.fromTxData(txData, txOptions);
+    const address = toChecksumAddress(bufferToHex(generateAddress(Buffer.from(sender, 'hex'), Buffer.from(nonce!.toString(16), 'hex'))));
+    return {
+      serialized: tx.serialize().toString('hex'),
+      signatureHash: tx.getMessageToSign(true).toString('hex'),
+      address,
+    };
+  }
+
+  signTransaction(req: SignTransactionRequest) {
+    const { serialized, signature, network } = req as Required<SignTransactionRequest>;
+    const { chainId } = network!;
+    const common = new Common({ chain: chainId! });
+    const txOptions = { common };
+    const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
+    const { r, s, v } = signature[0];
+    const signedData = {
+      ...tx.toJSON(),
+      r: Buffer.from(r!, 'hex'),
+      s: Buffer.from(s!, 'hex'),
+      v: this.getChainIdVBN(v!, chainId!),
+    };
+
+    const signedTx = Transaction.fromTxData(signedData, txOptions);
+    const serializedTx = signedTx.serialize().toString('hex');
+    return {
+      serialized: serializedTx,
+    };
+  }
+
+  private getChainIdVBN(v: number, chainId: number) {
+    const vBN = new BN(v);
+    const chainIdBN = new BN(chainId!);
+    vBN.iadd(chainIdBN.muln(2).addn(8));
+    return vBN;
   }
 }
 

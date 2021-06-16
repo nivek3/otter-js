@@ -2,11 +2,19 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '../../providers/chain-state/ethereum/ethereum';
-import { ImplContext, ProxyImp } from '../utils/context';
+import { ImplContext, ProxyImp, signContext } from '../utils/context';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/ethereum';
-import { DeployAccountRequest, DeployAccountReply, EthereumHandlers } from '../../__proto__/ethereum/index';
+import { TransactionReply } from '../../__proto__/common/index';
+import {
+  DeployAccountRequest,
+  DeployAccountReply,
+  EthereumHandlers,
+  BuildAccountRequest,
+  BuildAccountReply,
+  SignTransactionRequest,
+} from '../../__proto__/ethereum/index';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
 const options = {
@@ -24,7 +32,18 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
-    const signature = ctx.signature(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx.body);
-    ctx.call.metadata.set('signature', signature);
+    signContext(root.ethereum.DeployAccountRequest as unknown as protobuf.Message, ctx);
+  },
+
+  BuildAccount: async function (ctx: ImplContext<BuildAccountRequest, BuildAccountReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildAccount(req);
+    signContext(root.ethereum.DeployAccountRequest as unknown as protobuf.Message, ctx);
+  },
+
+  SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.signTransaction(req);
+    signContext(root.ethereum.SignTransactionRequest as unknown as protobuf.Message, ctx);
   },
 };

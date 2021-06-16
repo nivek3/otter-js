@@ -5,26 +5,47 @@ option go_package = "./ethereum";
 import "common.proto";
 
 message Network {
-    string rpc_uri = 1;
+    string provider = 1;
+    int32 chain_id = 2;
 }
 
 message DeployAccountRequest {
     string key = 1;
 }
 
-message BuildAccountRequest {
-    repeated string keys = 1;
-    string sender = 2;
-    int32 nonce = 3;
-    int32 gas = 4;
-    int32 gas_price = 5;  
-    Network network = 6;
-}
-
 message DeployAccountReply {
     string address = 1;
 }
 
+message BuildAccountRequest {
+    repeated string keys = 1;
+    string sender = 2;
+    int32 nonce = 3;
+    string gas_limit = 4;
+    string gas_price = 5;  
+    Network network = 6;
+}
+
+message BuildAccountReply {
+    string address = 1;
+    string serialized = 2;
+    string signature_hash = 3;	
+}
+    
+message ETHSignature {
+    string r = 1;
+    string s = 2;
+    int32 v = 3;
+}
+
+message SignTransactionRequest { 
+    string serialized = 1;
+    repeated ETHSignature signature = 2;
+    Network network = 3;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc BuildAccount(BuildAccountRequest) returns (BuildAccountReply) {}
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
 }
