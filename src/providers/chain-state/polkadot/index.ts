@@ -5,13 +5,14 @@ import { sign } from './sign';
 import { transfer } from './transfer';
 import { pubKeyToBlack2Address } from './utils';
 
-import { TransactionReply } from '../../../__proto__/common/index';
+import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/index';
 import {
   DeployAccountRequest,
   TransferRequest,
   MultisigTransferRequest,
   MultisigApproveRequest,
   SignTransactionRequest,
+  SendTransactionRequest,
 } from '../../../__proto__/polkadot/index';
 
 export class PolkaDotStateProvider {
@@ -140,6 +141,17 @@ export class PolkaDotStateProvider {
     return {
       serialized: extrinsic.toHex(),
       signatureHashes: [],
+    };
+  }
+
+  async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
+    const { serialized, network } = req as Required<SendTransactionRequest>;
+    const { wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+    const hash = await api.rpc.author.submitExtrinsic(serialized as any);
+
+    return {
+      hash: hash.toString(),
     };
   }
 

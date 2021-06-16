@@ -12,3 +12,7 @@ message TransactionReply {
     string serialized = 1;
     repeated string signature_hashes = 2;	
 }
+
+message SendTransactionReply {
+    string hash = 1;
+}

@@ -66,6 +66,11 @@ message SignTransactionRequest {
     Network network = 3;
 }
 
+message SendTransactionRequest {
+    string serialized = 1;
+    Network network = 3;
+}
+
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildTransferTransaction(TransferRequest) returns (TransactionReply) {}
@@ -73,4 +78,5 @@ service Polkadot {
     rpc MultisigApproveTransaction(MultisigApproveRequest) returns (TransactionReply) {}
     rpc MultisigCancelTransaction(MultisigCancelRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
 }

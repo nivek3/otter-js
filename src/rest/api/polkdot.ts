@@ -65,6 +65,16 @@ router.post('/sign', async function (req: Request, res: Response, next) {
   }
 });
 
+router.post('/send', async function (req: Request, res: Response, next) {
+  try {
+    const data = await polkaDotStateProvider.sendTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('Sign Tx =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/polkadot',

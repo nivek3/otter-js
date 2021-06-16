@@ -6,7 +6,7 @@ import { ImplContext, ProxyImp } from '../utils/context';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/polkadot';
-import { TransactionReply } from '../../__proto__/common/index';
+import { TransactionReply, SendTransactionReply } from '../../__proto__/common/index';
 import {
   PolkadotHandlers,
   DeployAccountRequest,
@@ -15,6 +15,7 @@ import {
   MultisigTransferRequest,
   MultisigApproveRequest,
   MultisigCancelRequest,
+  SendTransactionRequest,
 } from '../../__proto__/polkadot/index';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -73,6 +74,14 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     const data = await provider.signTransaction(req);
     ctx.body = data;
     const signature = ctx.signature(root.common.TransactionReply as unknown as protobuf.Message, ctx.body);
+    ctx.call.metadata.set('signature', signature);
+  },
+
+  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.sendTransaction(req);
+    ctx.body = data;
+    const signature = ctx.signature(root.common.SendTransactionReply as unknown as protobuf.Message, ctx.body);
     ctx.call.metadata.set('signature', signature);
   },
 };
