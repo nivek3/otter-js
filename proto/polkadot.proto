@@ -68,7 +68,7 @@ message SignTransactionRequest {
 
 message SendTransactionRequest {
     string serialized = 1;
-    Network network = 3;
+    Network network = 2;
 }
 
 service Polkadot {
