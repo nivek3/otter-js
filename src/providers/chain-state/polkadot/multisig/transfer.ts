@@ -1,5 +1,6 @@
 import type { ApiPromise } from '@polkadot/api';
-import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
+import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash } from '../utils';
 
@@ -61,7 +62,7 @@ export const transfer = async function ({
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 
   const serialized = tx.toHex().slice(2);
-  const signatureHash = payload.toRaw().data.slice(2);
+  const signatureHash = u8aToHex(blake2AsU8a(payload.toRaw().data)).slice(2);
 
   return { serialized, signatureHash };
 };

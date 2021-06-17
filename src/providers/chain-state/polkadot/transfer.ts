@@ -1,3 +1,5 @@
+import { blake2AsU8a } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { SIGN_PLACEHOLDER } from './const';
 
@@ -25,6 +27,6 @@ export const transfer = function ({ api, quantity, nonce, from, to }: TransferPa
   tx.addSignature(from, SIGN_PLACEHOLDER, payload.toPayload());
 
   const serialized = tx.toHex().slice(2);
-  const signatureHash = payload.toRaw().data.slice(2);
+  const signatureHash = u8aToHex(blake2AsU8a(payload.toRaw().data)).slice(2);
   return { serialized, signatureHash };
 };
