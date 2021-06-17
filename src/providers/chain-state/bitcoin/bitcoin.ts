@@ -1,4 +1,5 @@
 import bitGoUTXO from '@bitgo/utxo-lib';
+import { payments, Network as bitcoinNetwork } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import coinSelect from 'coinselect';
 
@@ -9,11 +10,22 @@ import {
   Recipient,
   BuildTransactionRequest,
   DeployAccountRequest,
+  DeployMultisigAccountRequest,
   SignTransactionRequest,
 } from '../../../__proto__/bitcoin/types';
 
 export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
+    const { key, network: reqNetWork } = req;
+    const network = this.getNetWork(reqNetWork!) as bitcoinNetwork;
+    if (!network) throw new Error('Do not support such network');
+
+    const pubkey = Buffer.from(key!, 'hex');
+    const { address } = payments.p2pkh({ pubkey, network });
+    return address!;
+  }
+
+  deployMultisigAccount(req: DeployMultisigAccountRequest): string {
     const { keys, threshold, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!);
     if (!network) throw new Error('Do not support such network');

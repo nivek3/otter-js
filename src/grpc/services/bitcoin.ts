@@ -13,6 +13,8 @@ import {
   BitcoinHandlers,
   DeployAccountRequest,
   DeployAccountReply,
+  DeployMultisigAccountRequest,
+  DeployMultisigAccountReply,
   BuildTransactionRequest,
   SignTransactionRequest,
 } from '../../__proto__/bitcoin/types';
@@ -31,6 +33,13 @@ export const BitcoinService = protoDescriptor.bitcoin.Bitcoin.service;
 export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
   DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
+    const address = provider.deployAccount(req);
+    ctx.body = { address };
+    signContext(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx);
+  },
+
+  DeployMultisigAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
+    const req = ctx.call.request;
     if (!req.threshold || req.threshold < 1) {
       throw new GRpcError({
         ...errors.INVALID_ARGUMENT,
@@ -41,7 +50,7 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     }
     const address = provider.deployAccount(req);
     ctx.body = { address };
-    signContext(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx);
+    signContext(root.bitcoin.DeployMultisigAccountRequest as unknown as protobuf.Message, ctx);
   },
 
   BuildTransaction: function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): void {

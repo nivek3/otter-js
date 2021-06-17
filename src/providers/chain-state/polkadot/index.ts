@@ -8,7 +8,7 @@ import { pubKeyToBlack2Address } from './utils';
 import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
   DeployAccountRequest,
-  DeployMultiAccountRequest,
+  DeployMultisigAccountRequest,
   TransferRequest,
   MultisigTransferRequest,
   MultisigApproveRequest,
@@ -23,7 +23,7 @@ export class PolkaDotStateProvider {
     return pubKeyToBlack2Address(key, ss58Format);
   }
 
-  deployMultiAccount(req: DeployMultiAccountRequest): string {
+  deployMultisigAccount(req: DeployMultisigAccountRequest): string {
     const { keys, threshold, network } = req;
     const { ss58Format } = network!;
     const addresses = keys!.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));

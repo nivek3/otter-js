@@ -19,13 +19,13 @@ message DeployAccountReply {
 	string address = 1;
 }
 
-message DeployMultiAccountRequest {
+message DeployMultisigAccountRequest {
     repeated string keys = 1;
 	int32 threshold = 2;
 	Network network = 3;
 }
 
-message DeployMultiAccountReply {
+message DeployMultisigAccountReply {
 	string address = 1;
 }
 
@@ -83,7 +83,7 @@ message SendTransactionRequest {
 
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
-    rpc DeployMultiAccount(DeployMultiAccountRequest) returns (DeployMultiAccountReply) {}
+    rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
     rpc BuildTransferTransaction(TransferRequest) returns (TransactionReply) {}
     rpc BuildMultisigTransaction(MultisigTransferRequest) returns (TransactionReply) {}
     rpc MultisigApproveTransaction(MultisigApproveRequest) returns (TransactionReply) {}

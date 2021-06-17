@@ -11,12 +11,21 @@ message Network {
 }
 
 message DeployAccountRequest {
-	repeated string keys = 1;
-	int32 threshold = 2;
-	Network network = 3;
+	Network network = 1;
+    string key = 2;
 }
 
 message DeployAccountReply {
+	string address = 1;
+}
+
+message DeployMultisigAccountRequest {
+    Network network = 1;
+    repeated string keys = 2;
+	int32 threshold = 3;
+}
+
+message DeployMultisigAccountReply {
 	string address = 1;
 }
 
@@ -35,23 +44,24 @@ message Recipient {
 }
 
 message BuildTransactionRequest {
-    string pub_key = 1;
-    string changer = 2;
-    repeated Recipient recipients = 3;
-    repeated TransactionOutput utxos = 4;
-    double fee_rate = 5;
-    string redeem_script = 6;
-    Network network = 7;
+    Network network = 1;
+    string pub_key = 2;
+    string changer = 3;
+    repeated Recipient recipients = 4;
+    repeated TransactionOutput utxos = 5;
+    double fee_rate = 6;
+    string redeem_script = 7;
 }
 
 message SignTransactionRequest {
-    string serialized = 1;
-    repeated Signature signature = 2;
-    Network network = 3;
+    Network network = 1;
+    string serialized = 2;
+    repeated Signature signature = 3;
 }
 
 service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
     rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
 }

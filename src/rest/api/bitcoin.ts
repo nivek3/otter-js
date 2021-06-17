@@ -15,6 +15,18 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
+router.post('/deployMultisigAccount', async function (req: Request, res: Response, next) {
+  try {
+    const account = provider.deployMultisigAccount(req.body);
+    return res.json({
+      address: account,
+    });
+  } catch (err) {
+    logger.info('deployMultisigAccount =>', err);
+    return next(err);
+  }
+});
+
 router.post('/tx', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildTransaction(req.body);

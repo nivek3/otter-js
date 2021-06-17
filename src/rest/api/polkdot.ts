@@ -17,7 +17,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
 
 router.post('/deployMultiAccount', async function (req: Request, res: Response, next) {
   try {
-    const account = polkaDotStateProvider.deployMultiAccount(req.body);
+    const account = polkaDotStateProvider.deployMultisigAccount(req.body);
     return res.json({
       address: account,
     });
