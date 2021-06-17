@@ -15,14 +15,14 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
-router.post('/deployMultiAccount', async function (req: Request, res: Response, next) {
+router.post('/deployMultisigAccount', async function (req: Request, res: Response, next) {
   try {
     const account = polkaDotStateProvider.deployMultisigAccount(req.body);
     return res.json({
       address: account,
     });
   } catch (err) {
-    logger.info('deployMultiAccount =>', err);
+    logger.info('deployMultisigAccount =>', err);
     return next(err);
   }
 });

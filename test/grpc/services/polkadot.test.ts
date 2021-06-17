@@ -44,7 +44,7 @@ describe('Polkadot service', () => {
 
     test('generate a 2-of-3 multisig P2SH address, expect valid address', async () => {
       const address = '5EjXLmCHWyo5SVTQEo9JBgozVNZgWYheAdENAuEZ1UvaGD3e';
-      const DeployAccount = promisify(client.DeployMultiAccount.bind(client));
+      const DeployAccount = promisify(client.DeployMultisigAccount.bind(client));
       const response = await DeployAccount({
         keys: [
           '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',

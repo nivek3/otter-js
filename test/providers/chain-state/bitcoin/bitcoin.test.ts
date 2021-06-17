@@ -18,7 +18,7 @@ describe('ChainStateProvider BitCoin', () => {
         },
       };
 
-      const address = bitcoinStateProvider.deployAccount(req);
+      const address = bitcoinStateProvider.deployMultisigAccount(req);
       expect(address).toEqual('2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL');
     });
   });

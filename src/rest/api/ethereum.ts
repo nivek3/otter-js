@@ -17,7 +17,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
 
 router.post('/buildAccount', async function (req: Request, res: Response, next) {
   try {
-    const account = await provider.buildAccount(req.body);
+    const account = await provider.buildAccountTransaction(req.body);
     return res.json({
       address: account,
     });

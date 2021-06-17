@@ -16,7 +16,7 @@ describe('ChainStateProvider Polkadot', () => {
           ss58Format: 42,
         },
       };
-      const addresses = polkaDotStateProvider.deployAccount(req);
+      const addresses = polkaDotStateProvider.deployMultisigAccount(req);
       expect(addresses).toEqual('5EjXLmCHWyo5SVTQEo9JBgozVNZgWYheAdENAuEZ1UvaGD3e');
     });
   });

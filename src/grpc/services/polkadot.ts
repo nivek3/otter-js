@@ -37,7 +37,7 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     signContext(root.polkadot.DeployAccountReply as unknown as protobuf.Message, ctx);
   },
 
-  DeployMultiAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+  DeployMultisigAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployMultisigAccount(req);
     ctx.body = { address };

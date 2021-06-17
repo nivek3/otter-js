@@ -11,8 +11,8 @@ import {
   DeployAccountRequest,
   DeployAccountReply,
   EthereumHandlers,
-  BuildAccountRequest,
-  BuildAccountReply,
+  BuildAccountTransactionRequest,
+  BuildAccountTransactionReply,
   SignTransactionRequest,
 } from '../../__proto__/ethereum/types';
 
@@ -35,10 +35,10 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
     signContext(root.ethereum.DeployAccountRequest as unknown as protobuf.Message, ctx);
   },
 
-  BuildAccount: async function (ctx: ImplContext<BuildAccountRequest, BuildAccountReply>) {
+  BuildAccountTransaction: async function (ctx: ImplContext<BuildAccountTransactionRequest, BuildAccountTransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildAccount(req);
-    signContext(root.ethereum.DeployAccountRequest as unknown as protobuf.Message, ctx);
+    ctx.body = await provider.buildAccountTransaction(req);
+    signContext(root.ethereum.BuildAccountTransactionRequest as unknown as protobuf.Message, ctx);
   },
 
   SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {

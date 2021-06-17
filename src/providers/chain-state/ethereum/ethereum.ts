@@ -4,7 +4,12 @@ import { Transaction } from '@ethereumjs/tx';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
 
-import { DeployAccountRequest, BuildAccountRequest, BuildAccountReply, SignTransactionRequest } from '../../../__proto__/ethereum/types';
+import {
+  DeployAccountRequest,
+  BuildAccountTransactionRequest,
+  BuildAccountTransactionReply,
+  SignTransactionRequest,
+} from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
 const Contract = require('web3-eth-contract');
@@ -17,8 +22,8 @@ export class Provider {
     return pubToBIP55Address(key);
   }
 
-  async buildAccount(req: BuildAccountRequest): Promise<BuildAccountReply> {
-    const { keys, sender, network } = req as Required<BuildAccountRequest>;
+  async buildAccountTransaction(req: BuildAccountTransactionRequest): Promise<BuildAccountTransactionReply> {
+    const { keys, sender, network } = req as Required<BuildAccountTransactionRequest>;
     const { provider, chainId } = network!;
     let { gasLimit, gasPrice, nonce } = req;
     const common = new Common({ chain: chainId! });

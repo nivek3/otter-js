@@ -13,7 +13,7 @@ afterAll(async () => {
 
 describe('ChainStateProvider Polkadot', () => {
   describe('Polkadot', () => {
-    test('transfer', async () => {
+    test.skip('transfer', async () => {
       const req = {
         api,
         ss58Format: 42,

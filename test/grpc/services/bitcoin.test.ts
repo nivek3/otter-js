@@ -29,8 +29,29 @@ describe('Bitcoin service', () => {
     });
 
     describe('DeployAccount', () => {
-      test('generate a 2-of-3 multisig P2SH address, invalid arguments', (done) => {
+      test('generate address', (done) => {
+        const address = 'n1cScasu6XVoDki38WYAJH4ZJGRAfG8XRN';
         client.DeployAccount(
+          {
+            key: '02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231',
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc',
+            },
+          },
+          (err: grpc.ServiceError, response) => {
+            expect(err).toBeNull();
+            expect(response).toHaveProperty('address', address);
+            done();
+          },
+        );
+      });
+    });
+
+    describe('DeployMultisigAccount', () => {
+      test('generate a 2-of-3 multisig P2SH address, invalid arguments', (done) => {
+        client.DeployMultisigAccount(
           {
             keys: [
               '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
@@ -53,12 +74,10 @@ describe('Bitcoin service', () => {
         );
       });
 
-      test(
-        'generate a 2-of-3 multisig P2SH address, expect valid address',
-        async () => {
-          const address = '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL';
-          const DeployAccount = promisify(client.DeployAccount.bind(client));
-          const response = await DeployAccount({
+      test('generate a 2-of-3 multisig P2SH address, expect valid address', (done) => {
+        const address = '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL';
+        client.DeployMultisigAccount(
+          {
             keys: [
               '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
               '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
@@ -70,11 +89,13 @@ describe('Bitcoin service', () => {
               scriptHash: '0xc4',
               coin: 'btc',
             },
-          });
-          expect(response).toHaveProperty('address', address);
-        },
-        30 * 1000,
-      );
+          },
+          (_err: grpc.ServiceError, response) => {
+            expect(response).toHaveProperty('address', address);
+            done();
+          },
+        );
+      });
     });
 
     describe('BuildTransaction', () => {
