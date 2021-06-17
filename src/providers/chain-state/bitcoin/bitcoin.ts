@@ -1,9 +1,8 @@
-import rp from 'request-promise';
 import bitGoUTXO from '@bitgo/utxo-lib';
 import BigNumber from 'bignumber.js';
 import coinSelect from 'coinselect';
 
-import { TransactionReply } from '../../../__proto__/common/index';
+import { TransactionReply } from '../../../__proto__/common/types';
 import {
   Network,
   TransactionOutput,
@@ -11,7 +10,7 @@ import {
   BuildTransactionRequest,
   DeployAccountRequest,
   SignTransactionRequest,
-} from '../../../__proto__/bitcoin/index';
+} from '../../../__proto__/bitcoin/types';
 
 export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
