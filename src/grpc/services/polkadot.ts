@@ -6,7 +6,7 @@ import { ImplContext, ProxyImp, signContext } from '../utils/context';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/polkadot';
-import { TransactionReply } from '../../__proto__/common/index';
+import { TransactionReply } from '../../__proto__/common/types';
 import {
   PolkadotHandlers,
   DeployAccountRequest,
@@ -15,7 +15,7 @@ import {
   MultisigTransferRequest,
   MultisigApproveRequest,
   MultisigCancelRequest,
-} from '../../__proto__/polkadot/index';
+} from '../../__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
 const options = {

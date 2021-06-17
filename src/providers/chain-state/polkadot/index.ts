@@ -5,14 +5,14 @@ import { sign } from './sign';
 import { transfer } from './transfer';
 import { pubKeyToBlack2Address } from './utils';
 
-import { TransactionReply } from '../../../__proto__/common/index';
+import { TransactionReply } from '../../../__proto__/common/types';
 import {
   DeployAccountRequest,
   TransferRequest,
   MultisigTransferRequest,
   MultisigApproveRequest,
   SignTransactionRequest,
-} from '../../../__proto__/polkadot/index';
+} from '../../../__proto__/polkadot/types';
 
 export class PolkaDotStateProvider {
   deployAccount(req: DeployAccountRequest): string {

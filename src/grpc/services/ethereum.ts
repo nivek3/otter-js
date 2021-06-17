@@ -6,7 +6,7 @@ import { ImplContext, ProxyImp, signContext } from '../utils/context';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/ethereum';
-import { TransactionReply } from '../../__proto__/common/index';
+import { TransactionReply } from '../../__proto__/common/types';
 import {
   DeployAccountRequest,
   DeployAccountReply,
@@ -14,7 +14,7 @@ import {
   BuildAccountRequest,
   BuildAccountReply,
   SignTransactionRequest,
-} from '../../__proto__/ethereum/index';
+} from '../../__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
 const options = {

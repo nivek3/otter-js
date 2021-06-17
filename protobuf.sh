@@ -26,5 +26,5 @@ npx pbts -o $GEN_OUT_DIR/compiled.d.ts $GEN_OUT_DIR/compiled.js
 
 for dir in $(ls -l $GEN_OUT_DIR | awk '/^d/ {print $NF}')
 do
-  ./node_modules/.bin/barrelsby -d ${GEN_OUT_DIR}/${dir}
+  ./node_modules/.bin/barrelsby -d ${GEN_OUT_DIR}/${dir} -n types
 done

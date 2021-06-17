@@ -4,7 +4,7 @@ import { Transaction } from '@ethereumjs/tx';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
 
-import { DeployAccountRequest, BuildAccountRequest, BuildAccountReply, SignTransactionRequest } from '../../../__proto__/ethereum/index';
+import { DeployAccountRequest, BuildAccountRequest, BuildAccountReply, SignTransactionRequest } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
 const Contract = require('web3-eth-contract');

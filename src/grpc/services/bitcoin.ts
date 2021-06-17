@@ -8,14 +8,14 @@ import errors from '../errors';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
-import { TransactionReply } from '../../__proto__/common/index';
+import { TransactionReply } from '../../__proto__/common/types';
 import {
   BitcoinHandlers,
   DeployAccountRequest,
   DeployAccountReply,
   BuildTransactionRequest,
   SignTransactionRequest,
-} from '../../__proto__/bitcoin/index';
+} from '../../__proto__/bitcoin/types';
 
 const filename = path.join(__dirname, '../../../proto/bitcoin.proto');
 const options = {
