@@ -6,14 +6,18 @@ import { ImplContext, ProxyImp, signContext } from '../utils/context';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/ethereum';
-import { TransactionReply } from '../../__proto__/common/types';
+import { TransactionReply, SendTransactionReply } from '../../__proto__/common/types';
 import {
   DeployAccountRequest,
   DeployAccountReply,
   EthereumHandlers,
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
+  BuildTransferTransactionRequest,
+  BuildTokenTransferTransactionRequest,
+  BuildTokenTransferTransactionReply,
   SignTransactionRequest,
+  SendTransactionRequest,
 } from '../../__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
@@ -32,18 +36,36 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
-    signContext(root.ethereum.DeployAccountRequest as unknown as protobuf.Message, ctx);
+    signContext(root.ethereum.DeployAccountReply as unknown as protobuf.Message, ctx);
   },
 
   BuildAccountTransaction: async function (ctx: ImplContext<BuildAccountTransactionRequest, BuildAccountTransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildAccountTransaction(req);
-    signContext(root.ethereum.BuildAccountTransactionRequest as unknown as protobuf.Message, ctx);
+    signContext(root.ethereum.BuildAccountTransactionReply as unknown as protobuf.Message, ctx);
+  },
+
+  BuildTransferTransaction: async function (ctx: ImplContext<BuildTransferTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildTransferTransaction(req);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
+  },
+
+  BuildTokenTransferTransaction: async function (ctx: ImplContext<BuildTokenTransferTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildTokenTransferTransaction(req);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
   SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.signTransaction(req);
-    signContext(root.ethereum.SignTransactionRequest as unknown as protobuf.Message, ctx);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
+  },
+
+  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.sendTransaction(req);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 };

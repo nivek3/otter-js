@@ -50,7 +50,7 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     }
     const address = provider.deployMultisigAccount(req);
     ctx.body = { address };
-    signContext(root.bitcoin.DeployMultisigAccountRequest as unknown as protobuf.Message, ctx);
+    signContext(root.bitcoin.DeployMultisigAccountReply as unknown as protobuf.Message, ctx);
   },
 
   BuildTransaction: function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): void {

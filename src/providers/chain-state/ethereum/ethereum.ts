@@ -3,12 +3,18 @@ import { BigNumber } from 'bignumber.js';
 import { Transaction } from '@ethereumjs/tx';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
+import { trimPrefix, preparePrefix } from './../../../utils/hash';
 
+import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
+  Network,
   DeployAccountRequest,
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
+  BuildTransferTransactionRequest,
+  BuildTokenTransferTransactionRequest,
   SignTransactionRequest,
+  SendTransactionRequest,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 import { parseSignature } from './../../../utils/signature';
@@ -25,10 +31,11 @@ export class Provider {
 
   async buildAccountTransaction(req: BuildAccountTransactionRequest): Promise<BuildAccountTransactionReply> {
     const { keys, sender, network } = req as Required<BuildAccountTransactionRequest>;
-    const { provider, chainId } = network!;
-    let { gasLimit, gasPrice, nonce } = req;
-    const common = new Common({ chain: chainId! });
+    const { provider } = network!;
+    const common = this.getTxCommon(network!);
     const txOptions = { common };
+
+    const web3 = new Web3(provider!);
     const addresses = keys.map(pubToBIP55Address);
     const input = contract
       .deploy({
@@ -36,25 +43,20 @@ export class Provider {
         arguments: [addresses],
       })
       .encodeABI();
-    const web3 = new Web3(provider!);
 
-    if (nonce === undefined) {
-      nonce = await web3.eth.getTransactionCount('0xd73d9aa55abbd6cfbed3e9ad7f8be2f6d83c70dc');
-    }
-
-    if (!gasPrice) {
-      gasPrice = await web3.eth.getGasPrice();
-    }
-
-    if (!gasLimit) {
-      const estimateGas = await web3.eth.estimateGas({
+    const nonce = await this.getReqNonce(sender, web3, req.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, req.gasPrice);
+    const gasLimit = await this.getReqGasLimit(
+      web3,
+      {
         from: sender,
         gasPrice,
         nonce,
         data: input,
-      });
-      gasLimit = '0x' + new BigNumber(estimateGas).multipliedBy(2).toString(16);
-    }
+      },
+      req.gasLimit,
+    );
+
     const txData = {
       nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
       gasPrice: '0x' + new BigNumber(gasPrice).toString(16),
@@ -70,10 +72,93 @@ export class Provider {
     };
   }
 
+  async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
+    const { from, to, quantity, network } = req as Required<BuildTransferTransactionRequest>;
+    const { provider, chainId } = network!;
+    const common = this.getTxCommon(network!);
+    const txOptions = { common };
+    const web3 = new Web3(provider!);
+
+    const nonce = await this.getReqNonce(from, web3, req.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, req.gasPrice);
+    const gasLimit = await this.getReqGasLimit(
+      web3,
+      {
+        from,
+        to,
+        value: quantity,
+        gasPrice,
+        nonce,
+      },
+      req.gasLimit,
+    );
+
+    const txData = {
+      from,
+      to,
+      value: new BN(quantity).toBuffer(),
+      nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
+      gasPrice: '0x' + new BigNumber(gasPrice).toString(16),
+      gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
+    };
+    const tx = Transaction.fromTxData(txData, txOptions);
+    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    return {
+      serialized: tx.serialize().toString('hex'),
+      signatureHashes: [signatureHash],
+    };
+  }
+
+  async buildTokenTransferTransaction(req: BuildTokenTransferTransactionRequest): Promise<TransactionReply> {
+    const { from, to, tokenAddress, quantity, network } = req as Required<BuildTokenTransferTransactionRequest>;
+    const { provider } = network!;
+    const common = this.getTxCommon(network!);
+    const txOptions = { common };
+    const web3 = new Web3(provider!);
+
+    const raw = '0000000000000000000000000000000000000000000000000000000000000000';
+    const amount = new BigNumber(quantity).toString(16);
+    const input =
+      '0xa9059cbb000000000000000000000000' + // token transfer method
+      trimPrefix(to) + // to address
+      raw.substring(0, raw.length - amount.length) + // placeholder
+      amount; // amount
+
+    const nonce = await this.getReqNonce(from, web3, req.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, req.gasPrice);
+    const gasLimit = await this.getReqGasLimit(
+      web3,
+      {
+        from,
+        to: tokenAddress,
+        data: input,
+        gasPrice,
+        nonce,
+      },
+      req.gasLimit,
+    );
+
+    const txData = {
+      from,
+      to: tokenAddress,
+      data: input,
+      value: '0x00',
+      nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
+      gasPrice: '0x' + new BigNumber(gasPrice).toString(16),
+      gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
+    };
+    const tx = Transaction.fromTxData(txData, txOptions);
+    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    return {
+      serialized: tx.serialize().toString('hex'),
+      signatureHashes: [signatureHash],
+    };
+  }
+
   signTransaction(req: SignTransactionRequest) {
     const { serialized, signature, network } = req as Required<SignTransactionRequest>;
     const { chainId } = network!;
-    const common = new Common({ chain: chainId! });
+    const common = this.getTxCommon(network!);
     const txOptions = { common };
     const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
     const sign = signature[0].data;
@@ -90,6 +175,58 @@ export class Provider {
     return {
       serialized: serializedTx,
     };
+  }
+
+  async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
+    const { serialized, network } = req as Required<SendTransactionRequest>;
+    const { provider } = network!;
+    const web3 = new Web3(provider!);
+    const data = preparePrefix(serialized);
+    const { transactionHash: hash } = await web3.eth.sendSignedTransaction(data);
+    return {
+      hash,
+    };
+  }
+
+  private getTxCommon(network: Network) {
+    let common: Common;
+    const chainId = network.chainId;
+    if (Common.isSupportedChainId(new BN(chainId!))) {
+      common = new Common({ chain: chainId! });
+    } else {
+      common = new Common({ chain: 'kovan' });
+      common.setChain({
+        genesis: common.genesis(),
+        hardforks: common.hardforks(),
+        bootstrapNodes: common.bootstrapNodes(),
+        chainId,
+        networkId: chainId,
+        ...network,
+      });
+    }
+    return common;
+  }
+
+  private async getReqNonce(address: string, web3: Web3, nonce?: number) {
+    if (nonce === undefined) {
+      nonce = await web3.eth.getTransactionCount(address);
+    }
+    return nonce;
+  }
+
+  private async getReqGasPrice(web3: Web3, gasPrice?: string) {
+    if (!gasPrice) {
+      gasPrice = await web3.eth.getGasPrice();
+    }
+    return gasPrice;
+  }
+
+  private async getReqGasLimit(web3: Web3, tx: object, gasLimit?: string) {
+    if (!gasLimit) {
+      const estimateGas = await web3.eth.estimateGas(tx);
+      gasLimit = new BigNumber(estimateGas).multipliedBy(2).toString();
+    }
+    return gasLimit;
   }
 
   private getChainIdVBN(v: number, chainId: number) {

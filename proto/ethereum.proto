@@ -10,7 +10,8 @@ message Network {
 }
 
 message DeployAccountRequest {
-    string key = 1;
+    Network network = 1;
+    string key = 2;
 }
 
 message DeployAccountReply {
@@ -32,14 +33,48 @@ message BuildAccountTransactionReply {
     string signature_hash = 3;	
 }
 
+message BuildTransferTransactionRequest {
+    Network network = 1;
+    string from = 2;
+    string to = 3;
+    string quantity = 4;
+    int32 nonce = 5;
+    string gas_price = 6;
+    string gas_limit = 7;
+}
+
+message BuildTokenTransferTransactionRequest {
+    Network network = 1;
+    string from = 2;
+    string to = 3;
+    string quantity = 4;
+    string token_address = 5;
+    int32 nonce = 6;
+    string gas_price = 7;
+    string gas_limit = 8;
+}
+
+message BuildTokenTransferTransactionReply {
+    string serialized = 1;
+    string signature_hash = 2;	
+}
+
 message SignTransactionRequest { 
     string serialized = 1;
     repeated Signature signature = 2;
     Network network = 3;
 }
 
+message SendTransactionRequest {
+    string serialized = 1;
+    Network network = 2;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
+    rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTokenTransferTransaction(BuildTokenTransferTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
 }
