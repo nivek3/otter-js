@@ -38,5 +38,5 @@ export class ApiService {
 
 // TODO: choose a place in the config for the API timeout and include it here
 export const Api = new ApiService({
-  port: process.env.port ? Number.parseInt(process.env.port, 10) : undefined,
+  port: process.env.PORT ? Number.parseInt(process.env.PORT, 10) : undefined,
 });

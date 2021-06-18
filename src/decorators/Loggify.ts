@@ -1,8 +1,8 @@
-import logger from '../logger';
 import util from 'util';
-import parseArgv from "../utils/parseArgv";
+import logger from '../logger';
 export const PerformanceTracker = {};
-let args = parseArgv([], ['DEBUG']);
+
+const DEBUG = process.env.DEBUG;
 
 export function SavePerformance(logPrefix, startTime, endTime) {
   const totalTime = endTime.getTime() - startTime.getTime();
@@ -10,7 +10,7 @@ export function SavePerformance(logPrefix, startTime, endTime) {
     PerformanceTracker[logPrefix] = {
       time: totalTime,
       count: 1,
-      avg: totalTime
+      avg: totalTime,
     };
   } else {
     PerformanceTracker[logPrefix].time += totalTime;
@@ -19,19 +19,14 @@ export function SavePerformance(logPrefix, startTime, endTime) {
   }
 }
 
-
-export function LoggifyClass<T extends { new(...args: any[]): {} }>(
-  aClass: T
-) {
-  if (!args.DEBUG) {
+export function LoggifyClass<T extends { new (...args: any[]): {} }>(aClass: T) {
+  if (!DEBUG) {
     return aClass;
   }
   return class extends aClass {
     constructor(...args: any[]) {
       super(...args);
-      logger.debug(
-        `Loggifying ${aClass.name} with args:: ${util.inspect(args)}`
-      );
+      logger.debug(`Loggifying ${aClass.name} with args:: ${util.inspect(args)}`);
       for (let prop of Object.getOwnPropertyNames(aClass.prototype)) {
         if (typeof this[prop] === 'function') {
           logger.debug(`Loggifying  ${aClass.name}::${prop}`);
@@ -42,9 +37,8 @@ export function LoggifyClass<T extends { new(...args: any[]): {} }>(
   };
 }
 
-
 export function LoggifyFunction(fn: Function, logPrefix: string = '', bind?: any) {
-  if (!args.DEBUG) {
+  if (!DEBUG) {
     return fn as (...methodargs: any[]) => any;
   }
   let copy = fn;
@@ -74,7 +68,7 @@ export function LoggifyFunction(fn: Function, logPrefix: string = '', bind?: any
 }
 
 export function LoggifyObject(obj: any, logPrefix: string = '', bind?: any) {
-  if (!args.DEBUG) {
+  if (!DEBUG) {
     return obj;
   }
   for (let prop of Object.getOwnPropertyNames(obj)) {
