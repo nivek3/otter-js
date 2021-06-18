@@ -11,6 +11,7 @@ import {
   SignTransactionRequest,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
+import { parseSignature } from './../../../utils/signature';
 
 const Contract = require('web3-eth-contract');
 const abi = require('./abis/multisig');
@@ -75,7 +76,8 @@ export class Provider {
     const common = new Common({ chain: chainId! });
     const txOptions = { common };
     const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
-    const { r, s, v } = signature[0];
+    const sign = signature[0].data;
+    const { r, s, v } = parseSignature(sign!);
     const signedData = {
       ...tx.toJSON(),
       r: Buffer.from(r!, 'hex'),

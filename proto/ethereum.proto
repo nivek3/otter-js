@@ -31,16 +31,10 @@ message BuildAccountTransactionReply {
     string serialized = 2;
     string signature_hash = 3;	
 }
-    
-message ETHSignature {
-    string r = 1;
-    string s = 2;
-    int32 v = 3;
-}
 
 message SignTransactionRequest { 
     string serialized = 1;
-    repeated ETHSignature signature = 2;
+    repeated Signature signature = 2;
     Network network = 3;
 }
 
