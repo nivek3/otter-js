@@ -18,13 +18,17 @@ message DeployAccountReply {
     string address = 1;
 }
 
+message TransactionParams {
+    string gas_limit = 1;
+    string gas_price = 2;   
+    int32 nonce  = 3;
+}
+
 message BuildAccountTransactionRequest {
-    repeated string keys = 1;
-    string sender = 2;
-    int32 nonce = 3;
-    string gas_limit = 4;
-    string gas_price = 5;  
-    Network network = 6;
+    Network network = 1;
+    repeated string keys = 2;
+    string sender = 3;
+    TransactionParams params = 4;
 }
 
 message BuildAccountTransactionReply {
@@ -38,9 +42,7 @@ message BuildTransferTransactionRequest {
     string from = 2;
     string to = 3;
     string quantity = 4;
-    int32 nonce = 5;
-    string gas_price = 6;
-    string gas_limit = 7;
+    TransactionParams params = 5;
 }
 
 message BuildTokenTransferTransactionRequest {
@@ -49,9 +51,7 @@ message BuildTokenTransferTransactionRequest {
     string to = 3;
     string quantity = 4;
     string token_address = 5;
-    int32 nonce = 6;
-    string gas_price = 7;
-    string gas_limit = 8;
+    TransactionParams params = 6;
 }
 
 message BuildTokenTransferTransactionReply {
