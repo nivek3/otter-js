@@ -27,7 +27,7 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
   }
 });
 
-router.post('/tx', async function (req: Request, res: Response, next) {
+router.post('/buildTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildTransaction(req.body);
     return res.json(data);
@@ -37,12 +37,22 @@ router.post('/tx', async function (req: Request, res: Response, next) {
   }
 });
 
-router.post('/sign', async function (req: Request, res: Response, next) {
+router.post('/signTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.signTransaction(req.body);
+    const data = provider.signTransaction(req.body);
     return res.json(data);
   } catch (err) {
     logger.info('SignTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/sendTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.sendTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('SendTransaction =>', err);
     return next(err);
   }
 });

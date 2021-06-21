@@ -8,6 +8,7 @@ message Network {
 	string pub_key_hash = 1;
 	string script_hash = 2;
     string coin = 3;
+    string rpc_uri = 4;
 }
 
 message DeployAccountRequest {
@@ -36,6 +37,7 @@ message TransactionOutput {
     string redeem_script = 4; 
     string witness_script = 5;
     int32 amount = 6;
+    string script = 7;
 }
 
 message Recipient {
@@ -59,9 +61,15 @@ message SignTransactionRequest {
     repeated Signature signature = 3;
 }
 
+message SendTransactionRequest {
+    string serialized = 1;
+    Network network = 2;
+}
+
 service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
     rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
 }

@@ -1,9 +1,10 @@
+import rp from 'request-promise';
 import bitGoUTXO from '@bitgo/utxo-lib';
 import { payments, Network as bitcoinNetwork } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import coinSelect from 'coinselect';
 
-import { TransactionReply } from '../../../__proto__/common/types';
+import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
   Network,
   TransactionOutput,
@@ -12,6 +13,7 @@ import {
   DeployAccountRequest,
   DeployMultisigAccountRequest,
   SignTransactionRequest,
+  SendTransactionRequest,
 } from '../../../__proto__/bitcoin/types';
 
 export class BitcoinStateProvider {
@@ -125,8 +127,36 @@ export class BitcoinStateProvider {
     };
   }
 
+  async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
+    const { network } = req as Required<SendTransactionRequest>;
+    const { rpcUri } = network!;
+    const { txid } = await this.makeRequest({
+      url: rpcUri,
+      method: 'POST',
+      data: {
+        rawTx: req.serialized,
+      },
+    });
+    return {
+      hash: txid,
+    };
+  }
+
   selectCoins(utxos: TransactionOutput[], recipients: Recipient[], feeRate: number) {
     return coinSelect(utxos, recipients, feeRate);
+  }
+
+  async makeRequest(opts): Promise<any> {
+    return rp({
+      url: opts.url,
+      method: opts.method,
+      json: true,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      qs: opts.qs || {},
+      body: opts.data || {},
+    });
   }
 
   getNetWork({ scriptHash, pubKeyHash, coin }: Network) {

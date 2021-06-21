@@ -8,7 +8,7 @@ import errors from '../errors';
 
 import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
-import { TransactionReply } from '../../__proto__/common/types';
+import { TransactionReply, SendTransactionReply } from '../../__proto__/common/types';
 import {
   BitcoinHandlers,
   DeployAccountRequest,
@@ -17,6 +17,7 @@ import {
   DeployMultisigAccountReply,
   BuildTransactionRequest,
   SignTransactionRequest,
+  SendTransactionRequest,
 } from '../../__proto__/bitcoin/types';
 
 const filename = path.join(__dirname, '../../../proto/bitcoin.proto');
@@ -55,15 +56,19 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
 
   BuildTransaction: function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
-    const data = provider.buildTransaction(req);
-    ctx.body = data;
+    ctx.body = provider.buildTransaction(req);
     signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
   SignTransaction: function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
-    const data = provider.signTransaction(req);
-    ctx.body = data;
+    ctx.body = provider.signTransaction(req);
     signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
+  },
+
+  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.sendTransaction(req);
+    signContext(root.common.SendTransactionReply as unknown as protobuf.Message, ctx);
   },
 };
