@@ -15,6 +15,7 @@ import {
   BuildTokenTransferTransactionRequest,
   SignTransactionRequest,
   SendTransactionRequest,
+  RebuildTransactionRequest,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 import { parseSignature } from './../../../utils/signature';
@@ -174,6 +175,47 @@ export class Provider {
     const serializedTx = signedTx.serialize().toString('hex');
     return {
       serialized: serializedTx,
+    };
+  }
+
+  async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
+    const { serialized, params = {}, network } = req as Required<RebuildTransactionRequest>;
+    const { provider } = network!;
+    const common = this.getTxCommon(network!);
+    const web3 = new Web3(provider!);
+    const txOptions = { common };
+    const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
+    const { r, s, v, ...jsonTx } = tx.toJSON();
+
+    const txData = {
+      ...jsonTx,
+      ...params,
+    };
+
+    if (params?.nonce !== undefined) {
+      const nonce = '0x' + new BigNumber(params.nonce).toString(16);
+      jsonTx.nonce = nonce;
+    }
+
+    if (!params?.gasPrice) {
+      const gasPrice = await this.getReqGasPrice(web3);
+      jsonTx.gasPrice = '0x' + new BigNumber(gasPrice).toString(16);
+    }
+
+    if (!params?.gasLimit) {
+      delete jsonTx.gasLimit;
+      const rebuildTx = {
+        ...jsonTx,
+      };
+      const gasLimit = await this.getReqGasLimit(web3, rebuildTx);
+      jsonTx.gasLimit = '0x' + new BigNumber(gasLimit).toString(16);
+    }
+    Object.assign(txData, jsonTx);
+    const newTx = Transaction.fromTxData(txData, txOptions);
+    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    return {
+      serialized: newTx.serialize().toString('hex'),
+      signatureHashes: [signatureHash],
     };
   }
 

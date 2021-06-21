@@ -60,14 +60,20 @@ message BuildTokenTransferTransactionReply {
 }
 
 message SignTransactionRequest { 
-    string serialized = 1;
-    repeated Signature signature = 2;
-    Network network = 3;
+    Network network = 1;
+    string serialized = 2;
+    repeated Signature signature = 3;
 }
 
 message SendTransactionRequest {
-    string serialized = 1;
-    Network network = 2;
+    Network network = 1;
+    string serialized = 2;
+}
+
+message RebuildTransactionRequest { 
+    Network network = 1;
+    string serialized = 2;
+    TransactionParams params = 3;    
 }
 
 service Ethereum {
@@ -76,5 +82,6 @@ service Ethereum {
     rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
     rpc BuildTokenTransferTransaction(BuildTokenTransferTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
 }

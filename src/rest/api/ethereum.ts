@@ -15,26 +15,22 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
-router.post('/buildAccount', async function (req: Request, res: Response, next) {
+router.post('/buildAccountTransaction', async function (req: Request, res: Response, next) {
   try {
-    const account = await provider.buildAccountTransaction(req.body);
-    return res.json({
-      address: account,
-    });
+    const data = await provider.buildAccountTransaction(req.body);
+    return res.json(data);
   } catch (err) {
-    logger.info('buildAccount =>', err);
+    logger.info('buildAccountTransaction =>', err);
     return next(err);
   }
 });
 
 router.post('/buildTransferTransaction', async function (req: Request, res: Response, next) {
   try {
-    const account = await provider.buildTransferTransaction(req.body);
-    return res.json({
-      address: account,
-    });
+    const data = await provider.buildTransferTransaction(req.body);
+    return res.json(data);
   } catch (err) {
-    logger.info('buildAccount =>', err);
+    logger.info('buildTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -62,6 +58,16 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
 router.post('/sendTransaction', async function (req: Request, res: Response, next) {
   try {
     const tx = await provider.sendTransaction(req.body);
+    return res.json(tx);
+  } catch (err) {
+    logger.info('signTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/rebuildTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const tx = await provider.rebuildTransaction(req.body);
     return res.json(tx);
   } catch (err) {
     logger.info('signTransaction =>', err);

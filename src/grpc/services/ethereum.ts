@@ -15,8 +15,8 @@ import {
   BuildAccountTransactionReply,
   BuildTransferTransactionRequest,
   BuildTokenTransferTransactionRequest,
-  BuildTokenTransferTransactionReply,
   SignTransactionRequest,
+  RebuildTransactionRequest,
   SendTransactionRequest,
 } from '../../__proto__/ethereum/types';
 
@@ -60,6 +60,12 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
   SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.signTransaction(req);
+    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
+  },
+
+  RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.rebuildTransaction(req);
     signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
