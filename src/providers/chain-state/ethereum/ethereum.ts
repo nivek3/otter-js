@@ -30,7 +30,7 @@ export class Provider {
   }
 
   async buildAccountTransaction(req: BuildAccountTransactionRequest): Promise<BuildAccountTransactionReply> {
-    const { keys, sender, network } = req as Required<BuildAccountTransactionRequest>;
+    const { keys, sender, network, params } = req as Required<BuildAccountTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
@@ -44,8 +44,8 @@ export class Provider {
       })
       .encodeABI();
 
-    const nonce = await this.getReqNonce(sender, web3, req.nonce);
-    const gasPrice = await this.getReqGasPrice(web3, req.gasPrice);
+    const nonce = await this.getReqNonce(sender, web3, params?.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
     const gasLimit = await this.getReqGasLimit(
       web3,
       {
@@ -54,7 +54,7 @@ export class Provider {
         nonce,
         data: input,
       },
-      req.gasLimit,
+      params?.gasLimit,
     );
 
     const txData = {
@@ -73,14 +73,14 @@ export class Provider {
   }
 
   async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network } = req as Required<BuildTransferTransactionRequest>;
+    const { from, to, quantity, network, params } = req as Required<BuildTransferTransactionRequest>;
     const { provider, chainId } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const web3 = new Web3(provider!);
 
-    const nonce = await this.getReqNonce(from, web3, req.nonce);
-    const gasPrice = await this.getReqGasPrice(web3, req.gasPrice);
+    const nonce = await this.getReqNonce(from, web3, params?.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
     const gasLimit = await this.getReqGasLimit(
       web3,
       {
@@ -90,7 +90,7 @@ export class Provider {
         gasPrice,
         nonce,
       },
-      req.gasLimit,
+      params?.gasLimit,
     );
 
     const txData = {
@@ -110,7 +110,7 @@ export class Provider {
   }
 
   async buildTokenTransferTransaction(req: BuildTokenTransferTransactionRequest): Promise<TransactionReply> {
-    const { from, to, tokenAddress, quantity, network } = req as Required<BuildTokenTransferTransactionRequest>;
+    const { from, to, tokenAddress, quantity, network, params } = req as Required<BuildTokenTransferTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
@@ -124,8 +124,8 @@ export class Provider {
       raw.substring(0, raw.length - amount.length) + // placeholder
       amount; // amount
 
-    const nonce = await this.getReqNonce(from, web3, req.nonce);
-    const gasPrice = await this.getReqGasPrice(web3, req.gasPrice);
+    const nonce = await this.getReqNonce(from, web3, params?.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
     const gasLimit = await this.getReqGasLimit(
       web3,
       {
@@ -135,7 +135,7 @@ export class Provider {
         gasPrice,
         nonce,
       },
-      req.gasLimit,
+      params?.gasLimit,
     );
 
     const txData = {
