@@ -31,10 +31,10 @@ export class PolkaDotStateProvider {
   }
 
   async buildTransferTransaction(req: TransferRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network } = req as Required<TransferRequest>;
-    const { wss, ss58Format } = network!;
+    const { from, to, quantity, network, params } = req as Required<TransferRequest>;
+    const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, req.nonce);
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
     const { serialized, signatureHash } = transfer({
       api,
@@ -51,14 +51,14 @@ export class PolkaDotStateProvider {
   }
 
   async buildMultisigTransaction(req: MultisigTransferRequest): Promise<TransactionReply> {
-    const { to, quantity, network, sender, pubKeys, threshold, maxWeight } = req as Required<MultisigTransferRequest>;
-    const { wss, ss58Format } = network!;
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<MultisigTransferRequest>;
+    const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, req.nonce);
-
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const maxWeight = params?.maxWeight;
     const { serialized, signatureHash } = await multisigTransfer({
       api,
       ss58Format: ss58Format!,
@@ -79,13 +79,14 @@ export class PolkaDotStateProvider {
   }
 
   async multisigApproveTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { to, quantity, network, sender, pubKeys, threshold, maxWeight } = req as Required<MultisigApproveRequest>;
-    const { wss, ss58Format } = network!;
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<MultisigApproveRequest>;
+    const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, req.nonce);
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const maxWeight = params?.maxWeight;
 
     const { serialized, signatureHash } = await approveMultisig({
       api,
@@ -107,13 +108,13 @@ export class PolkaDotStateProvider {
   }
 
   async multisigCancelTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { to, quantity, network, sender, pubKeys, threshold } = req as Required<MultisigApproveRequest>;
-    const { wss, ss58Format } = network!;
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<MultisigApproveRequest>;
+    const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, req.nonce);
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
     const { serialized, signatureHash } = await cancelMultisig({
       api,
@@ -135,11 +136,11 @@ export class PolkaDotStateProvider {
 
   async signTransaction(req: SignTransactionRequest): Promise<TransactionReply> {
     const { serialized, signature, network } = req as Required<SignTransactionRequest>;
-    const { wss, ss58Format } = network!;
+    const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     if (!(Array.isArray(signature) && signature.length)) {
-      throw new Error('pleasure provider the signature');
+      throw new Error('please provider the signature');
     }
     const replaceSignature = '02' + signature[0].data!;
     const hex = sign({ api, serialized, signature: replaceSignature });
@@ -153,7 +154,7 @@ export class PolkaDotStateProvider {
 
   async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
     const { serialized, network } = req as Required<SendTransactionRequest>;
-    const { wss, ss58Format } = network!;
+    const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const hash = await api.rpc.author.submitExtrinsic(serialized as any);
 

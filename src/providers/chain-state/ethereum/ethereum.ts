@@ -75,7 +75,7 @@ export class Provider {
 
   async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
     const { from, to, quantity, network, params } = req as Required<BuildTransferTransactionRequest>;
-    const { provider, chainId } = network!;
+    const { provider } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const web3 = new Web3(provider!);

@@ -8,7 +8,7 @@ message Network {
 	string pub_key_hash = 1;
 	string script_hash = 2;
     string coin = 3;
-    string rpc_uri = 4;
+    string provider = 4;
 }
 
 message DeployAccountRequest {

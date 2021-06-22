@@ -35,7 +35,7 @@ describe('Polkadot service', () => {
       const response = await DeployAccount({
         key: '0x0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624',
         network: {
-          wss: 'wss://api.clover.finance',
+          provider: 'wss://api.clover.finance',
           ss58Format: 42,
         },
       });
@@ -55,7 +55,7 @@ describe('Polkadot service', () => {
         network: {
           platform: 'polkadot',
           params: {
-            wss: 'wss://api.clover.finance',
+            provider: 'wss://api.clover.finance',
             ss58Format: 42,
           },
         },
@@ -69,10 +69,12 @@ describe('Polkadot service', () => {
         to: '5Gj9zP2Rr7ZTu9RWfSZ8W62tf1kcmsoLYSeX6BqDwUHQKw7j',
         quantity: '1000',
         from: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
-        nonce: 4,
         network: {
-          wss: 'wss://api.clover.finance',
+          provider: 'wss://api.clover.finance',
           ss58Format: 42,
+        },
+        params: {
+          nonce: 4,
         },
       });
       const { serialized, signatureHashes } = response;
@@ -94,7 +96,7 @@ describe('Polkadot service', () => {
           },
         ],
         network: {
-          wss: 'wss://api.clover.finance',
+          provider: 'wss://api.clover.finance',
           ss58Format: 42,
         },
       });
@@ -123,12 +125,14 @@ describe('Polkadot service', () => {
         ],
         to,
         quantity,
-        nonce: 45,
         sender: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
         threshold: 2,
         network: {
-          wss,
+          provider: wss,
           ss58Format,
+        },
+        params: {
+          nonce: 45,
         },
       });
       const { serialized, signatureHashes } = response;
@@ -163,10 +167,12 @@ describe('Polkadot service', () => {
         threshold: 2,
         quantity: '100000',
         sender: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
-        nonce: 45,
         network: {
-          wss,
+          provider: wss,
           ss58Format,
+        },
+        params: {
+          nonce: 45,
         },
       });
       const { serialized, signatureHashes } = response;
@@ -203,10 +209,12 @@ describe('Polkadot service', () => {
         ],
         threshold: 2,
         sender: '5F1GPrYp5Q32Hr3hczZXoJCTxNhuQxsBbABtSjDnVK9Fn9dZ',
-        nonce: 1,
         network: {
-          wss: 'wss://api.clover.finance',
+          provider: 'wss://api.clover.finance',
           ss58Format: 42,
+        },
+        params: {
+          nonce: 1,
         },
       });
       const { serialized, signatureHashes } = response;

@@ -12,7 +12,7 @@ describe('ChainStateProvider Polkadot', () => {
         ],
         threshold: 2,
         network: {
-          wss: 'wss://api.clover.finance',
+          provider: 'wss://api.clover.finance',
           ss58Format: 42,
         },
       };

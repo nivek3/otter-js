@@ -129,9 +129,9 @@ export class BitcoinStateProvider {
 
   async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
     const { network } = req as Required<SendTransactionRequest>;
-    const { rpcUri } = network!;
+    const { provider } = network!;
     const { txid } = await this.makeRequest({
-      url: rpcUri,
+      url: provider,
       method: 'POST',
       data: {
         rawTx: req.serialized,
