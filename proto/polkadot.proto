@@ -28,7 +28,7 @@ message DeployMultisigAccountReply {
 	string address = 1;
 }
 
-message Transactionparams {
+message TransactionParams {
     int32 nonce = 1;
     int32 max_weight = 2;
 }
@@ -38,7 +38,7 @@ message TransferRequest {
     string from = 2;
 	string to = 3;
     string quantity = 4;
-    Transactionparams params = 5;
+    TransactionParams params = 5;
 }
 
 message MultisigTransferRequest {
@@ -48,7 +48,7 @@ message MultisigTransferRequest {
     repeated string pub_keys = 4;
     int32 threshold = 5;
     string sender = 6;
-    Transactionparams params = 7;
+    TransactionParams params = 7;
 }
 
 message MultisigApproveRequest {
@@ -58,7 +58,7 @@ message MultisigApproveRequest {
     repeated string pub_keys = 4;
     int32 threshold = 5;
     string sender = 6;
-    Transactionparams params = 7;
+    TransactionParams params = 7;
 }
 
 message MultisigCancelRequest {
@@ -68,7 +68,7 @@ message MultisigCancelRequest {
     repeated string pub_keys = 4;
     int32 threshold = 5;
     string sender = 6;
-    Transactionparams params = 7;
+    TransactionParams params = 7;
 }
 
 message SignTransactionRequest {
