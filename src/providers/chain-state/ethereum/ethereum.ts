@@ -274,7 +274,7 @@ export class Provider {
   private getChainIdVBN(v: number, chainId: number) {
     const vBN = new BN(v);
     const chainIdBN = new BN(chainId!);
-    vBN.iadd(chainIdBN.muln(2).addn(8));
+    vBN.iadd(chainIdBN.muln(2).addn(8 + 27));
     return vBN;
   }
 }

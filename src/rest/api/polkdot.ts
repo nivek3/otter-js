@@ -27,7 +27,7 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
   }
 });
 
-router.post('/transfer', async function (req: Request, res: Response, next) {
+router.post('/buildTransferTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.buildTransferTransaction(req.body);
     return res.json(data);
@@ -37,7 +37,7 @@ router.post('/transfer', async function (req: Request, res: Response, next) {
   }
 });
 
-router.post('/multisig/transfer', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.buildMultisigTransaction(req.body);
     return res.json(data);
@@ -47,7 +47,7 @@ router.post('/multisig/transfer', async function (req: Request, res: Response, n
   }
 });
 
-router.post('/multisig/approve', async function (req: Request, res: Response, next) {
+router.post('/multisigApproveTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.multisigApproveTransaction(req.body);
     return res.json(data);
@@ -57,7 +57,7 @@ router.post('/multisig/approve', async function (req: Request, res: Response, ne
   }
 });
 
-router.post('/multisig/cancel', async function (req: Request, res: Response, next) {
+router.post('/multisigCancelTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.multisigCancelTransaction(req.body);
     return res.json(data);
@@ -67,7 +67,7 @@ router.post('/multisig/cancel', async function (req: Request, res: Response, nex
   }
 });
 
-router.post('/sign', async function (req: Request, res: Response, next) {
+router.post('/signTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.signTransaction(req.body);
     return res.json(data);
@@ -77,7 +77,7 @@ router.post('/sign', async function (req: Request, res: Response, next) {
   }
 });
 
-router.post('/send', async function (req: Request, res: Response, next) {
+router.post('/sendTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await polkaDotStateProvider.sendTransaction(req.body);
     return res.json(data);
