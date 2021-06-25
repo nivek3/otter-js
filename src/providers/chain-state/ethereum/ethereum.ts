@@ -224,10 +224,18 @@ export class Provider {
     const { provider } = network!;
     const web3 = new Web3(provider!);
     const data = preparePrefix(serialized);
-    const { transactionHash: hash } = await web3.eth.sendSignedTransaction(data);
-    return {
-      hash,
-    };
+    return new Promise((resolve, reject) => {
+      web3.eth
+        .sendSignedTransaction(data)
+        .once('transactionHash', (hash) => {
+          resolve({
+            hash,
+          });
+        })
+        .on('error', function (error) {
+          reject(error);
+        });
+    });
   }
 
   private getTxCommon(network: Network) {
