@@ -175,6 +175,7 @@ export class Provider {
     const serializedTx = signedTx.serialize().toString('hex');
     return {
       serialized: serializedTx,
+      hash: '0x' + signedTx.hash().toString('hex'),
     };
   }
 
