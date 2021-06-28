@@ -1,0 +1,8 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+
+# ---
+Language: Proto
+BasedOnStyle:  google
+AlignConsecutiveAssignments: true
+ColumnLimit: 0

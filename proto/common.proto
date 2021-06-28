@@ -5,13 +5,13 @@ option go_package = "./common";
 
 message Signature {
     string pub_key = 1;
-    string data = 2;
+    string data    = 2;
 }
 
 message TransactionReply {
-    string serialized = 1;
-    repeated string signature_hashes = 2;	
-    string hash = 3;
+    string serialized                = 1;
+    repeated string signature_hashes = 2;
+    string hash                      = 3;
 }
 
 message BuildTransactionReply {

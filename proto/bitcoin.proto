@@ -5,71 +5,83 @@ option go_package = "./bitcoin";
 import "common.proto";
 
 message Network {
-	string pub_key_hash = 1;
-	string script_hash = 2;
-    string coin = 3;
-    string provider = 4;
+    string pub_key_hash = 1;
+    string script_hash  = 2;
+    string coin         = 3;
+    string provider     = 4;
 }
 
 message DeployAccountRequest {
-	Network network = 1;
-    string key = 2;
+    Network network = 1;
+    string key      = 2;
 }
 
 message DeployAccountReply {
-	string address = 1;
+    string address = 1;
 }
 
 message DeployMultisigAccountRequest {
-    Network network = 1;
+    Network network      = 1;
     repeated string keys = 2;
-	int32 threshold = 3;
+    int32 threshold      = 3;
 }
 
 message DeployMultisigAccountReply {
-	string address = 1;
+    string address = 1;
 }
 
+// https://chainquery.com/bitcoin-cli/signrawtransactionwithkey
 message TransactionOutput {
-    int32 vout = 1;
-    string txid = 2;
-    string script_pub_key = 3;  
-    string redeem_script = 4; 
+    int32 vout            = 1;
+    string txid           = 2;
+    string script_pub_key = 3;
+    string redeem_script  = 4;
     string witness_script = 5;
-    int32 amount = 6;
-    string script = 7;
+    int32 amount          = 6;
+    string script         = 7;
 }
 
 message Recipient {
     string address = 1;
-    int32 value = 2;
+    int32 value    = 2;
+}
+
+message TransactionParams {
+    double fee_rate = 1;
 }
 
 message BuildTransactionRequest {
-    Network network = 1;
-    string pub_key = 2;
-    string changer = 3;
-    repeated Recipient recipients = 4;
+    Network network                  = 1;
+    string pub_key                   = 2 [deprecated = true];
+    string changer                   = 3;
+    repeated Recipient recipients    = 4;
     repeated TransactionOutput utxos = 5;
-    double fee_rate = 6;
-    string redeem_script = 7;
+    TransactionParams params         = 6;
+}
+
+message HashForSignatureRequest {
+    Network network                  = 1;
+    string pub_key                   = 2;
+    string serialized                = 3;
+    repeated TransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }
 
 message SignTransactionRequest {
-    Network network = 1;
-    string serialized = 2;
+    Network network              = 1;
+    string serialized            = 2;
     repeated Signature signature = 3;
 }
 
 message SendTransactionRequest {
     string serialized = 1;
-    Network network = 2;
+    Network network   = 2;
 }
 
 service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
-    rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTransaction(BuildTransactionRequest) returns (BuildTransactionReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
 }

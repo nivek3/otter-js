@@ -5,80 +5,80 @@ option go_package = "./polkadot";
 import "common.proto";
 
 message Network {
-	int32 ss58Format = 1;
-	string provider = 2;
+    int32 ss58Format = 1;
+    string provider  = 2;
 }
 
 message DeployAccountRequest {
-    string key = 1;
+    string key      = 1;
     Network network = 2;
 }
 
 message DeployAccountReply {
-	string address = 1;
+    string address = 1;
 }
 
 message DeployMultisigAccountRequest {
-	Network network = 1;
+    Network network      = 1;
     repeated string keys = 2;
-	int32 threshold = 3;
+    int32 threshold      = 3;
 }
 
 message DeployMultisigAccountReply {
-	string address = 1;
+    string address = 1;
 }
 
 message TransactionParams {
-    int32 nonce = 1;
+    int32 nonce      = 1;
     int32 max_weight = 2;
 }
 
 message TransferRequest {
-	Network network = 1;
-    string from = 2;
-	string to = 3;
-    string quantity = 4;
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
     TransactionParams params = 5;
 }
 
 message MultisigTransferRequest {
-    Network network = 1;
-    string to = 2;
-    string quantity = 3;
+    Network network          = 1;
+    string to                = 2;
+    string quantity          = 3;
     repeated string pub_keys = 4;
-    int32 threshold = 5;
-    string sender = 6;
+    int32 threshold          = 5;
+    string sender            = 6;
     TransactionParams params = 7;
 }
 
 message MultisigApproveRequest {
-    Network network = 1;
-    string to = 2;
-    string quantity = 3;
+    Network network          = 1;
+    string to                = 2;
+    string quantity          = 3;
     repeated string pub_keys = 4;
-    int32 threshold = 5;
-    string sender = 6;
+    int32 threshold          = 5;
+    string sender            = 6;
     TransactionParams params = 7;
 }
 
 message MultisigCancelRequest {
-    Network network = 1;
-    string to = 2;
-    string quantity = 3;
+    Network network          = 1;
+    string to                = 2;
+    string quantity          = 3;
     repeated string pub_keys = 4;
-    int32 threshold = 5;
-    string sender = 6;
+    int32 threshold          = 5;
+    string sender            = 6;
     TransactionParams params = 7;
 }
 
 message SignTransactionRequest {
-    Network network = 1;
-    string serialized = 2;
+    Network network              = 1;
+    string serialized            = 2;
     repeated Signature signature = 3;
 }
 
 message SendTransactionRequest {
-    Network network = 1;
+    Network network   = 1;
     string serialized = 2;
 }
 

@@ -6,12 +6,12 @@ import "common.proto";
 
 message Network {
     string provider = 1;
-    int32 chain_id = 2;
+    int32 chain_id  = 2;
 }
 
 message DeployAccountRequest {
     Network network = 1;
-    string key = 2;
+    string key      = 2;
 }
 
 message DeployAccountReply {
@@ -20,60 +20,60 @@ message DeployAccountReply {
 
 message TransactionParams {
     string gas_limit = 1;
-    string gas_price = 2;   
-    int32 nonce  = 3;
+    string gas_price = 2;
+    int32 nonce      = 3;
 }
 
 message BuildAccountTransactionRequest {
-    Network network = 1;
-    repeated string keys = 2;
-    string sender = 3;
+    Network network          = 1;
+    repeated string keys     = 2;
+    string sender            = 3;
     TransactionParams params = 4;
 }
 
 message BuildAccountTransactionReply {
-    string address = 1;
-    string serialized = 2;
-    string signature_hash = 3;	
+    string address        = 1;
+    string serialized     = 2;
+    string signature_hash = 3;
 }
 
 message BuildTransferTransactionRequest {
-    Network network = 1;
-    string from = 2;
-    string to = 3;
-    string quantity = 4;
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
     TransactionParams params = 5;
 }
 
 message BuildTokenTransferTransactionRequest {
-    Network network = 1;
-    string from = 2;
-    string to = 3;
-    string quantity = 4;
-    string token_address = 5;
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string token_address     = 5;
     TransactionParams params = 6;
 }
 
 message BuildTokenTransferTransactionReply {
-    string serialized = 1;
-    string signature_hash = 2;	
+    string serialized     = 1;
+    string signature_hash = 2;
 }
 
-message SignTransactionRequest { 
-    Network network = 1;
-    string serialized = 2;
+message SignTransactionRequest {
+    Network network              = 1;
+    string serialized            = 2;
     repeated Signature signature = 3;
 }
 
 message SendTransactionRequest {
-    Network network = 1;
+    Network network   = 1;
     string serialized = 2;
 }
 
-message RebuildTransactionRequest { 
-    Network network = 1;
-    string serialized = 2;
-    TransactionParams params = 3;    
+message RebuildTransactionRequest {
+    Network network          = 1;
+    string serialized        = 2;
+    TransactionParams params = 3;
 }
 
 service Ethereum {
