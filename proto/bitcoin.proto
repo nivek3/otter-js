@@ -32,13 +32,14 @@ message DeployMultisigAccountReply {
 
 // https://chainquery.com/bitcoin-cli/signrawtransactionwithkey
 message TransactionOutput {
-    int32 vout            = 1;
-    string txid           = 2;
-    string script_pub_key = 3;
-    string redeem_script  = 4;
-    string witness_script = 5;
-    int32 amount          = 6;
-    string script         = 7;
+    int32 vout              = 1;
+    string txid             = 2;
+    string script_pub_key   = 3;
+    string redeem_script    = 4;
+    string witness_script   = 5;
+    int32 amount            = 6;
+    string script           = 7;
+    repeated string signers = 8;
 }
 
 message Recipient {
@@ -66,10 +67,26 @@ message HashForSignatureRequest {
     repeated TransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }
 
+message PubKeySignature {
+    string pub_key                   = 1;
+    repeated string signature_hashes = 2;
+}
+
+message HashForSignatureReply {
+    string serialized                           = 1;
+    repeated PubKeySignature pub_key_signatures = 2;
+}
+
+message SignSignature {
+    string pub_key       = 1;
+    repeated string data = 2;
+}
+
 message SignTransactionRequest {
-    Network network              = 1;
-    string serialized            = 2;
-    repeated Signature signature = 3;
+    Network network                  = 1;
+    string serialized                = 2;
+    repeated SignSignature signature = 3;
+    repeated TransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }
 
 message SendTransactionRequest {
@@ -81,7 +98,7 @@ service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
     rpc BuildTransaction(BuildTransactionRequest) returns (BuildTransactionReply) {}
-    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (HashForSignatureReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
 }
