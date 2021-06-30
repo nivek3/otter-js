@@ -9,6 +9,7 @@ message Network {
     string script_hash  = 2;
     string coin         = 3;
     string provider     = 4;
+    int32 dust_limit    = 5;
 }
 
 message DeployAccountRequest {
@@ -48,7 +49,7 @@ message Recipient {
 }
 
 message TransactionParams {
-    double fee_rate = 1;
+    int32 fee_rate = 1;
 }
 
 message BuildTransactionRequest {

@@ -1,9 +1,9 @@
 import { ec as EC } from 'elliptic';
 import rp from 'request-promise';
 import bitGoUTXO from '@bitgo/utxo-lib';
-import { payments, Network as bitcoinNetwork } from 'bitcoinjs-lib';
+import { payments, Network as bitcoinNetwork, address } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
-import coinSelect from 'coinselect';
+import { finalize } from 'coinselect/utils';
 
 import { TransactionReply, BuildTransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
@@ -19,6 +19,7 @@ import {
   HashForSignatureReply,
 } from '../../../__proto__/bitcoin/types';
 
+const DUST_AMOUNT = 546;
 const ec = new EC('secp256k1');
 export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
@@ -46,6 +47,8 @@ export class BitcoinStateProvider {
   buildTransaction(req: BuildTransactionRequest): BuildTransactionReply {
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
+    const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
+    // TODO when feePerKb is null, call the node estimate fee
     const feePerKb = new BigNumber(params?.feeRate || 0).toNumber();
     if (!network) throw new Error('Do not support such network');
     if (!utxos) {
@@ -69,7 +72,9 @@ export class BitcoinStateProvider {
       }
       txb.addInput(input.txId, input.vout, input.sequence, prevOutScript);
     });
+
     outputs.forEach((output: { address: string; value: number }) => {
+      if (!address && output.value < dustLimit) return;
       txb.addOutput(output.address || changer, output.value);
     });
 
@@ -187,7 +192,7 @@ export class BitcoinStateProvider {
   }
 
   selectCoins(utxos: TransactionOutput[], recipients: Recipient[], feeRate: number) {
-    return coinSelect(utxos, recipients, feeRate);
+    return finalize(utxos, recipients, feeRate);
   }
 
   async makeRequest(opts): Promise<any> {
