@@ -29,10 +29,20 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
 
 router.post('/buildTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.buildTransaction(req.body);
+    const data = provider.buildTransaction(req.body);
     return res.json(data);
   } catch (err) {
     logger.info('BuildTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/hashForSignature', async function (req: Request, res: Response, next) {
+  try {
+    const data = provider.hashForSignature(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('HashForSignature =>', err);
     return next(err);
   }
 });

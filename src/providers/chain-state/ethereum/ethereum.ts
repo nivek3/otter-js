@@ -4,6 +4,7 @@ import { Transaction } from '@ethereumjs/tx';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
+import { parseSignature } from './../../../utils/signature';
 
 import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
@@ -18,7 +19,6 @@ import {
   RebuildTransactionRequest,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
-import { parseSignature } from './../../../utils/signature';
 
 const Contract = require('web3-eth-contract');
 const abi = require('./abis/multisig');

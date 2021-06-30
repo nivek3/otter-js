@@ -68,13 +68,13 @@ message HashForSignatureRequest {
 }
 
 message PubKeySignature {
-    string pub_key                   = 1;
-    repeated string signature_hashes = 2;
+    string pub_key         = 1;
+    repeated string hashes = 2;
 }
 
 message HashForSignatureReply {
-    string serialized                           = 1;
-    repeated PubKeySignature pub_key_signatures = 2;
+    string serialized                         = 1;
+    repeated PubKeySignature signature_hashes = 2;
 }
 
 message SignSignature {

@@ -18,6 +18,8 @@ import {
   BuildTransactionRequest,
   SignTransactionRequest,
   SendTransactionRequest,
+  HashForSignatureReply,
+  HashForSignatureRequest,
 } from '../../__proto__/bitcoin/types';
 
 const filename = path.join(__dirname, '../../../proto/bitcoin.proto');
@@ -58,6 +60,12 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     const req = ctx.call.request;
     ctx.body = provider.buildTransaction(req);
     signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
+  },
+
+  HashForSignature: function (ctx: ImplContext<HashForSignatureRequest, HashForSignatureReply>): void {
+    const req = ctx.call.request;
+    ctx.body = provider.hashForSignature(req);
+    signContext(root.bitcoin.HashForSignatureReply as unknown as protobuf.Message, ctx);
   },
 
   SignTransaction: function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): void {
