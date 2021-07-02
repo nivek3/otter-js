@@ -32,15 +32,14 @@ message DeployMultisigAccountReply {
 }
 
 // https://chainquery.com/bitcoin-cli/signrawtransactionwithkey
-message TransactionOutput {
+message UnspentTransactionOutput {
     int32 vout              = 1;
     string txid             = 2;
     string script_pub_key   = 3;
     string redeem_script    = 4;
     string witness_script   = 5;
     int32 amount            = 6;
-    string script           = 7;
-    repeated string signers = 8;
+    repeated string signers = 7;
 }
 
 message Recipient {
@@ -53,41 +52,37 @@ message TransactionParams {
 }
 
 message BuildTransactionRequest {
-    Network network                  = 1;
-    string pub_key                   = 2 [deprecated = true];
-    string changer                   = 3;
-    repeated Recipient recipients    = 4;
-    repeated TransactionOutput utxos = 5;
-    TransactionParams params         = 6;
+    Network network                         = 1;
+    string pub_key                          = 2 [deprecated = true];
+    string changer                          = 3;
+    repeated Recipient recipients           = 4;
+    repeated UnspentTransactionOutput utxos = 5;
+    TransactionParams params                = 6;
 }
 
 message HashForSignatureRequest {
-    Network network                  = 1;
-    string pub_key                   = 2;
-    string serialized                = 3;
-    repeated TransactionOutput utxos = 4;  // required for multisig and wintiness txns
+    Network network                         = 1;
+    string pub_key                          = 2;
+    string serialized                       = 3;
+    repeated UnspentTransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }
 
-message PubKeySignature {
-    string pub_key         = 1;
-    repeated string hashes = 2;
+message Signature {
+    string pub_key   = 1;
+    string hash      = 2;
+    string signature = 3;
 }
 
 message HashForSignatureReply {
-    string serialized                         = 1;
-    repeated PubKeySignature signature_hashes = 2;
-}
-
-message SignSignature {
-    string pub_key       = 1;
-    repeated string data = 2;
+    string serialized             = 1;
+    repeated Signature signatures = 2;
 }
 
 message SignTransactionRequest {
-    Network network                  = 1;
-    string serialized                = 2;
-    repeated SignSignature signature = 3;
-    repeated TransactionOutput utxos = 4;  // required for multisig and wintiness txns
+    Network network                         = 1;
+    string serialized                       = 2;
+    repeated Signature signatures           = 3;
+    repeated UnspentTransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }
 
 message SendTransactionRequest {

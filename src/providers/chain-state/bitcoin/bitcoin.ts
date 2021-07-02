@@ -8,7 +8,7 @@ import { finalize } from 'coinselect/utils';
 import { TransactionReply, BuildTransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
   Network,
-  TransactionOutput,
+  UnspentTransactionOutput,
   Recipient,
   BuildTransactionRequest,
   DeployAccountRequest,
@@ -17,6 +17,7 @@ import {
   SendTransactionRequest,
   HashForSignatureRequest,
   HashForSignatureReply,
+  Signature,
 } from '../../../__proto__/bitcoin/types';
 
 const DUST_AMOUNT = 546;
@@ -55,22 +56,18 @@ export class BitcoinStateProvider {
       throw new Error('Should provider the utxos');
     }
 
-    utxos.forEach((utxo) => {
-      utxo['txId'] = utxo.txid;
-      utxo['value'] = utxo.amount;
-      delete utxo.txid;
-      delete utxo.amount;
-    });
+    this.calcInputBytes(utxos);
 
     const { inputs, outputs } = this.selectCoins(utxos, recipients, feePerKb);
+
     if (!inputs || !outputs) throw new Error(`No enough balance`);
     const txb = new bitGoUTXO.TransactionBuilder(network);
     inputs.forEach((input) => {
       let prevOutScript: Buffer | undefined;
-      if (input.script) {
-        prevOutScript = Buffer.from(input.script, 'hex');
+      if (input.scriptPubKey) {
+        prevOutScript = Buffer.from(input.scriptPubKey, 'hex');
       }
-      txb.addInput(input.txId, input.vout, input.sequence, prevOutScript);
+      txb.addInput(input.txid, input.vout, input.sequence, prevOutScript);
     });
 
     outputs.forEach((output: { address: string; value: number }) => {
@@ -94,7 +91,7 @@ export class BitcoinStateProvider {
     const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
     const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
 
-    const hashes: Record<string, string[]> = {};
+    const signatures: Signature[] = [];
     for (let i = 0; i < txb.inputs.length; i++) {
       const { hash, index } = txb.tx.ins[i];
       const txid = this.getTxId(hash);
@@ -107,29 +104,30 @@ export class BitcoinStateProvider {
       for (const pub of signers!) {
         const pubKey = Buffer.from(pub, 'hex');
         txb.prepareInput(i, pubKey, redeemScriptBuffer);
-        const signingData: Buffer = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
-        hashes[pub] = [...(hashes[pub] || []), signingData.toString('hex')];
+        const hash: Buffer = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
+        signatures.push({
+          pubKey: pub,
+          hash: hash.toString('hex'),
+        });
       }
     }
-    const signatureHashes = Object.keys(hashes).map((pub) => {
-      return {
-        pubKey: pub,
-        hashes: hashes[pub],
-      };
-    });
     return {
       serialized: txb.buildIncomplete().toHex(),
-      signatureHashes,
+      signatures,
     };
   }
 
   signTransaction(req: SignTransactionRequest): TransactionReply {
     const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
-    const { serialized, utxos, signature: signatures, network: reqNetwork } = req as Required<SignTransactionRequest>;
+    const { serialized, utxos, signatures, network: reqNetwork } = req as Required<SignTransactionRequest>;
     const network = this.getNetWork(reqNetwork!);
     if (!network) throw new Error('Do not support such network');
-    const utxoMap: Map<string, TransactionOutput> = new Map(utxos.map((utxo) => [this.getUtxoKey(utxo), utxo]));
-    const signatureMap = new Map(signatures!.map((signature) => [signature.pubKey, signature.data]));
+    const utxoMap: Map<string, UnspentTransactionOutput> = new Map(utxos.map((utxo) => [this.getUtxoKey(utxo), utxo]));
+    const signatureMap = signatures.reduce((acc, cur) => {
+      const { signature, pubKey } = cur;
+      acc[pubKey!] = [...new Set(acc[pubKey!]).add(signature)];
+      return acc;
+    }, {});
 
     const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
     const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
@@ -152,7 +150,7 @@ export class BitcoinStateProvider {
         const key = ec.keyFromPublic(pub, 'hex');
         txb.prepareInput(i, pubKey, redeemScriptBuffer);
         const signingData: Buffer = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
-        const data = signatureMap.get(pub);
+        const data = signatureMap[pub];
         if (!(Array.isArray(data) && data.length)) {
           throw new Error(`No matching signatures found`);
         }
@@ -191,7 +189,7 @@ export class BitcoinStateProvider {
     };
   }
 
-  selectCoins(utxos: TransactionOutput[], recipients: Recipient[], feeRate: number) {
+  selectCoins(utxos: UnspentTransactionOutput[], recipients: Recipient[], feeRate: number) {
     return finalize(utxos, recipients, feeRate);
   }
 
@@ -214,13 +212,57 @@ export class BitcoinStateProvider {
     );
   }
 
-  getUtxoKey(utxo: TransactionOutput) {
+  getUtxoKey(utxo: UnspentTransactionOutput) {
     return `${utxo.txid}+${utxo.vout}`;
   }
 
   getTxId(hash: Buffer) {
     const txid: Buffer = Buffer.from(hash).reverse() as Buffer;
     return txid.toString('hex');
+  }
+
+  // https://gist.github.com/junderw/b43af3253ea5865ed52cb51c200ac19c
+  calcInputBytes(utxos: UnspentTransactionOutput[]) {
+    const types = bitGoUTXO.script.types;
+    const classifyOutput = bitGoUTXO.script.classifyOutput;
+    const inputs = {
+      'MULTISIG-P2SH': 49 * 4,
+      'MULTISIG-P2WSH': 6 + 41 * 4,
+      'MULTISIG-P2SH-P2WSH': 6 + 76 * 4,
+      [types.P2PKH]: 148 * 4,
+      [types.P2SH]: 108 * 4,
+      [types.P2WPKH]: 108 + 41 * 4,
+      'P2SH-P2WPKH': 108 + 64 * 4,
+    };
+
+    utxos.forEach((utxo) => {
+      utxo['value'] = utxo.amount;
+      utxo['txId'] = utxo.txid;
+      return;
+      // const { scriptPubKey, redeemScript } = utxo;
+      // if (!scriptPubKey) return;
+      // const type = classifyOutput(Buffer.from(scriptPubKey, 'hex'));
+      // if (!inputs[type]) return;
+
+      // let length: number = 0;
+      // if (redeemScript) {
+      //   const redeemScriptBuffer = Buffer.from(redeemScript, 'hex');
+      //   const redeemScriptType = classifyOutput(redeemScriptBuffer);
+      //   if (redeemScriptType == types.MULTISIG) {
+      //     const newKey = `MULTISIG-${type}`;
+      //     const { m, pubKeys } = bitGoUTXO.script.multisig.output.decode(redeemScriptBuffer);
+      //     const n = pubKeys.length;
+      //     const multiplier = newKey === 'MULTISIG-P2SH' ? 4 : 1;
+      //     const totalWeight = inputs[newKey] + (73 * m + 34 * n) * multiplier;
+      //     length = Math.ceil(totalWeight / 4);
+      //   }
+      // }
+      // if (!length) {
+      //   const totalWeight = inputs[types];
+      //   length = Math.ceil(totalWeight / 4);
+      // }
+      // utxo['script'] = { length };
+    });
   }
 }
 
