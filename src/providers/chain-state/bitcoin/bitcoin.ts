@@ -4,6 +4,7 @@ import bitGoUTXO from '@bitgo/utxo-lib';
 import { payments, Network as bitcoinNetwork, address } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
+import { parseSignature } from './../../../utils/signature';
 
 import { TransactionReply, BuildTransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
@@ -125,7 +126,8 @@ export class BitcoinStateProvider {
     const utxoMap: Map<string, UnspentTransactionOutput> = new Map(utxos.map((utxo) => [this.getUtxoKey(utxo), utxo]));
     const signatureMap = signatures.reduce((acc, cur) => {
       const { signature, pubKey } = cur;
-      acc[pubKey!] = [...new Set(acc[pubKey!]).add(signature)];
+      const { r, s } = parseSignature(signature!);
+      acc[pubKey!] = [...new Set(acc[pubKey!]).add(r + s)];
       return acc;
     }, {});
 
@@ -225,7 +227,7 @@ export class BitcoinStateProvider {
   calcInputBytes(utxos: UnspentTransactionOutput[]) {
     const types = bitGoUTXO.script.types;
     const classifyOutput = bitGoUTXO.script.classifyOutput;
-    const inputs = {
+    const inputs: Record<string, number> = {
       'MULTISIG-P2SH': 49 * 4,
       'MULTISIG-P2WSH': 6 + 41 * 4,
       'MULTISIG-P2SH-P2WSH': 6 + 76 * 4,
@@ -238,30 +240,32 @@ export class BitcoinStateProvider {
     utxos.forEach((utxo) => {
       utxo['value'] = utxo.amount;
       utxo['txId'] = utxo.txid;
-      return;
-      // const { scriptPubKey, redeemScript } = utxo;
-      // if (!scriptPubKey) return;
-      // const type = classifyOutput(Buffer.from(scriptPubKey, 'hex'));
-      // if (!inputs[type]) return;
 
-      // let length: number = 0;
-      // if (redeemScript) {
-      //   const redeemScriptBuffer = Buffer.from(redeemScript, 'hex');
-      //   const redeemScriptType = classifyOutput(redeemScriptBuffer);
-      //   if (redeemScriptType == types.MULTISIG) {
-      //     const newKey = `MULTISIG-${type}`;
-      //     const { m, pubKeys } = bitGoUTXO.script.multisig.output.decode(redeemScriptBuffer);
-      //     const n = pubKeys.length;
-      //     const multiplier = newKey === 'MULTISIG-P2SH' ? 4 : 1;
-      //     const totalWeight = inputs[newKey] + (73 * m + 34 * n) * multiplier;
-      //     length = Math.ceil(totalWeight / 4);
-      //   }
-      // }
-      // if (!length) {
-      //   const totalWeight = inputs[types];
-      //   length = Math.ceil(totalWeight / 4);
-      // }
-      // utxo['script'] = { length };
+      const { scriptPubKey, redeemScript } = utxo;
+      if (!scriptPubKey) return;
+      const type: string = classifyOutput(Buffer.from(scriptPubKey, 'hex'));
+      if (!inputs[type]) return;
+
+      let length: number = 0;
+      if (redeemScript) {
+        const redeemScriptBuffer = Buffer.from(redeemScript, 'hex');
+        const redeemScriptType = classifyOutput(redeemScriptBuffer);
+        if (redeemScriptType == types.MULTISIG) {
+          const typeKey = Object.keys(types).find((key) => types[key] === type);
+          const newKey = `MULTISIG-${typeKey}`;
+          const { m, pubKeys } = bitGoUTXO.script.multisig.output.decode(redeemScriptBuffer);
+          const n = pubKeys.length;
+          const multiplier = newKey === 'MULTISIG-P2SH' ? 4 : 1;
+          const weight = inputs[newKey] + (73 * m + 34 * n) * multiplier;
+          length = Math.ceil(weight / 4);
+        }
+      }
+      if (!length) {
+        const weight = inputs[type];
+        length = Math.ceil(weight / 4);
+      }
+
+      utxo['script'] = { length };
     });
   }
 }
