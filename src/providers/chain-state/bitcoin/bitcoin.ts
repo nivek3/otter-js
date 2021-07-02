@@ -78,6 +78,7 @@ export class BitcoinStateProvider {
     });
 
     return {
+      hash: txb.tx.getHash().toString('hex'),
       serialized: txb.buildIncomplete().toHex(),
     };
   }
@@ -172,6 +173,7 @@ export class BitcoinStateProvider {
         txb.signInput(i, sin, ecSignature, hashType);
       }
     }
+
     return {
       serialized: txb.build().toHex(),
     };
