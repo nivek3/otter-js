@@ -16,7 +16,7 @@ message TransactionReply {
 
 message BuildTransactionReply {
     string serialized = 1;
-
+}
 
 message SendTransactionReply {
     string hash = 1;
