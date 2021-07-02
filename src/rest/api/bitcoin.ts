@@ -29,7 +29,7 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
 
 router.post('/buildTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = provider.buildTransaction(req.body);
+    const data = await provider.buildTransaction(req.body);
     return res.json(data);
   } catch (err) {
     logger.info('BuildTransaction =>', err);

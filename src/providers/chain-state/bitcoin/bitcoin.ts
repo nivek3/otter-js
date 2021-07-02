@@ -1,7 +1,7 @@
 import { ec as EC } from 'elliptic';
 import rp from 'request-promise';
 import bitGoUTXO from '@bitgo/utxo-lib';
-import { payments, Network as bitcoinNetwork, address } from 'bitcoinjs-lib';
+import { payments, Network as bitcoinNetwork, address, networks } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
 import { parseSignature } from './../../../utils/signature';
@@ -46,13 +46,14 @@ export class BitcoinStateProvider {
     return bitGoUTXO.address.fromOutputScript(scriptPubKey, network);
   }
 
-  buildTransaction(req: BuildTransactionRequest): BuildTransactionReply {
+  async buildTransaction(req: BuildTransactionRequest): Promise<BuildTransactionReply> {
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
-    const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
-    // TODO when feePerKb is null, call the node estimate fee
-    const feePerKb = new BigNumber(params?.feeRate || 0).toNumber();
     if (!network) throw new Error('Do not support such network');
+
+    const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
+    const feePerKb = await this.getReqFeePerKb(reqNetWork!.provider!, params?.feeRate, 1);
+
     if (!utxos) {
       throw new Error('Should provider the utxos');
     }
@@ -179,15 +180,16 @@ export class BitcoinStateProvider {
   async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
     const { network } = req as Required<SendTransactionRequest>;
     const { provider } = network!;
-    const { txid } = await this.makeRequest({
+    const { result, error } = await this.makeRequest({
       url: provider,
-      method: 'POST',
-      data: {
-        rawTx: req.serialized,
-      },
+      method: 'sendrawtransaction',
+      params: [req.serialized],
     });
+    if (error) {
+      throw new Error(error);
+    }
     return {
-      hash: txid,
+      hash: result,
     };
   }
 
@@ -195,17 +197,19 @@ export class BitcoinStateProvider {
     return finalize(utxos, recipients, feeRate);
   }
 
-  async makeRequest(opts): Promise<any> {
-    return rp({
-      url: opts.url,
-      method: opts.method,
+  async makeRequest({ url, method, params }): Promise<any> {
+    const { body } = await rp({
+      url: url,
+      method: 'POST',
       json: true,
-      headers: {
-        'Content-Type': 'application/json',
+      body: {
+        jsonrpc: '1.0',
+        id: Date.now(),
+        method,
+        params,
       },
-      qs: opts.qs || {},
-      body: opts.data || {},
     });
+    return body;
   }
 
   getNetWork({ scriptHash, pubKeyHash, coin }: Network): any {
@@ -267,6 +271,21 @@ export class BitcoinStateProvider {
 
       utxo['script'] = { length };
     });
+  }
+
+  // https://chainquery.com/bitcoin-cli/estimatesmartfee
+  private async getReqFeePerKb(url: string, feeRate = 0, blocks = 1) {
+    if (!feeRate) {
+      const { result, error } = await this.makeRequest({
+        url,
+        method: 'estimatesmartfee',
+        params: [blocks],
+      });
+      if (error) throw new Error('Could not fetch the fee rate');
+      const feePreKb = new BigNumber(result.feerate).multipliedBy(8).div(1024).toFixed(0);
+      feeRate = new BigNumber(feePreKb).toNumber();
+    }
+    return feeRate;
   }
 }
 

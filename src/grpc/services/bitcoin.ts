@@ -56,9 +56,9 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     signContext(root.bitcoin.DeployMultisigAccountReply as unknown as protobuf.Message, ctx);
   },
 
-  BuildTransaction: function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): void {
+  BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = provider.buildTransaction(req);
+    ctx.body = await provider.buildTransaction(req);
     signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
