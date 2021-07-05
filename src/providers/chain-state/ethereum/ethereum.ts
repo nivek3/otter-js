@@ -162,7 +162,7 @@ export class Provider {
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
-    const sign = signature[0].data;
+    const sign = signature[0].signature;
     const { r, s, v } = parseSignature(sign!);
     const signedData = {
       ...tx.toJSON(),
