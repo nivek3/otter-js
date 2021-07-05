@@ -113,7 +113,7 @@ describe('Bitcoin service', () => {
               vout: 1,
               txid: 'fd9b44753db382c410aaf63778aba38a51c43825b21aa5a230148b3fb20d1322',
               amount: 10000,
-              script: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
+              scriptPubKey: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
               redeemScript:
                 '522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae',
               signers: [
@@ -125,7 +125,7 @@ describe('Bitcoin service', () => {
               vout: 0,
               txid: 'b779a919a3f6c4f8b2730cc497626c4703b5d99e9676ca937115ebcbcdcbddd8',
               amount: 10000,
-              script: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
+              scriptPubKey: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
               signers: ['02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231'],
             },
           ],
@@ -141,7 +141,7 @@ describe('Bitcoin service', () => {
         const BuildTransaction = promisify(client.BuildTransaction.bind(client));
         const { serialized } = await BuildTransaction(req);
         expect(serialized).toEqual(
-          '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187e21900000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
+          '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187fb1800000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
         );
       });
     });
