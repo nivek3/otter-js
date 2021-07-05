@@ -55,7 +55,7 @@ describe('ChainStateProvider BitCoin', () => {
           },
         ],
         params: {
-          feeRate: 0,
+          feeRate: 1,
         },
         network: {
           pubKeyHash: '0x6f',
@@ -66,7 +66,7 @@ describe('ChainStateProvider BitCoin', () => {
 
       const { serialized } = await bitcoinStateProvider.buildTransaction(req);
       expect(serialized).toEqual(
-        '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
+        '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581a00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
       );
     });
   });

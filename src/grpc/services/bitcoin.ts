@@ -2,11 +2,10 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { bitcoinStateProvider as provider } from '../../providers/chain-state/bitcoin/bitcoin';
-import { ImplContext, ProxyImp, signContext } from '../utils/context';
+import { ImplContext, ProxyImp } from '../utils/context';
 import { GRpcError } from '../internals/error';
 import errors from '../errors';
 
-import root from '../../__proto__/compiled';
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
 import { TransactionReply, SendTransactionReply } from '../../__proto__/common/types';
 import {
@@ -38,7 +37,6 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
-    signContext(root.bitcoin.DeployAccountRequest as unknown as protobuf.Message, ctx);
   },
 
   DeployMultisigAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
@@ -53,30 +51,25 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     }
     const address = provider.deployMultisigAccount(req);
     ctx.body = { address };
-    signContext(root.bitcoin.DeployMultisigAccountReply as unknown as protobuf.Message, ctx);
   },
 
   BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransaction(req);
-    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
   HashForSignature: function (ctx: ImplContext<HashForSignatureRequest, HashForSignatureReply>): void {
     const req = ctx.call.request;
     ctx.body = provider.hashForSignature(req);
-    signContext(root.bitcoin.HashForSignatureReply as unknown as protobuf.Message, ctx);
   },
 
   SignTransaction: function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
     ctx.body = provider.signTransaction(req);
-    signContext(root.common.TransactionReply as unknown as protobuf.Message, ctx);
   },
 
   SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
-    signContext(root.common.SendTransactionReply as unknown as protobuf.Message, ctx);
   },
 };
