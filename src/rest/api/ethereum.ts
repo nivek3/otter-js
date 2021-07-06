@@ -75,6 +75,16 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
   }
 });
 
+router.post('/buildMultisigTransferInput', async function (req: Request, res: Response, next) {
+  try {
+    const result = provider.buildMultisigTransferInput(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('signTransaction =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/ethereum',

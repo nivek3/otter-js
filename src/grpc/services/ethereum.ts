@@ -17,6 +17,8 @@ import {
   SignTransactionRequest,
   RebuildTransactionRequest,
   SendTransactionRequest,
+  BuildMultisigTransferInputRequest,
+  BuildMultisigTransferInputReply,
 } from '../../__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
@@ -65,5 +67,10 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
   SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
+  },
+
+  BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, BuildMultisigTransferInputReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.buildMultisigTransferInput(req);
   },
 };

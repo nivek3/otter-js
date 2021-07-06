@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 import { BigNumber } from 'bignumber.js';
 import { Transaction } from '@ethereumjs/tx';
+import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
@@ -17,6 +18,8 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   RebuildTransactionRequest,
+  BuildMultisigTransferInputRequest,
+  BuildMultisigTransferInputReply,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
@@ -239,6 +242,24 @@ export class Provider {
     });
   }
 
+  buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): BuildMultisigTransferInputReply {
+    const { prefix, toAddress, quantity, data, expireTime, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
+
+    const hash = this.getSha3ForConfirmationTx(
+      prefix || 'ETHER', //
+      toAddress,
+      quantity,
+      data || '',
+      expireTime || Math.ceil(new Date().getTime() / 1000) + 600, //
+      sequenceId,
+    );
+    return {
+      signature: {
+        hash: hash.toString('hex'),
+      },
+    };
+  }
+
   private getTxCommon(network: Network) {
     let common: Common;
     const chainId = network.chainId;
@@ -275,9 +296,23 @@ export class Provider {
   private async getReqGasLimit(web3: Web3, tx: object, gasLimit?: string) {
     if (!gasLimit) {
       const estimateGas = await web3.eth.estimateGas(tx);
-      gasLimit = new BigNumber(estimateGas).multipliedBy(2).toString();
+      gasLimit = new BigNumber(estimateGas).toString();
     }
     return gasLimit;
+  }
+
+  private getSha3ForConfirmationTx(
+    prefix: string,
+    toAddress: string,
+    quantity: string,
+    data: string,
+    expireTime: number,
+    sequenceId: number,
+  ) {
+    return ABI.soliditySHA3(
+      ['string', 'address', 'uint', 'string', 'uint', 'uint'], // argTypes
+      [prefix, new BN(toAddress.replace('0x', ''), 16), quantity, data, expireTime, sequenceId],
+    );
   }
 
   private getChainIdVBN(v: number, chainId: number) {
