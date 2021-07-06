@@ -22,6 +22,8 @@ import {
   BuildMultisigTransferInputReply,
   SignMultisigTransferInputRequest,
   SignMultisigTransferInputReply,
+  BuildMultisigTransferTransactionRequest,
+  BuildMultisigTransferTransactionReply,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
@@ -157,20 +159,20 @@ export class Provider {
       gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
     };
     const tx = Transaction.fromTxData(txData, txOptions);
-    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    const hash = tx.getMessageToSign(true).toString('hex');
     return {
       serialized: tx.serialize().toString('hex'),
-      signatureHashes: [signatureHash],
+      signatureHashes: [hash],
     };
   }
 
   signTransaction(req: SignTransactionRequest) {
-    const { serialized, signature, network } = req as Required<SignTransactionRequest>;
+    const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
     const { chainId } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
-    const sign = signature[0].signature;
+    const sign = signatures[0].signature;
     const { r, s, v } = parseSignature(sign!);
     const signedData = {
       ...tx.toJSON(),
@@ -283,6 +285,44 @@ export class Provider {
     const input = contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, signature).encodeABI();
     return {
       serialized: input,
+    };
+  }
+
+  async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<BuildMultisigTransferTransactionReply> {
+    const { network, contract, input, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
+    const { provider } = network!;
+    const common = this.getTxCommon(network!);
+    const txOptions = { common };
+    const web3 = new Web3(provider!);
+
+    const nonce = await this.getReqNonce(sender, web3, params?.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
+    const gasLimit = await this.getReqGasLimit(
+      web3,
+      {
+        from: sender,
+        to: contract,
+        data: input,
+        gasPrice,
+        nonce,
+      },
+      params?.gasLimit,
+    );
+
+    const txData = {
+      data: input,
+      value: '0x00',
+      to: contract,
+      nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
+      gasPrice: '0x' + new BigNumber(gasPrice).toString(16),
+      gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
+    };
+    const tx = Transaction.fromTxData(txData, txOptions);
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = { hash };
+    return {
+      serialized: tx.serialize().toString('hex'),
+      signatures: [signature],
     };
   }
 

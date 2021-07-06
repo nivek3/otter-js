@@ -55,14 +55,14 @@ message BuildTokenTransferTransactionRequest {
 }
 
 message BuildTokenTransferTransactionReply {
-    string serialized     = 1;
-    string signature_hash = 2;
+    string serialized             = 1;
+    repeated Signature signatures = 2;
 }
 
 message SignTransactionRequest {
-    Network network              = 1;
-    string serialized            = 2;
-    repeated Signature signature = 3;
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
 }
 
 message SendTransactionRequest {
@@ -91,22 +91,6 @@ message BuildMultisigTransferInputReply {
     repeated Signature signatures = 3;
 }
 
-message BuildMultisigTransactionRequest {
-    Network network          = 1;
-    string contract          = 2;
-    string to                = 3;
-    string quantity          = 4;
-    string input             = 5;
-    string sender            = 6;
-    TransactionParams params = 7;
-}
-
-message BuildMultisigTransactionReply {
-    string serialized             = 1;
-    string hash                   = 2;
-    repeated Signature signatures = 3;
-}
-
 message SignMultisigTransferInputRequest {
     string serialized             = 2;
     repeated Signature signatures = 3;
@@ -114,6 +98,20 @@ message SignMultisigTransferInputRequest {
 
 message SignMultisigTransferInputReply {
     string serialized = 1;
+}
+
+message BuildMultisigTransferTransactionRequest {
+    Network network          = 1;
+    string contract          = 2;
+    string input             = 3;
+    string sender            = 4;
+    TransactionParams params = 5;
+}
+
+message BuildMultisigTransferTransactionReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
 }
 
 service Ethereum {
@@ -126,5 +124,5 @@ service Ethereum {
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
     rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (BuildMultisigTransferInputReply) {}
     rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (SignMultisigTransferInputReply) {}
-    rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (BuildMultisigTransactionReply) {}
+    rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (BuildMultisigTransferTransactionReply) {}
 }
