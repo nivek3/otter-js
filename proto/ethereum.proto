@@ -113,9 +113,7 @@ message SignMultisigTransferInputRequest {
 }
 
 message SignMultisigTransferInputReply {
-    string serialized             = 1;
-    string hash                   = 2;
-    repeated Signature signatures = 3;
+    string serialized = 1;
 }
 
 service Ethereum {
