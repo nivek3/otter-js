@@ -86,9 +86,9 @@ message BuildMultisigTransferInputRequest {
 }
 
 message BuildMultisigTransferInputReply {
-    string serialized   = 1;
-    Signature signature = 2;
-    string hash         = 3;
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
 }
 
 message BuildMultisigTransactionRequest {
@@ -102,9 +102,20 @@ message BuildMultisigTransactionRequest {
 }
 
 message BuildMultisigTransactionReply {
-    string serialized   = 1;
-    Signature signature = 2;
-    string hash         = 3;
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputRequest {
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
 }
 
 service Ethereum {
@@ -116,5 +127,6 @@ service Ethereum {
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
     rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (BuildMultisigTransferInputReply) {}
+    rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (SignMultisigTransferInputReply) {}
     rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (BuildMultisigTransactionReply) {}
 }

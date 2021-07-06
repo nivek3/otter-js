@@ -7,7 +7,7 @@ import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
 import { parseSignature } from './../../../utils/signature';
 
-import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
+import { TransactionReply, SendTransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
   DeployAccountRequest,
@@ -20,13 +20,18 @@ import {
   RebuildTransactionRequest,
   BuildMultisigTransferInputRequest,
   BuildMultisigTransferInputReply,
+  SignMultisigTransferInputRequest,
+  SignMultisigTransferInputReply,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
+const abiDecoder = require('abi-decoder');
 const Contract = require('web3-eth-contract');
 const abi = require('./abis/multisig');
 const bytecode = require('./bytecodes/multisig');
 const contract = new Contract(abi);
+abiDecoder.addABI(abi);
+
 export class Provider {
   deployAccount(req: DeployAccountRequest): string {
     const { key } = req as Required<DeployAccountRequest>;
@@ -243,20 +248,41 @@ export class Provider {
   }
 
   buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): BuildMultisigTransferInputReply {
-    const { prefix, toAddress, quantity, data, expireTime, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
-
+    const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
+    const prefix = req.prefix || 'ETHER';
+    const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
+    const data = req.data || '';
     const hash = this.getSha3ForConfirmationTx(
-      prefix || 'ETHER', //
+      prefix,
       toAddress,
       quantity,
-      data || '',
-      expireTime || Math.ceil(new Date().getTime() / 1000) + 600, //
+      data,
+      expireTime, //
       sequenceId,
     );
+    const input = contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, '0x').encodeABI();
+    const signature: Signature = {
+      hash: hash.toString('hex'),
+    };
     return {
-      signature: {
-        hash: hash.toString('hex'),
-      },
+      serialized: input,
+      signatures: [signature],
+    };
+  }
+
+  signMultisigTransferInput(req: SignMultisigTransferInputRequest): SignMultisigTransferInputReply {
+    const { serialized, signatures } = req as Required<SignMultisigTransferInputRequest>;
+    const { signature } = signatures[0];
+    const decodedData = abiDecoder.decodeMethod(serialized!);
+    if (decodedData?.name !== 'sendMultiSig') throw new Error('invalid hash');
+    const params = decodedData.params.reduce((accum, cur) => {
+      accum[cur.name] = cur.value;
+      return accum;
+    }, {});
+    const { toAddress, value: quantity, data, expireTime, sequenceId } = params;
+    const input = contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, signature).encodeABI();
+    return {
+      serialized: input,
     };
   }
 
