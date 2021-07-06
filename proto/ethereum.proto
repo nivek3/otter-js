@@ -76,6 +76,36 @@ message RebuildTransactionRequest {
     TransactionParams params = 3;
 }
 
+message BuildMultisigInputRequest {
+    Network network   = 1;
+    string contract   = 2;
+    int32 sequence_id = 3;
+    string to         = 4;
+    string quantity   = 5;
+}
+
+message BuildMultisigInputReply {
+    string serialized   = 1;
+    Signature signature = 2;
+    string hash         = 3;
+}
+
+message BuildMultisigTransactionRequest {
+    Network network          = 1;
+    string contract          = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string input             = 5;
+    string sender            = 6;
+    TransactionParams params = 7;
+}
+
+message BuildMultisigTransactionReply {
+    string serialized   = 1;
+    Signature signature = 2;
+    string hash         = 3;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
@@ -84,4 +114,6 @@ service Ethereum {
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
+    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (BuildMultisigInputReply) {}
+    rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (BuildMultisigTransactionReply) {}
 }
