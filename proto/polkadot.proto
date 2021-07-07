@@ -84,7 +84,7 @@ message SendTransactionRequest {
 
 message Recipient {
     string address = 1;
-    int32 value    = 2;
+    string value   = 2;
 }
 
 message BatchTransferTransactionRequest {

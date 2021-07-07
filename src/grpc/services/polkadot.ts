@@ -1,7 +1,7 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { polkaDotStateProvider as provider } from '../../providers/chain-state/polkadot';
+import { provider } from '../../providers/chain-state/polkadot';
 import { ImplContext, ProxyImp } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/polkadot';
@@ -15,6 +15,7 @@ import {
   MultisigApproveRequest,
   MultisigCancelRequest,
   SendTransactionRequest,
+  BatchTransferTransactionRequest,
 } from '../../__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -74,6 +75,12 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
   SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
     const req = ctx.call.request;
     const data = await provider.sendTransaction(req);
+    ctx.body = data;
+  },
+
+  BatchTransferTransaction: async function (ctx: ImplContext<BatchTransferTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    const data = await provider.batchTransferTransaction(req);
     ctx.body = data;
   },
 };
