@@ -6,7 +6,7 @@ import { sign } from './sign';
 import { transfer } from './transfer';
 import { pubKeyToBlack2Address } from './utils';
 
-import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
+import { SendTransactionReply } from '../../../__proto__/common/types';
 import {
   DeployAccountRequest,
   DeployMultisigAccountRequest,
@@ -16,6 +16,7 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   BatchTransferTransactionRequest,
+  TransactionReply,
 } from '../../../__proto__/polkadot/types';
 
 export class Provider {
@@ -38,7 +39,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
-    const { serialized, signatureHash } = transfer({
+    const { method, serialized, signatureHash } = transfer({
       api,
       nonce,
       quantity,
@@ -47,6 +48,7 @@ export class Provider {
     });
 
     return {
+      method,
       serialized,
       signatureHashes: [signatureHash],
     };
@@ -61,7 +63,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
     const maxWeight = params?.maxWeight;
-    const { serialized, signatureHash } = await multisigTransfer({
+    const { method, serialized, signatureHash } = await multisigTransfer({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -75,6 +77,7 @@ export class Provider {
     });
 
     return {
+      method,
       serialized,
       signatureHashes: [signatureHash],
     };
@@ -118,7 +121,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
-    const { serialized, signatureHash } = await cancelMultisig({
+    const { method, serialized, signatureHash } = await cancelMultisig({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -131,6 +134,7 @@ export class Provider {
     });
 
     return {
+      method,
       serialized,
       signatureHashes: [signatureHash],
     };

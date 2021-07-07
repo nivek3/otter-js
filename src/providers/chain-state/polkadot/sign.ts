@@ -13,7 +13,7 @@ export function sign({ api, serialized, signature }: SignParams) {
   const prefix = '0x';
   serialized = preparePrefix(serialized, prefix);
   signature = trimPrefix(signature, prefix);
-  const placeholder = SIGN_PLACEHOLDER.slice(2);
+  const placeholder = trimPrefix(SIGN_PLACEHOLDER);
   const hex = serialized.replace(placeholder, signature);
   return api.createType('Extrinsic', hex).toHex();
 }
