@@ -81,7 +81,13 @@ describe('Polkadot service', () => {
       expect(serialized).toEqual(
         '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f',
       );
-      expect(signatureHashes[0]).toEqual('5a8e80660ee83243ac0646c63a5ab32962d43eb7b030459c36aaee9990dd34d4');
+      expect(response.signatures).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            hash: '5a8e80660ee83243ac0646c63a5ab32962d43eb7b030459c36aaee9990dd34d4',
+          }),
+        ]),
+      );
       expect(method).toEqual('070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f');
     });
 
@@ -90,9 +96,10 @@ describe('Polkadot service', () => {
       const response = await SignTransaction({
         serialized:
           '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f',
-        signature: [
+        signatures: [
           {
-            data: '0732d882ebd406a8ae8b02a12b53bfb55697545bf20847b3812b61ffe9d0e0c8b614ea1da9689cc2a91a3ef4913938dc2f07307b9fc55d7704bc3785f25ff7b500',
+            signature:
+              '0732d882ebd406a8ae8b02a12b53bfb55697545bf20847b3812b61ffe9d0e0c8b614ea1da9689cc2a91a3ef4913938dc2f07307b9fc55d7704bc3785f25ff7b500',
             pubkey: '',
           },
         ],
@@ -137,11 +144,17 @@ describe('Polkadot service', () => {
             nonce: 45,
           },
         });
-        const { serialized, signatureHashes } = response;
+        const { serialized, signatures } = response;
         expect(serialized).toEqual(
           '55038400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca461202000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100b4001d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
         );
-        expect(signatureHashes[0]).toEqual('a056fc8b93c255dba1805388fc7dd5c952f2bee4e01dd5ea11e5989574dff717');
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: 'a056fc8b93c255dba1805388fc7dd5c952f2bee4e01dd5ea11e5989574dff717',
+            }),
+          ]),
+        );
       });
 
       test('build multisig cancel transaction', async () => {
@@ -177,11 +190,17 @@ describe('Polkadot service', () => {
             nonce: 45,
           },
         });
-        const { serialized, signatureHashes } = response;
+        const { serialized, signatures } = response;
         expect(serialized).toEqual(
           '51038400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca461202000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100b4001d0302000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaacaca120001000000bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c4',
         );
-        expect(signatureHashes[0]).toEqual('4df1b4b9b9e94e76f6a18396da2030880ca0344fcb77b5f498a268ddeaee3c0a');
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '4df1b4b9b9e94e76f6a18396da2030880ca0344fcb77b5f498a268ddeaee3c0a',
+            }),
+          ]),
+        );
       });
 
       test('build multisig approve transaction', async () => {
@@ -219,11 +238,17 @@ describe('Polkadot service', () => {
             nonce: 1,
           },
         });
-        const { serialized, signatureHashes } = response;
+        const { serialized, signatures } = response;
         expect(serialized).toEqual(
           '99038400821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010004001d0102000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca461201caca1200010000009c070000f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612821a06000000a0252600000000',
         );
-        expect(signatureHashes[0]).toEqual('e42925b9d6025f0e37bc161241352f181b5b652929754967d174a6485dd168ed');
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: 'e42925b9d6025f0e37bc161241352f181b5b652929754967d174a6485dd168ed',
+            }),
+          ]),
+        );
       });
     });
 
@@ -250,11 +275,17 @@ describe('Polkadot service', () => {
             nonce: 68,
           },
         });
-        const { serialized, signatureHashes } = response;
+        const { serialized, signatures } = response;
         expect(serialized).toEqual(
           'fd028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001101001a0008070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b00a0724e1809070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b0040e59c3012',
         );
-        expect(signatureHashes[0]).toEqual('5b088e2d8865ea21da44da0a484934fb3b3c2b25543bfbd310fdc53b584e6627');
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '5b088e2d8865ea21da44da0a484934fb3b3c2b25543bfbd310fdc53b584e6627',
+            }),
+          ]),
+        );
       });
     });
   });

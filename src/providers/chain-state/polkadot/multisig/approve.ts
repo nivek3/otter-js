@@ -72,11 +72,11 @@ export async function approve({
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 
   const serialized = tx.toHex();
-  const signatureHash = u8aToHex(blake2AsU8a(payload.toRaw().data));
+  const hash = u8aToHex(blake2AsU8a(payload.toRaw().data));
 
   return trimObjectPrefix({
     method,
     serialized,
-    signatureHash,
+    hash,
   });
 }

@@ -39,7 +39,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
-    const { method, serialized, signatureHash } = transfer({
+    const { method, serialized, hash } = transfer({
       api,
       nonce,
       quantity,
@@ -47,10 +47,11 @@ export class Provider {
       to,
     });
 
+    const signature = { hash };
     return {
       method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -63,7 +64,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
     const maxWeight = params?.maxWeight;
-    const { method, serialized, signatureHash } = await multisigTransfer({
+    const { method, serialized, hash } = await multisigTransfer({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -76,10 +77,11 @@ export class Provider {
       maxWeight,
     });
 
+    const signature = { hash };
     return {
       method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -93,7 +95,7 @@ export class Provider {
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
     const maxWeight = params?.maxWeight;
 
-    const { serialized, signatureHash } = await approveMultisig({
+    const { serialized, hash } = await approveMultisig({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -105,10 +107,10 @@ export class Provider {
       to,
       maxWeight,
     });
-
+    const signature = { hash };
     return {
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -121,7 +123,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
-    const { method, serialized, signatureHash } = await cancelMultisig({
+    const { method, serialized, hash } = await cancelMultisig({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -132,23 +134,23 @@ export class Provider {
       from,
       to,
     });
-
+    const signature = { hash };
     return {
       method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
   async signTransaction(req: SignTransactionRequest): Promise<TransactionReply> {
-    const { serialized, signature, network } = req as Required<SignTransactionRequest>;
+    const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    if (!(Array.isArray(signature) && signature.length)) {
+    if (!(Array.isArray(signatures) && signatures.length)) {
       throw new Error('please provider the signature');
     }
-    const replaceSignature = '02' + signature[0].signature!;
+    const replaceSignature = '02' + signatures[0].signature!;
     const hex = sign({ api, serialized, signature: replaceSignature });
     const extrinsic = api.createType('Extrinsic', hex);
 
@@ -167,16 +169,17 @@ export class Provider {
     }
 
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
-    const { serialized, signatureHash } = await batchTransfer({
+    const { serialized, hash, method } = await batchTransfer({
       api,
       recipients,
       sender,
       nonce,
     });
-
+    const signature = { hash };
     return {
+      method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
