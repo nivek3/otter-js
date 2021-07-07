@@ -38,7 +38,6 @@ export class Provider {
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
-
     const { method, serialized, hash } = transfer({
       api,
       nonce,

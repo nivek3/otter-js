@@ -44,43 +44,36 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
 
   BuildTransferTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.buildTransferTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.buildTransferTransaction(req);
   },
 
   BuildMultisigTransaction: async function (ctx: ImplContext<MultisigTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.buildMultisigTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.buildMultisigTransaction(req);
   },
 
   MultisigApproveTransaction: async function (ctx: ImplContext<MultisigApproveRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.multisigApproveTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.multisigApproveTransaction(req);
   },
 
   MultisigCancelTransaction: async function (ctx: ImplContext<MultisigCancelRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.multisigCancelTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.multisigCancelTransaction(req);
   },
 
   SignTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.signTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.signTransaction(req);
   },
 
   SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.sendTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.sendTransaction(req);
   },
 
   BatchTransferTransaction: async function (ctx: ImplContext<BatchTransferTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    const data = await provider.batchTransferTransaction(req);
-    ctx.body = data;
+    ctx.body = await provider.batchTransferTransaction(req);
   },
 };
