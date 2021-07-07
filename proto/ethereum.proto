@@ -32,9 +32,9 @@ message BuildAccountTransactionRequest {
 }
 
 message BuildAccountTransactionReply {
-    string address        = 1;
-    string serialized     = 2;
-    string signature_hash = 3;
+    string address                = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
 }
 
 message BuildTransferTransactionRequest {
