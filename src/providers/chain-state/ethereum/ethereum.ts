@@ -24,6 +24,10 @@ import {
   SignMultisigTransferInputReply,
   BuildMultisigTransferTransactionRequest,
   BuildMultisigTransferTransactionReply,
+  BuildMultisigTokenTransferInputRequest,
+  BuildMultisigTokenTransferInputReply,
+  SignMultisigTokenTransferInputRequest,
+  SignMultisigTokenTransferInputReply,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
@@ -251,7 +255,7 @@ export class Provider {
 
   buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): BuildMultisigTransferInputReply {
     const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
-    const prefix = req.prefix || 'ETHER';
+    const prefix = 'ETHER';
     const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
     const data = req.data || '';
     const hash = this.getSha3ForConfirmationTx(
@@ -326,6 +330,45 @@ export class Provider {
     };
   }
 
+  buildMultisigTokenTransferInput(req: BuildMultisigTokenTransferInputRequest): BuildMultisigTokenTransferInputReply {
+    const { toAddress, quantity, sequenceId, tokenAddress } = req as Required<BuildMultisigTokenTransferInputRequest>;
+    const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
+    const hash = this.getSha3ForConfirmationTokenTx(
+      'ERC20',
+      toAddress,
+      quantity,
+      tokenAddress,
+      expireTime, //
+      sequenceId,
+    );
+    const input = contract.methods.sendMultiSigToken(toAddress, quantity, tokenAddress, expireTime, sequenceId, '0x').encodeABI();
+    const signature: Signature = {
+      hash: hash.toString('hex'),
+    };
+    return {
+      serialized: input,
+      signatures: [signature],
+    };
+  }
+
+  signMultisigTokenTransferInput(req: SignMultisigTokenTransferInputRequest): SignMultisigTokenTransferInputReply {
+    const { serialized, signatures } = req as Required<SignMultisigTokenTransferInputRequest>;
+    const { signature } = signatures[0];
+    const decodedData = abiDecoder.decodeMethod(serialized!);
+    if (decodedData?.name !== 'sendMultiSigToken') throw new Error('invalid hash');
+    const params = decodedData.params.reduce((accum, cur) => {
+      accum[cur.name] = cur.value;
+      return accum;
+    }, {});
+    const { toAddress, value: quantity, tokenContractAddress, expireTime, sequenceId } = params;
+    const input = contract.methods
+      .sendMultiSigToken(toAddress, quantity, tokenContractAddress, expireTime, sequenceId, signature)
+      .encodeABI();
+    return {
+      serialized: input,
+    };
+  }
+
   private getTxCommon(network: Network) {
     let common: Common;
     const chainId = network.chainId;
@@ -378,6 +421,20 @@ export class Provider {
     return ABI.soliditySHA3(
       ['string', 'address', 'uint', 'string', 'uint', 'uint'], // argTypes
       [prefix, new BN(toAddress.replace('0x', ''), 16), quantity, data, expireTime, sequenceId],
+    );
+  }
+
+  private getSha3ForConfirmationTokenTx(
+    prefix: string,
+    toAddress: string,
+    value: string,
+    tokenContractAddress: string,
+    expireTime: number,
+    sequenceId: number,
+  ) {
+    return ABI.soliditySHA3(
+      ['string', 'address', 'uint', 'address', 'uint', 'uint'], //
+      [prefix, new BN(toAddress.replace('0x', ''), 16), value, new BN(tokenContractAddress.replace('0x', ''), 16), expireTime, sequenceId],
     );
   }
 

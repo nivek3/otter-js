@@ -105,6 +105,26 @@ router.post('/buildMultisigTransferTransaction', async function (req: Request, r
   }
 });
 
+router.post('/buildMultisigTokenTransferInput', async function (req: Request, res: Response, next) {
+  try {
+    const result = provider.buildMultisigTokenTransferInput(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('buildMultisigTokenTransferInput =>', err);
+    return next(err);
+  }
+});
+
+router.post('/signMultisigTokenTransferInput', async function (req: Request, res: Response, next) {
+  try {
+    const result = provider.signMultisigTokenTransferInput(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('signMultisigTokenTransferInput =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/ethereum',
