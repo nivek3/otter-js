@@ -1,10 +1,10 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
-import { transfer as batchTransfer } from './batch';
+import { transfer as batchTransfer, utility as batchUtility } from './batch';
 import { sign } from './sign';
 import { transfer } from './transfer';
-import { pubKeyToBlack2Address } from './utils';
+import { pubKeyToBlack2Address, preparePrefix } from './utils';
 
 import { SendTransactionReply } from '../../../__proto__/common/types';
 import {
@@ -17,6 +17,7 @@ import {
   SendTransactionRequest,
   BatchTransferTransactionRequest,
   TransactionReply,
+  BatchTransactionRequest,
 } from '../../../__proto__/polkadot/types';
 
 export class Provider {
@@ -171,6 +172,30 @@ export class Provider {
     const { serialized, hash, method } = await batchTransfer({
       api,
       recipients,
+      sender,
+      nonce,
+    });
+    const signature = { hash };
+    return {
+      method,
+      serialized,
+      signatures: [signature],
+    };
+  }
+
+  async batchTransaction(req: BatchTransactionRequest): Promise<TransactionReply> {
+    const { txs, sender, params, network } = req as Required<BatchTransactionRequest>;
+    const { provider: wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    if (!(Array.isArray(txs) && txs.length)) {
+      throw new Error('please provider the txs');
+    }
+
+    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
+    const { serialized, hash, method } = await batchUtility({
+      api,
+      txs: txs.map((tx) => preparePrefix(tx)),
       sender,
       nonce,
     });

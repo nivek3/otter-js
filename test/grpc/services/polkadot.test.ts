@@ -287,6 +287,38 @@ describe('Polkadot service', () => {
           ]),
         );
       });
+
+      test('batch transfer transaction', async () => {
+        const BatchTransaction = promisify(client.BatchTransaction.bind(client));
+        const response = await BatchTransaction({
+          txs: [
+            '1d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
+            '0x1d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
+          ],
+          sender: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
+          network: {
+            provider: 'wss://api.clover.finance',
+            ss58Format: 42,
+          },
+          params: {
+            nonce: 69,
+          },
+        });
+        const { serialized, signatures, method } = response;
+        expect(method).toEqual(
+          '1a00081d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a02526000000001d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
+        );
+        expect(serialized).toEqual(
+          '1d058400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001501001a00081d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a02526000000001d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
+        );
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: 'aca22b137b6c3054aa1f92da501d497dd03f0c46acd90bd747c81ab5ede8e12c',
+            }),
+          ]),
+        );
+      });
     });
   });
 });

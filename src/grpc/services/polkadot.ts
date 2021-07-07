@@ -16,6 +16,7 @@ import {
   MultisigCancelRequest,
   SendTransactionRequest,
   BatchTransferTransactionRequest,
+  BatchTransactionRequest,
 } from '../../__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -75,5 +76,10 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
   BatchTransferTransaction: async function (ctx: ImplContext<BatchTransferTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.batchTransferTransaction(req);
+  },
+
+  BatchTransaction: async function (ctx: ImplContext<BatchTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.batchTransaction(req);
   },
 };

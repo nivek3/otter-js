@@ -97,6 +97,16 @@ router.post('/batchTransferTransaction', async function (req: Request, res: Resp
   }
 });
 
+router.post('/batchTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.batchTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BatchTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/polkadot',

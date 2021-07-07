@@ -101,6 +101,13 @@ message BatchTransferTransactionRequest {
     TransactionParams params      = 4;
 }
 
+message BatchTransactionRequest {
+    Network network          = 1;
+    repeated string txs      = 2;
+    string sender            = 3;
+    TransactionParams params = 4;
+}
+
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
@@ -111,4 +118,5 @@ service Polkadot {
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
     rpc BatchTransferTransaction(BatchTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BatchTransaction(BatchTransactionRequest) returns (TransactionReply) {}
 }
