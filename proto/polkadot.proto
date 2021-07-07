@@ -82,6 +82,18 @@ message SendTransactionRequest {
     string serialized = 2;
 }
 
+message Recipient {
+    string address = 1;
+    int32 value    = 2;
+}
+
+message BatchTransferTransactionRequest {
+    Network network               = 1;
+    repeated Recipient recipients = 2;
+    string sender                 = 3;
+    TransactionParams params      = 4;
+}
+
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
@@ -91,4 +103,5 @@ service Polkadot {
     rpc MultisigCancelTransaction(MultisigCancelRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
+    rpc BatchTransferTransaction(BatchTransferTransactionRequest) returns (TransactionReply) {}
 }
