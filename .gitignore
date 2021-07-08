@@ -28,3 +28,7 @@ config.json
 .env
 
 src/__proto__/
+
+logs
+*.log
+pkg
