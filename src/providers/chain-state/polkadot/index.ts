@@ -4,6 +4,7 @@ import { transfer as multisigTransfer, approve as approveMultisig, cancel as can
 import { sign } from './sign';
 import { transfer } from './transfer';
 import { pubKeyToBlack2Address } from './utils';
+import { ApiCache, ProviderCache } from './cache';
 
 import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
@@ -17,6 +18,14 @@ import {
 } from '../../../__proto__/polkadot/types';
 
 export class PolkaDotStateProvider {
+  apis: ApiCache;
+  providers: ProviderCache;
+
+  constructor(maxApis = 50, maxProviders = 50) {
+    this.apis = new ApiCache({ max: maxApis });
+    this.providers = new ProviderCache({ max: maxProviders });
+  }
+
   deployAccount(req: DeployAccountRequest): string {
     const { key, network } = req as Required<DeployAccountRequest>;
     const { ss58Format } = network!;
@@ -181,12 +190,36 @@ export class PolkaDotStateProvider {
     return types;
   }
 
-  async getApi(wss: string, ss58Format: number, autoConnectMs = 1000 * 60) {
-    const wsProvider = new WsProvider(wss, autoConnectMs);
-    return await ApiPromise.create({
-      provider: wsProvider,
+  async getApi(wss: string, ss58Format: number, autoConnectMs = 1000 * 5, timeout = 1000 * 10) {
+    const apiKey = this.apis.getKey(wss, ss58Format);
+    let api = this.apis.get(apiKey);
+    if (api) return api;
+
+    const providerKey = this.providers.getKey(wss);
+    let provider = this.providers.get(providerKey);
+    if (!provider) {
+      provider = new WsProvider(wss, autoConnectMs);
+      this.providers.set(providerKey, provider);
+    }
+
+    let timer: NodeJS.Timer;
+    const created = ApiPromise.create({
+      provider,
       types: this.getApiTypes(ss58Format),
     });
+
+    const proctored = new Promise<undefined>((resolve) => {
+      timer = setTimeout(resolve, timeout, undefined);
+    });
+
+    api = await Promise.race([created, proctored]);
+    if (!api) {
+      throw new Error('can not connect the provider');
+    }
+
+    clearTimeout(timer!);
+    this.apis.set(apiKey, api);
+    return api;
   }
 
   private async getAddressNonce(api: ApiPromise, from: string, nonce?: number) {
