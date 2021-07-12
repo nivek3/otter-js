@@ -79,7 +79,7 @@ export class Provider {
       data: input,
     };
     const tx = Transaction.fromTxData(txData, txOptions);
-    const address = toChecksumAddress(bufferToHex(generateAddress(Buffer.from(sender, 'hex'), Buffer.from(nonce!.toString(16), 'hex'))));
+    const address = toChecksumAddress(bufferToHex(generateAddress(Buffer.from(sender, 'hex'), new BN(nonce!).toBuffer())));
     return {
       serialized: tx.serialize().toString('hex'),
       signatureHash: tx.getMessageToSign(true).toString('hex'),
