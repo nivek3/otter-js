@@ -55,14 +55,14 @@ message BuildTokenTransferTransactionRequest {
 }
 
 message BuildTokenTransferTransactionReply {
-    string serialized     = 1;
-    string signature_hash = 2;
+    string serialized             = 1;
+    repeated Signature signatures = 2;
 }
 
 message SignTransactionRequest {
-    Network network              = 1;
-    string serialized            = 2;
-    repeated Signature signature = 3;
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
 }
 
 message SendTransactionRequest {
@@ -76,6 +76,80 @@ message RebuildTransactionRequest {
     TransactionParams params = 3;
 }
 
+message BuildMultisigTransferInputRequest {
+    string to_address = 1;
+    string quantity   = 2;
+    string data       = 3;
+    int32 expire_time = 4;
+    int32 sequence_id = 5;
+}
+
+message BuildMultisigTransferInputReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputRequest {
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputReply {
+    string serialized = 1;
+}
+
+message BuildMultisigTransferTransactionRequest {
+    Network network          = 1;
+    string contract          = 2;
+    string input             = 3;
+    string sender            = 4;
+    TransactionParams params = 5;
+}
+
+message BuildMultisigTransferTransactionReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
+message BuildMultisigTokenTransferInputRequest {
+    string token_address = 1;
+    string to_address    = 2;
+    string quantity      = 3;
+    int32 expire_time    = 4;
+    int32 sequence_id    = 5;
+}
+
+message BuildMultisigTokenTransferInputReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTokenTransferInputRequest {
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTokenTransferInputReply {
+    string serialized = 1;
+}
+
+message BuildMultisigTokenTransferTransactionRequest {
+    Network network          = 1;
+    string contract          = 2;
+    string input             = 3;
+    string sender            = 4;
+    TransactionParams params = 5;
+}
+
+message BuildMultisigTokenTransferTransactionReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
@@ -84,4 +158,9 @@ service Ethereum {
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
+    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (BuildMultisigTransferInputReply) {}
+    rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (SignMultisigTransferInputReply) {}
+    rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (BuildMultisigTransferTransactionReply) {}
+    rpc BuildMultisigTokenTransferInput(BuildMultisigTokenTransferInputRequest) returns (BuildMultisigTokenTransferInputReply) {}
+    rpc SignMultisigTokenTransferInput(SignMultisigTokenTransferInputRequest) returns (SignMultisigTokenTransferInputReply) {}
 }

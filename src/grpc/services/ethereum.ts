@@ -17,6 +17,16 @@ import {
   SignTransactionRequest,
   RebuildTransactionRequest,
   SendTransactionRequest,
+  BuildMultisigTransferInputRequest,
+  BuildMultisigTransferInputReply,
+  SignMultisigTransferInputRequest,
+  SignMultisigTransferInputReply,
+  BuildMultisigTransferTransactionRequest,
+  BuildMultisigTransferTransactionReply,
+  BuildMultisigTokenTransferInputRequest,
+  BuildMultisigTokenTransferInputReply,
+  SignMultisigTokenTransferInputRequest,
+  SignMultisigTokenTransferInputReply,
 } from '../../__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
@@ -65,5 +75,36 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
   SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
+  },
+
+  BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, BuildMultisigTransferInputReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.buildMultisigTransferInput(req);
+  },
+
+  SignMultisigTransferInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, SignMultisigTransferInputReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.signMultisigTransferInput(req);
+  },
+
+  BuildMultisigTransferTransaction: async function (
+    ctx: ImplContext<BuildMultisigTransferTransactionRequest, BuildMultisigTransferTransactionReply>,
+  ) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigTransferTransaction(req);
+  },
+
+  BuildMultisigTokenTransferInput: async function (
+    ctx: ImplContext<BuildMultisigTokenTransferInputRequest, BuildMultisigTokenTransferInputReply>,
+  ) {
+    const req = ctx.call.request;
+    ctx.body = provider.buildMultisigTokenTransferInput(req);
+  },
+
+  SignMultisigTokenTransferInput: async function (
+    ctx: ImplContext<SignMultisigTokenTransferInputRequest, SignMultisigTokenTransferInputReply>,
+  ) {
+    const req = ctx.call.request;
+    ctx.body = provider.signMultisigTokenTransferInput(req);
   },
 };
