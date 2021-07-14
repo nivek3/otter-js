@@ -4,7 +4,7 @@ import { transfer as multisigTransfer, approve as approveMultisig, cancel as can
 import { sign } from './sign';
 import { transfer } from './transfer';
 import { pubKeyToBlack2Address } from './utils';
-import { ApiCache, ProviderCache } from './cache';
+import { ApiCache } from './cache';
 
 import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
 import {
@@ -19,11 +19,9 @@ import {
 
 export class PolkaDotStateProvider {
   apis: ApiCache;
-  providers: ProviderCache;
 
-  constructor(maxApis = 50, maxProviders = 50) {
-    this.apis = new ApiCache({ max: maxApis });
-    this.providers = new ProviderCache({ max: maxProviders });
+  constructor(apiMaxAge = 1000 * 60 * 60) {
+    this.apis = new ApiCache({ maxAge: apiMaxAge });
   }
 
   deployAccount(req: DeployAccountRequest): string {
@@ -195,28 +193,26 @@ export class PolkaDotStateProvider {
     let api = this.apis.get(apiKey);
     if (api) return api;
 
-    const providerKey = this.providers.getKey(wss);
-    let provider = this.providers.get(providerKey);
-    if (!provider) {
-      provider = new WsProvider(wss, autoConnectMs);
-      this.providers.set(providerKey, provider);
-    }
-
     let timer: NodeJS.Timer;
-    const created = ApiPromise.create({
-      provider,
-      types: this.getApiTypes(ss58Format),
-    });
 
+    const provider = new WsProvider(wss, autoConnectMs);
     const proctored = new Promise<undefined>((resolve) => {
-      timer = setTimeout(resolve, timeout, undefined);
+      timer = setTimeout(() => {
+        resolve(undefined);
+      }, timeout);
     });
 
-    api = await Promise.race([created, proctored]);
+    api = await Promise.race([
+      ApiPromise.create({
+        provider,
+        types: this.getApiTypes(ss58Format),
+      }),
+      proctored,
+    ]);
     if (!api) {
-      throw new Error('can not connect the provider');
+      await provider.disconnect().catch();
+      throw new Error('can not create the api');
     }
-
     clearTimeout(timer!);
     this.apis.set(apiKey, api);
     return api;

@@ -1,10 +1,7 @@
 import LRU from 'lru-cache';
-const separator = '-';
-
 export class LRUCache<T> {
   cache: LRU<string, T>;
-  constructor({ max = 500 }) {
-    const options = { max };
+  constructor(options: LRU.Options<string, T>) {
     this.cache = new LRU<string, T>(options);
   }
 
