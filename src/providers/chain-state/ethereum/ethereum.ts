@@ -3,7 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { Transaction } from '@ethereumjs/tx';
 import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
-import { BN, bufferToHex, generateAddress, toChecksumAddress, Address } from 'ethereumjs-util';
+import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
 import { parseSignature } from './../../../utils/signature';
 
@@ -272,7 +272,7 @@ export class Provider {
       hash: hash.toString('hex'),
     };
     return {
-      serialized: input,
+      serialized: stripHexPrefix(input),
       signatures: [signature],
     };
   }
@@ -280,16 +280,18 @@ export class Provider {
   signMultisigTransferInput(req: SignMultisigTransferInputRequest): SignMultisigTransferInputReply {
     const { serialized, signatures } = req as Required<SignMultisigTransferInputRequest>;
     const { signature } = signatures[0];
-    const decodedData = abiDecoder.decodeMethod(serialized!);
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
     if (decodedData?.name !== 'sendMultiSig') throw new Error('invalid hash');
     const params = decodedData.params.reduce((accum, cur) => {
       accum[cur.name] = cur.value;
       return accum;
     }, {});
     const { toAddress, value: quantity, data, expireTime, sequenceId } = params;
-    const input = contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, signature).encodeABI();
+    const input = contract.methods
+      .sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, addHexPrefix(signature!))
+      .encodeABI();
     return {
-      serialized: input,
+      serialized: stripHexPrefix(input),
     };
   }
 
@@ -299,7 +301,7 @@ export class Provider {
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const web3 = new Web3(provider!);
-
+    const data = addHexPrefix(input);
     const nonce = await this.getReqNonce(sender, web3, params?.nonce);
     const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
     const gasLimit = await this.getReqGasLimit(
@@ -307,7 +309,7 @@ export class Provider {
       {
         from: sender,
         to: contract,
-        data: input,
+        data,
         gasPrice,
         nonce,
       },
@@ -315,7 +317,7 @@ export class Provider {
     );
 
     const txData = {
-      data: input,
+      data,
       value: '0x00',
       to: contract,
       nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
@@ -347,7 +349,7 @@ export class Provider {
       hash: hash.toString('hex'),
     };
     return {
-      serialized: input,
+      serialized: stripHexPrefix(input),
       signatures: [signature],
     };
   }
@@ -355,7 +357,7 @@ export class Provider {
   signMultisigTokenTransferInput(req: SignMultisigTokenTransferInputRequest): SignMultisigTokenTransferInputReply {
     const { serialized, signatures } = req as Required<SignMultisigTokenTransferInputRequest>;
     const { signature } = signatures[0];
-    const decodedData = abiDecoder.decodeMethod(serialized!);
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
     if (decodedData?.name !== 'sendMultiSigToken') throw new Error('invalid hash');
     const params = decodedData.params.reduce((accum, cur) => {
       accum[cur.name] = cur.value;
@@ -363,10 +365,10 @@ export class Provider {
     }, {});
     const { toAddress, value: quantity, tokenContractAddress, expireTime, sequenceId } = params;
     const input = contract.methods
-      .sendMultiSigToken(toAddress, quantity, tokenContractAddress, expireTime, sequenceId, signature)
+      .sendMultiSigToken(toAddress, quantity, tokenContractAddress, expireTime, sequenceId, addHexPrefix(signature!))
       .encodeABI();
     return {
-      serialized: input,
+      serialized: stripHexPrefix(input),
     };
   }
 
