@@ -3,7 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { Transaction } from '@ethereumjs/tx';
 import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
-import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
+import { BN, bufferToHex, generateAddress, toChecksumAddress, Address } from 'ethereumjs-util';
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
 import { parseSignature } from './../../../utils/signature';
 
@@ -79,7 +79,8 @@ export class Provider {
       data: input,
     };
     const tx = Transaction.fromTxData(txData, txOptions);
-    const address = toChecksumAddress(bufferToHex(generateAddress(Buffer.from(sender, 'hex'), new BN(nonce!).toBuffer())));
+    const from = Address.fromString(sender).toBuffer();
+    const address = toChecksumAddress(bufferToHex(generateAddress(from, new BN(nonce!).toBuffer())));
     return {
       serialized: tx.serialize().toString('hex'),
       signatureHash: tx.getMessageToSign(true).toString('hex'),
