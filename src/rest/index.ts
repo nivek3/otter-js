@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import express from 'express';
 import cors from 'cors';
 import { CacheMiddleware, CacheTimes } from './middleware';
+import { router as Health } from './health';
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -37,6 +38,8 @@ app.use(cors());
 app.use(CacheMiddleware(CacheTimes.Second, CacheTimes.Second));
 
 app.use('/api', bootstrap('api'));
+
+app.use(Health);
 
 // catch 404 and forward to error handler
 app.use(function (_, res) {
