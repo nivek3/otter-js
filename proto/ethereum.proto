@@ -150,6 +150,17 @@ message BuildMultisigTokenTransferTransactionReply {
     repeated Signature signatures = 3;
 }
 
+message HashForSignatureRequest {
+    Network network   = 1;
+    string pub_key    = 2;
+    string serialized = 3;
+}
+
+message HashForSignatureReply {
+    string serialized             = 1;
+    repeated Signature signatures = 2;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
@@ -163,4 +174,5 @@ service Ethereum {
     rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (BuildMultisigTransferTransactionReply) {}
     rpc BuildMultisigTokenTransferInput(BuildMultisigTokenTransferInputRequest) returns (BuildMultisigTokenTransferInputReply) {}
     rpc SignMultisigTokenTransferInput(SignMultisigTokenTransferInputRequest) returns (SignMultisigTokenTransferInputReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (HashForSignatureReply) {}
 }

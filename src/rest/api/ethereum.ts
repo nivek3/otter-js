@@ -125,6 +125,16 @@ router.post('/signMultisigTokenTransferInput', async function (req: Request, res
   }
 });
 
+router.post('/hashForSignature', async function (req: Request, res: Response, next) {
+  try {
+    const result = provider.hashForSignature(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('hashForSignature =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/ethereum',

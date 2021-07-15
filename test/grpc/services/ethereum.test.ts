@@ -281,5 +281,30 @@ describe('Ethereum service', () => {
         );
       });
     });
+
+    describe('hash for signature', () => {
+      test('without signature', async () => {
+        const HashForSignature = promisify(client.HashForSignature.bind(client));
+        const response = await HashForSignature({
+          serialized: 'e9098502540be40082a410945f560610a5f64834fb2c40402226745c32ec9f8585174876e80080808080',
+          network: {
+            provider: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+            chainId: 97,
+          },
+        });
+        expect(response).toHaveProperty(
+          'serialized',
+          'e9098502540be40082a410945f560610a5f64834fb2c40402226745c32ec9f8585174876e80080808080',
+        );
+
+        expect(response.signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c',
+            }),
+          ]),
+        );
+      });
+    });
   });
 });

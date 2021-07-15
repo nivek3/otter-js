@@ -27,6 +27,8 @@ import {
   BuildMultisigTokenTransferInputReply,
   SignMultisigTokenTransferInputRequest,
   SignMultisigTokenTransferInputReply,
+  HashForSignatureRequest,
+  HashForSignatureReply,
 } from '../../__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
@@ -106,5 +108,10 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
   ) {
     const req = ctx.call.request;
     ctx.body = provider.signMultisigTokenTransferInput(req);
+  },
+
+  HashForSignature: async function (ctx: ImplContext<HashForSignatureRequest, HashForSignatureReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.hashForSignature(req);
   },
 };

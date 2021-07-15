@@ -28,6 +28,8 @@ import {
   BuildMultisigTokenTransferInputReply,
   SignMultisigTokenTransferInputRequest,
   SignMultisigTokenTransferInputReply,
+  HashForSignatureRequest,
+  HashForSignatureReply,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
@@ -256,6 +258,9 @@ export class Provider {
 
   buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): BuildMultisigTransferInputReply {
     const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
+    if (!(sequenceId > 0)) {
+      throw new Error('sequenceId should be positive integer');
+    }
     const prefix = 'ETHER';
     const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
     const data = req.data || '';
@@ -369,6 +374,22 @@ export class Provider {
       .encodeABI();
     return {
       serialized: stripHexPrefix(input),
+    };
+  }
+
+  hashForSignature(req: HashForSignatureRequest): HashForSignatureReply {
+    const { serialized, network } = req as Required<HashForSignatureRequest>;
+    const common = this.getTxCommon(network!);
+    const txOptions = { common };
+    const buf = Buffer.from(stripHexPrefix(serialized), 'hex');
+    const tx = Transaction.fromSerializedTx(buf, txOptions);
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = {
+      hash,
+    };
+    return {
+      serialized: tx.serialize().toString('hex'),
+      signatures: [signature],
     };
   }
 
