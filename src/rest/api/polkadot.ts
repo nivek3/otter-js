@@ -47,22 +47,22 @@ router.post('/buildMultisigTransaction', async function (req: Request, res: Resp
   }
 });
 
-router.post('/multisigApproveTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigApproveTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.multisigApproveTransaction(req.body);
+    const data = await provider.buildMultisigApproveTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('MultisigApproveTransaction =>', err);
+    logger.info('BuildMultisigApproveTransaction =>', err);
     return next(err);
   }
 });
 
-router.post('/multisigCancelTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigCancelTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.multisigCancelTransaction(req.body);
+    const data = await provider.buildMultisigCancelTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('MultisigCancelTransaction =>', err);
+    logger.info('BuildMultisigCancelTransaction =>', err);
     return next(err);
   }
 });
@@ -87,22 +87,22 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
   }
 });
 
-router.post('/batchTransferTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildBatchTransferTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.batchTransferTransaction(req.body);
+    const data = await provider.buildBatchTransferTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BatchTransferTransaction Tx =>', err);
+    logger.info('BuildBatchTransferTransaction Tx =>', err);
     return next(err);
   }
 });
 
-router.post('/batchTransaction', async function (req: Request, res: Response, next) {
+router.post('/BuildBatchTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.batchTransaction(req.body);
+    const data = await provider.buildBatchTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BatchTransaction Tx =>', err);
+    logger.info('BuildBatchTransaction Tx =>', err);
     return next(err);
   }
 });

@@ -10,13 +10,13 @@ import {
   PolkadotHandlers,
   DeployAccountRequest,
   DeployAccountReply,
-  TransferRequest,
-  MultisigTransferRequest,
-  MultisigApproveRequest,
-  MultisigCancelRequest,
+  BuildTransferRequest,
+  BuildMultisigTransferRequest,
+  BuildMultisigApproveRequest,
+  BuildMultisigCancelRequest,
   SendTransactionRequest,
-  BatchTransferTransactionRequest,
-  BatchTransactionRequest,
+  BuildBatchTransferTransactionRequest,
+  BuildBatchTransactionRequest,
 } from '../../__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -43,27 +43,27 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     ctx.body = { address };
   },
 
-  BuildTransferTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
+  BuildTransferTransaction: async function (ctx: ImplContext<BuildTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransferTransaction(req);
   },
 
-  BuildMultisigTransaction: async function (ctx: ImplContext<MultisigTransferRequest, TransactionReply>): Promise<void> {
+  BuildMultisigTransaction: async function (ctx: ImplContext<BuildMultisigTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultisigTransaction(req);
   },
 
-  MultisigApproveTransaction: async function (ctx: ImplContext<MultisigApproveRequest, TransactionReply>): Promise<void> {
+  BuildMultisigApproveTransaction: async function (ctx: ImplContext<BuildMultisigApproveRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.multisigApproveTransaction(req);
+    ctx.body = await provider.buildMultisigApproveTransaction(req);
   },
 
-  MultisigCancelTransaction: async function (ctx: ImplContext<MultisigCancelRequest, TransactionReply>): Promise<void> {
+  BuildMultisigCancelTransaction: async function (ctx: ImplContext<BuildMultisigCancelRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.multisigCancelTransaction(req);
+    ctx.body = await provider.buildMultisigCancelTransaction(req);
   },
 
-  SignTransaction: async function (ctx: ImplContext<TransferRequest, TransactionReply>): Promise<void> {
+  SignTransaction: async function (ctx: ImplContext<BuildTransferRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.signTransaction(req);
   },
@@ -73,13 +73,13 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     ctx.body = await provider.sendTransaction(req);
   },
 
-  BatchTransferTransaction: async function (ctx: ImplContext<BatchTransferTransactionRequest, TransactionReply>): Promise<void> {
+  BuildBatchTransferTransaction: async function (ctx: ImplContext<BuildBatchTransferTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.batchTransferTransaction(req);
+    ctx.body = await provider.buildBatchTransferTransaction(req);
   },
 
-  BatchTransaction: async function (ctx: ImplContext<BatchTransactionRequest, TransactionReply>): Promise<void> {
+  BuildBatchTransaction: async function (ctx: ImplContext<BuildBatchTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.batchTransaction(req);
+    ctx.body = await provider.buildBatchTransaction(req);
   },
 };

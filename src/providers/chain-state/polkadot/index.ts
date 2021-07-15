@@ -11,14 +11,14 @@ import { SendTransactionReply } from '../../../__proto__/common/types';
 import {
   DeployAccountRequest,
   DeployMultisigAccountRequest,
-  TransferRequest,
-  MultisigTransferRequest,
-  MultisigApproveRequest,
+  BuildTransferRequest,
+  BuildMultisigTransferRequest,
+  BuildMultisigApproveRequest,
   SignTransactionRequest,
   SendTransactionRequest,
-  BatchTransferTransactionRequest,
+  BuildBatchTransferTransactionRequest,
   TransactionReply,
-  BatchTransactionRequest,
+  BuildBatchTransactionRequest,
 } from '../../../__proto__/polkadot/types';
 
 export class Provider {
@@ -41,8 +41,8 @@ export class Provider {
     return encodeMultiAddress(sortAddresses(addresses, ss58Format), threshold!, ss58Format!);
   }
 
-  async buildTransferTransaction(req: TransferRequest): Promise<TransactionReply> {
-    const { from, to, quantity, network, params } = req as Required<TransferRequest>;
+  async buildTransferTransaction(req: BuildTransferRequest): Promise<TransactionReply> {
+    const { from, to, quantity, network, params } = req as Required<BuildTransferRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
@@ -62,8 +62,8 @@ export class Provider {
     };
   }
 
-  async buildMultisigTransaction(req: MultisigTransferRequest): Promise<TransactionReply> {
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<MultisigTransferRequest>;
+  async buildMultisigTransaction(req: BuildMultisigTransferRequest): Promise<TransactionReply> {
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigTransferRequest>;
     const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
@@ -92,8 +92,8 @@ export class Provider {
     };
   }
 
-  async multisigApproveTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<MultisigApproveRequest>;
+  async buildMultisigApproveTransaction(req: BuildMultisigApproveRequest): Promise<TransactionReply> {
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveRequest>;
     const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
@@ -121,8 +121,8 @@ export class Provider {
     };
   }
 
-  async multisigCancelTransaction(req: MultisigApproveRequest): Promise<TransactionReply> {
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<MultisigApproveRequest>;
+  async buildMultisigCancelTransaction(req: BuildMultisigApproveRequest): Promise<TransactionReply> {
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveRequest>;
     const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
@@ -166,8 +166,8 @@ export class Provider {
     };
   }
 
-  async batchTransferTransaction(req: BatchTransferTransactionRequest): Promise<TransactionReply> {
-    const { recipients, sender, params, network } = req as Required<BatchTransferTransactionRequest>;
+  async buildBatchTransferTransaction(req: BuildBatchTransferTransactionRequest): Promise<TransactionReply> {
+    const { recipients, sender, params, network } = req as Required<BuildBatchTransferTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
@@ -190,8 +190,8 @@ export class Provider {
     };
   }
 
-  async batchTransaction(req: BatchTransactionRequest): Promise<TransactionReply> {
-    const { txs, sender, params, network } = req as Required<BatchTransactionRequest>;
+  async buildBatchTransaction(req: BuildBatchTransactionRequest): Promise<TransactionReply> {
+    const { txs, sender, params, network } = req as Required<BuildBatchTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 

@@ -114,7 +114,7 @@ describe('Polkadot service', () => {
       );
     });
 
-    describe.skip('multisig transaction', () => {
+    describe('build multisig transaction', () => {
       test('build multisig transfer transaction', async () => {
         const wss = 'wss://api.clover.finance';
         const ss58Format = 42;
@@ -171,8 +171,8 @@ describe('Polkadot service', () => {
           },
         } as any);
 
-        const MultisigCancelTransaction = promisify(client.MultisigCancelTransaction.bind(client));
-        const response = await MultisigCancelTransaction({
+        const BuildMultisigCancelTransaction = promisify(client.BuildMultisigCancelTransaction.bind(client));
+        const response = await BuildMultisigCancelTransaction({
           to: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
           pubKeys: [
             '0x0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624',
@@ -219,8 +219,8 @@ describe('Polkadot service', () => {
           },
         } as any);
 
-        const MultisigApproveTransaction = promisify(client.MultisigApproveTransaction.bind(client));
-        const response = await MultisigApproveTransaction({
+        const BuildMultisigApproveTransaction = promisify(client.BuildMultisigApproveTransaction.bind(client));
+        const response = await BuildMultisigApproveTransaction({
           to,
           quantity,
           pubKeys: [
@@ -253,9 +253,9 @@ describe('Polkadot service', () => {
     });
 
     describe('batch transaction', () => {
-      test('batch transfer transaction', async () => {
-        const BatchTransferTransaction = promisify(client.BatchTransferTransaction.bind(client));
-        const response = await BatchTransferTransaction({
+      test('build batch transfer transaction', async () => {
+        const BuildBatchTransferTransaction = promisify(client.BuildBatchTransferTransaction.bind(client));
+        const response = await BuildBatchTransferTransaction({
           recipients: [
             {
               address: '5F1GPrYp5Q32Hr3hczZXoJCTxNhuQxsBbABtSjDnVK9Fn9dZ',
@@ -288,9 +288,9 @@ describe('Polkadot service', () => {
         );
       });
 
-      test('batch transfer transaction', async () => {
-        const BatchTransaction = promisify(client.BatchTransaction.bind(client));
-        const response = await BatchTransaction({
+      test('build batch transfer transaction', async () => {
+        const BuildBatchTransaction = promisify(client.BuildBatchTransaction.bind(client));
+        const response = await BuildBatchTransaction({
           txs: [
             '1d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',
             '0x1d0202000826146dc16221b108d05e7d792e27e3851d15ce1887cf62a9ccea554e43426a53821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa00bf13d36031407d5ede1415e0e93e16606fffa0f46b70481aded73627b93465c400a0252600000000',

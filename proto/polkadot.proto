@@ -40,7 +40,7 @@ message TransactionParams {
     int32 max_weight = 2;
 }
 
-message TransferRequest {
+message BuildTransferRequest {
     Network network          = 1;
     string from              = 2;
     string to                = 3;
@@ -48,7 +48,7 @@ message TransferRequest {
     TransactionParams params = 5;
 }
 
-message MultisigTransferRequest {
+message BuildMultisigTransferRequest {
     Network network          = 1;
     string to                = 2;
     string quantity          = 3;
@@ -58,7 +58,7 @@ message MultisigTransferRequest {
     TransactionParams params = 7;
 }
 
-message MultisigApproveRequest {
+message BuildMultisigApproveRequest {
     Network network          = 1;
     string to                = 2;
     string quantity          = 3;
@@ -68,7 +68,7 @@ message MultisigApproveRequest {
     TransactionParams params = 7;
 }
 
-message MultisigCancelRequest {
+message BuildMultisigCancelRequest {
     Network network          = 1;
     string to                = 2;
     string quantity          = 3;
@@ -94,14 +94,14 @@ message Recipient {
     string value   = 2;
 }
 
-message BatchTransferTransactionRequest {
+message BuildBatchTransferTransactionRequest {
     Network network               = 1;
     repeated Recipient recipients = 2;
     string sender                 = 3;
     TransactionParams params      = 4;
 }
 
-message BatchTransactionRequest {
+message BuildBatchTransactionRequest {
     Network network          = 1;
     repeated string txs      = 2;
     string sender            = 3;
@@ -111,12 +111,12 @@ message BatchTransactionRequest {
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
-    rpc BuildTransferTransaction(TransferRequest) returns (TransactionReply) {}
-    rpc BuildMultisigTransaction(MultisigTransferRequest) returns (TransactionReply) {}
-    rpc MultisigApproveTransaction(MultisigApproveRequest) returns (TransactionReply) {}
-    rpc MultisigCancelTransaction(MultisigCancelRequest) returns (TransactionReply) {}
+    rpc BuildTransferTransaction(BuildTransferRequest) returns (TransactionReply) {}
+    rpc BuildMultisigTransaction(BuildMultisigTransferRequest) returns (TransactionReply) {}
+    rpc BuildMultisigApproveTransaction(BuildMultisigApproveRequest) returns (TransactionReply) {}
+    rpc BuildMultisigCancelTransaction(BuildMultisigCancelRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
-    rpc BatchTransferTransaction(BatchTransferTransactionRequest) returns (TransactionReply) {}
-    rpc BatchTransaction(BatchTransactionRequest) returns (TransactionReply) {}
+    rpc BuildBatchTransferTransaction(BuildBatchTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildBatchTransaction(BuildBatchTransactionRequest) returns (TransactionReply) {}
 }
