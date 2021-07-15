@@ -1,12 +1,13 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
+import { transfer as batchTransfer, utility as batchUtility } from './batch';
 import { sign } from './sign';
 import { transfer } from './transfer';
-import { pubKeyToBlack2Address } from './utils';
+import { pubKeyToBlack2Address, preparePrefix } from './utils';
 import { ApiCache } from './cache';
 
-import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
+import { SendTransactionReply } from '../../../__proto__/common/types';
 import {
   DeployAccountRequest,
   DeployMultisigAccountRequest,
@@ -15,9 +16,12 @@ import {
   MultisigApproveRequest,
   SignTransactionRequest,
   SendTransactionRequest,
+  BatchTransferTransactionRequest,
+  TransactionReply,
+  BatchTransactionRequest,
 } from '../../../__proto__/polkadot/types';
 
-export class PolkaDotStateProvider {
+export class Provider {
   apis: ApiCache;
 
   constructor(apiMaxAge = 1000 * 60 * 60) {
@@ -42,8 +46,7 @@ export class PolkaDotStateProvider {
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
-
-    const { serialized, signatureHash } = transfer({
+    const { method, serialized, hash } = transfer({
       api,
       nonce,
       quantity,
@@ -51,9 +54,11 @@ export class PolkaDotStateProvider {
       to,
     });
 
+    const signature = { hash };
     return {
+      method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -66,7 +71,7 @@ export class PolkaDotStateProvider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
     const maxWeight = params?.maxWeight;
-    const { serialized, signatureHash } = await multisigTransfer({
+    const { method, serialized, hash } = await multisigTransfer({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -79,9 +84,11 @@ export class PolkaDotStateProvider {
       maxWeight,
     });
 
+    const signature = { hash };
     return {
+      method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -95,7 +102,7 @@ export class PolkaDotStateProvider {
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
     const maxWeight = params?.maxWeight;
 
-    const { serialized, signatureHash } = await approveMultisig({
+    const { serialized, hash } = await approveMultisig({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -107,10 +114,10 @@ export class PolkaDotStateProvider {
       to,
       maxWeight,
     });
-
+    const signature = { hash };
     return {
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -123,7 +130,7 @@ export class PolkaDotStateProvider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
-    const { serialized, signatureHash } = await cancelMultisig({
+    const { method, serialized, hash } = await cancelMultisig({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -134,28 +141,76 @@ export class PolkaDotStateProvider {
       from,
       to,
     });
-
+    const signature = { hash };
     return {
+      method,
       serialized,
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
   async signTransaction(req: SignTransactionRequest): Promise<TransactionReply> {
-    const { serialized, signature, network } = req as Required<SignTransactionRequest>;
+    const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    if (!(Array.isArray(signature) && signature.length)) {
+    if (!(Array.isArray(signatures) && signatures.length)) {
       throw new Error('please provider the signature');
     }
-    const replaceSignature = '02' + signature[0].signature!;
+    const replaceSignature = '02' + signatures[0].signature!;
     const hex = sign({ api, serialized, signature: replaceSignature });
     const extrinsic = api.createType('Extrinsic', hex);
 
     return {
       serialized: extrinsic.toHex(),
-      signatureHashes: [],
+    };
+  }
+
+  async batchTransferTransaction(req: BatchTransferTransactionRequest): Promise<TransactionReply> {
+    const { recipients, sender, params, network } = req as Required<BatchTransferTransactionRequest>;
+    const { provider: wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    if (!(Array.isArray(recipients) && recipients.length)) {
+      throw new Error('please provider the recipients');
+    }
+
+    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
+    const { serialized, hash, method } = await batchTransfer({
+      api,
+      recipients,
+      sender,
+      nonce,
+    });
+    const signature = { hash };
+    return {
+      method,
+      serialized,
+      signatures: [signature],
+    };
+  }
+
+  async batchTransaction(req: BatchTransactionRequest): Promise<TransactionReply> {
+    const { txs, sender, params, network } = req as Required<BatchTransactionRequest>;
+    const { provider: wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    if (!(Array.isArray(txs) && txs.length)) {
+      throw new Error('please provider the txs');
+    }
+
+    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
+    const { serialized, hash, method } = await batchUtility({
+      api,
+      txs: txs.map((tx) => preparePrefix(tx)),
+      sender,
+      nonce,
+    });
+    const signature = { hash };
+    return {
+      method,
+      serialized,
+      signatures: [signature],
     };
   }
 
@@ -227,4 +282,4 @@ export class PolkaDotStateProvider {
   }
 }
 
-export const polkaDotStateProvider = new PolkaDotStateProvider();
+export const provider = new Provider();

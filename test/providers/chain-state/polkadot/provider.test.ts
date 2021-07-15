@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { polkaDotStateProvider } from '../../../../src/providers/chain-state/polkadot';
+import { provider } from '../../../../src/providers/chain-state/polkadot';
 
 describe('ChainStateProvider Polkadot', () => {
   describe('Polkadot provider', () => {
@@ -16,7 +16,7 @@ describe('ChainStateProvider Polkadot', () => {
           ss58Format: 42,
         },
       };
-      const addresses = polkaDotStateProvider.deployMultisigAccount(req);
+      const addresses = provider.deployMultisigAccount(req);
       expect(addresses).toEqual('5EjXLmCHWyo5SVTQEo9JBgozVNZgWYheAdENAuEZ1UvaGD3e');
     });
   });

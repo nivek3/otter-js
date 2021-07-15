@@ -9,6 +9,13 @@ message Network {
     string provider  = 2;
 }
 
+message TransactionReply {
+    string serialized             = 1;
+    repeated Signature signatures = 2;
+    string hash                   = 3;
+    string method                 = 4;
+}
+
 message DeployAccountRequest {
     string key      = 1;
     Network network = 2;
@@ -72,14 +79,33 @@ message MultisigCancelRequest {
 }
 
 message SignTransactionRequest {
-    Network network              = 1;
-    string serialized            = 2;
-    repeated Signature signature = 3;
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
 }
 
 message SendTransactionRequest {
     Network network   = 1;
     string serialized = 2;
+}
+
+message Recipient {
+    string address = 1;
+    string value   = 2;
+}
+
+message BatchTransferTransactionRequest {
+    Network network               = 1;
+    repeated Recipient recipients = 2;
+    string sender                 = 3;
+    TransactionParams params      = 4;
+}
+
+message BatchTransactionRequest {
+    Network network          = 1;
+    repeated string txs      = 2;
+    string sender            = 3;
+    TransactionParams params = 4;
 }
 
 service Polkadot {
@@ -91,4 +117,6 @@ service Polkadot {
     rpc MultisigCancelTransaction(MultisigCancelRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
+    rpc BatchTransferTransaction(BatchTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BatchTransaction(BatchTransactionRequest) returns (TransactionReply) {}
 }

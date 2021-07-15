@@ -22,6 +22,13 @@ export const trimPrefix = (key: string, prefix = '0x') => {
   return key;
 };
 
+export const trimObjectPrefix = <T = Record<string, string>>(source: T, prefix = '0x'): T => {
+  return Object.entries(source).reduce((pre, [k, v]) => {
+    pre[k] = trimPrefix(v, prefix);
+    return pre;
+  }, {} as T);
+};
+
 export const pubKeyToBlack2Address = (publicKey: string, ss58Format?: number) => {
   publicKey = preparePrefix(publicKey, '0x');
   return encodeAddress(blake2AsU8a(publicKey), ss58Format);

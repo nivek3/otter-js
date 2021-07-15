@@ -65,7 +65,13 @@ describe('Ethereum service', () => {
         });
         expect(response).toHaveProperty('serialized', serialized);
         expect(response).toHaveProperty('address', address);
-        expect(response).toHaveProperty('signatureHash', signatureHash);
+        expect(response.signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: signatureHash,
+            }),
+          ]),
+        );
       });
     });
 
@@ -133,7 +139,13 @@ describe('Ethereum service', () => {
           'serialized',
           'e90a8502540be40082a410945f560610a5f64834fb2c40402226745c32ec9f8585174876e80080808080',
         );
-        expect(response.signatureHashes[0]).toEqual('24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c');
+        expect(response.signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c',
+            }),
+          ]),
+        );
       });
 
       test('rebuild bnb transfer transaction without signature', async () => {
@@ -155,7 +167,13 @@ describe('Ethereum service', () => {
           'serialized',
           'e90a8502540be40082a410945f560610a5f64834fb2c40402226745c32ec9f8585174876e80080808080',
         );
-        expect(response.signatureHashes[0]).toEqual('24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c');
+        expect(response.signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c',
+            }),
+          ]),
+        );
       });
     });
 

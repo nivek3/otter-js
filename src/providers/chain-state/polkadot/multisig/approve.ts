@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
 import { SIGN_PLACEHOLDER } from '../const';
-import { getCallHexAndHash } from '../utils';
+import { getCallHexAndHash, trimObjectPrefix } from '../utils';
 
 export interface ApproveParams {
   api: ApiPromise;
@@ -58,8 +58,10 @@ export async function approve({
     maxWeight,
   );
 
+  const method = tx.method.toHex();
+
   const payload = api.createType('SignerPayload', {
-    method: tx.method.toHex(),
+    method,
     nonce,
     genesisHash: api.genesisHash,
     blockHash: api.genesisHash,
@@ -69,8 +71,12 @@ export async function approve({
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 
-  const serialized = tx.toHex().slice(2);
-  const signatureHash = u8aToHex(blake2AsU8a(payload.toRaw().data)).slice(2);
+  const serialized = tx.toHex();
+  const hash = u8aToHex(blake2AsU8a(payload.toRaw().data));
 
-  return { serialized, signatureHash };
+  return trimObjectPrefix({
+    method,
+    serialized,
+    hash,
+  });
 }

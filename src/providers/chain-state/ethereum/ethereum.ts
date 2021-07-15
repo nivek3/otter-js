@@ -83,9 +83,11 @@ export class Provider {
     const tx = Transaction.fromTxData(txData, txOptions);
     const from = Address.fromString(sender).toBuffer();
     const address = toChecksumAddress(bufferToHex(generateAddress(from, new BN(nonce!).toBuffer())));
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = { hash };
     return {
       serialized: tx.serialize().toString('hex'),
-      signatureHash: tx.getMessageToSign(true).toString('hex'),
+      signatures: [signature],
       address,
     };
   }
@@ -120,10 +122,11 @@ export class Provider {
       gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
     };
     const tx = Transaction.fromTxData(txData, txOptions);
-    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = { hash };
     return {
       serialized: tx.serialize().toString('hex'),
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
@@ -167,9 +170,10 @@ export class Provider {
     };
     const tx = Transaction.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = { hash };
     return {
       serialized: tx.serialize().toString('hex'),
-      signatureHashes: [hash],
+      signatures: [signature],
     };
   }
 
@@ -230,10 +234,11 @@ export class Provider {
     }
     Object.assign(txData, jsonTx);
     const newTx = Transaction.fromTxData(txData, txOptions);
-    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = { hash };
     return {
       serialized: newTx.serialize().toString('hex'),
-      signatureHashes: [signatureHash],
+      signatures: [signature],
     };
   }
 
