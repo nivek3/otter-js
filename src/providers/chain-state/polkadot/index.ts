@@ -149,7 +149,7 @@ export class PolkaDotStateProvider {
     if (!(Array.isArray(signature) && signature.length)) {
       throw new Error('please provider the signature');
     }
-    const replaceSignature = '02' + signature[0].data!;
+    const replaceSignature = '02' + signature[0].signature!;
     const hex = sign({ api, serialized, signature: replaceSignature });
     const extrinsic = api.createType('Extrinsic', hex);
 

@@ -1,12 +1,13 @@
 import Web3 from 'web3';
 import { BigNumber } from 'bignumber.js';
 import { Transaction } from '@ethereumjs/tx';
+import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
-import { BN, bufferToHex, generateAddress, toChecksumAddress } from 'ethereumjs-util';
+import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
 import { parseSignature } from './../../../utils/signature';
 
-import { TransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
+import { TransactionReply, SendTransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
   DeployAccountRequest,
@@ -17,13 +18,26 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   RebuildTransactionRequest,
+  BuildMultisigTransferInputRequest,
+  BuildMultisigTransferInputReply,
+  SignMultisigTransferInputRequest,
+  SignMultisigTransferInputReply,
+  BuildMultisigTransferTransactionRequest,
+  BuildMultisigTransferTransactionReply,
+  BuildMultisigTokenTransferInputRequest,
+  BuildMultisigTokenTransferInputReply,
+  SignMultisigTokenTransferInputRequest,
+  SignMultisigTokenTransferInputReply,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address } from './utils';
 
+const abiDecoder = require('abi-decoder');
 const Contract = require('web3-eth-contract');
 const abi = require('./abis/multisig');
 const bytecode = require('./bytecodes/multisig');
 const contract = new Contract(abi);
+abiDecoder.addABI(abi);
+
 export class Provider {
   deployAccount(req: DeployAccountRequest): string {
     const { key } = req as Required<DeployAccountRequest>;
@@ -65,7 +79,8 @@ export class Provider {
       data: input,
     };
     const tx = Transaction.fromTxData(txData, txOptions);
-    const address = toChecksumAddress(bufferToHex(generateAddress(Buffer.from(sender, 'hex'), Buffer.from(nonce!.toString(16), 'hex'))));
+    const from = Address.fromString(sender).toBuffer();
+    const address = toChecksumAddress(bufferToHex(generateAddress(from, new BN(nonce!).toBuffer())));
     return {
       serialized: tx.serialize().toString('hex'),
       signatureHash: tx.getMessageToSign(true).toString('hex'),
@@ -149,20 +164,20 @@ export class Provider {
       gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
     };
     const tx = Transaction.fromTxData(txData, txOptions);
-    const signatureHash = tx.getMessageToSign(true).toString('hex');
+    const hash = tx.getMessageToSign(true).toString('hex');
     return {
       serialized: tx.serialize().toString('hex'),
-      signatureHashes: [signatureHash],
+      signatureHashes: [hash],
     };
   }
 
   signTransaction(req: SignTransactionRequest) {
-    const { serialized, signature, network } = req as Required<SignTransactionRequest>;
+    const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
     const { chainId } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
-    const sign = signature[0].data;
+    const sign = signatures[0].signature;
     const { r, s, v } = parseSignature(sign!);
     const signedData = {
       ...tx.toJSON(),
@@ -239,6 +254,124 @@ export class Provider {
     });
   }
 
+  buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): BuildMultisigTransferInputReply {
+    const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
+    const prefix = 'ETHER';
+    const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
+    const data = req.data || '';
+    const hash = this.getSha3ForConfirmationTx(
+      prefix,
+      toAddress,
+      quantity,
+      data,
+      expireTime, //
+      sequenceId,
+    );
+    const input = contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, '0x').encodeABI();
+    const signature: Signature = {
+      hash: hash.toString('hex'),
+    };
+    return {
+      serialized: stripHexPrefix(input),
+      signatures: [signature],
+    };
+  }
+
+  signMultisigTransferInput(req: SignMultisigTransferInputRequest): SignMultisigTransferInputReply {
+    const { serialized, signatures } = req as Required<SignMultisigTransferInputRequest>;
+    const { signature } = signatures[0];
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
+    if (decodedData?.name !== 'sendMultiSig') throw new Error('invalid hash');
+    const params = decodedData.params.reduce((accum, cur) => {
+      accum[cur.name] = cur.value;
+      return accum;
+    }, {});
+    const { toAddress, value: quantity, data, expireTime, sequenceId } = params;
+    const input = contract.methods
+      .sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, addHexPrefix(signature!))
+      .encodeABI();
+    return {
+      serialized: stripHexPrefix(input),
+    };
+  }
+
+  async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<BuildMultisigTransferTransactionReply> {
+    const { network, contract, input, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
+    const { provider } = network!;
+    const common = this.getTxCommon(network!);
+    const txOptions = { common };
+    const web3 = new Web3(provider!);
+    const data = addHexPrefix(input);
+    const nonce = await this.getReqNonce(sender, web3, params?.nonce);
+    const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
+    const gasLimit = await this.getReqGasLimit(
+      web3,
+      {
+        from: sender,
+        to: contract,
+        data,
+        gasPrice,
+        nonce,
+      },
+      params?.gasLimit,
+    );
+
+    const txData = {
+      data,
+      value: '0x00',
+      to: contract,
+      nonce: nonce ? '0x' + new BigNumber(nonce).toString(16) : '0x',
+      gasPrice: '0x' + new BigNumber(gasPrice).toString(16),
+      gasLimit: '0x' + new BigNumber(gasLimit).toString(16),
+    };
+    const tx = Transaction.fromTxData(txData, txOptions);
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const signature = { hash };
+    return {
+      serialized: tx.serialize().toString('hex'),
+      signatures: [signature],
+    };
+  }
+
+  buildMultisigTokenTransferInput(req: BuildMultisigTokenTransferInputRequest): BuildMultisigTokenTransferInputReply {
+    const { toAddress, quantity, sequenceId, tokenAddress } = req as Required<BuildMultisigTokenTransferInputRequest>;
+    const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
+    const hash = this.getSha3ForConfirmationTokenTx(
+      'ERC20',
+      toAddress,
+      quantity,
+      tokenAddress,
+      expireTime, //
+      sequenceId,
+    );
+    const input = contract.methods.sendMultiSigToken(toAddress, quantity, tokenAddress, expireTime, sequenceId, '0x').encodeABI();
+    const signature: Signature = {
+      hash: hash.toString('hex'),
+    };
+    return {
+      serialized: stripHexPrefix(input),
+      signatures: [signature],
+    };
+  }
+
+  signMultisigTokenTransferInput(req: SignMultisigTokenTransferInputRequest): SignMultisigTokenTransferInputReply {
+    const { serialized, signatures } = req as Required<SignMultisigTokenTransferInputRequest>;
+    const { signature } = signatures[0];
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
+    if (decodedData?.name !== 'sendMultiSigToken') throw new Error('invalid hash');
+    const params = decodedData.params.reduce((accum, cur) => {
+      accum[cur.name] = cur.value;
+      return accum;
+    }, {});
+    const { toAddress, value: quantity, tokenContractAddress, expireTime, sequenceId } = params;
+    const input = contract.methods
+      .sendMultiSigToken(toAddress, quantity, tokenContractAddress, expireTime, sequenceId, addHexPrefix(signature!))
+      .encodeABI();
+    return {
+      serialized: stripHexPrefix(input),
+    };
+  }
+
   private getTxCommon(network: Network) {
     let common: Common;
     const chainId = network.chainId;
@@ -275,9 +408,37 @@ export class Provider {
   private async getReqGasLimit(web3: Web3, tx: object, gasLimit?: string) {
     if (!gasLimit) {
       const estimateGas = await web3.eth.estimateGas(tx);
-      gasLimit = new BigNumber(estimateGas).multipliedBy(2).toString();
+      gasLimit = new BigNumber(estimateGas).toString();
     }
     return gasLimit;
+  }
+
+  private getSha3ForConfirmationTx(
+    prefix: string,
+    toAddress: string,
+    quantity: string,
+    data: string,
+    expireTime: number,
+    sequenceId: number,
+  ) {
+    return ABI.soliditySHA3(
+      ['string', 'address', 'uint', 'string', 'uint', 'uint'], // argTypes
+      [prefix, new BN(toAddress.replace('0x', ''), 16), quantity, data, expireTime, sequenceId],
+    );
+  }
+
+  private getSha3ForConfirmationTokenTx(
+    prefix: string,
+    toAddress: string,
+    value: string,
+    tokenContractAddress: string,
+    expireTime: number,
+    sequenceId: number,
+  ) {
+    return ABI.soliditySHA3(
+      ['string', 'address', 'uint', 'address', 'uint', 'uint'], //
+      [prefix, new BN(toAddress.replace('0x', ''), 16), value, new BN(tokenContractAddress.replace('0x', ''), 16), expireTime, sequenceId],
+    );
   }
 
   private getChainIdVBN(v: number, chainId: number) {
