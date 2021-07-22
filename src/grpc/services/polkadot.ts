@@ -5,7 +5,7 @@ import { provider } from '../../providers/chain-state/polkadot';
 import { ImplContext, ProxyImp } from '../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/polkadot';
-import { TransactionReply, SendTransactionReply } from '../../__proto__/common/types';
+import { TransactionReply } from '../../__proto__/common/types';
 import {
   PolkadotHandlers,
   DeployAccountRequest,
@@ -68,7 +68,7 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     ctx.body = await provider.signTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
+  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
   },

@@ -7,7 +7,7 @@ import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexP
 import { trimPrefix, preparePrefix } from './../../../utils/hash';
 import { parseSignature } from './../../../utils/signature';
 
-import { TransactionReply, SendTransactionReply, Signature } from '../../../__proto__/common/types';
+import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
   DeployAccountRequest,
@@ -19,19 +19,13 @@ import {
   SendTransactionRequest,
   RebuildTransactionRequest,
   BuildMultisigTransferInputRequest,
-  BuildMultisigTransferInputReply,
   SignMultisigTransferInputRequest,
-  SignMultisigTransferInputReply,
   BuildMultisigTransferTransactionRequest,
-  BuildMultisigTransferTransactionReply,
   BuildMultisigTokenTransferInputRequest,
-  BuildMultisigTokenTransferInputReply,
   SignMultisigTokenTransferInputRequest,
-  SignMultisigTokenTransferInputReply,
   HashForSignatureRequest,
-  HashForSignatureReply,
 } from '../../../__proto__/ethereum/types';
-import { pubToBIP55Address } from './utils';
+import { pubToBIP55Address, compactPublicKey } from './utils';
 
 const abiDecoder = require('abi-decoder');
 const Contract = require('web3-eth-contract');
@@ -235,14 +229,16 @@ export class Provider {
     Object.assign(txData, jsonTx);
     const newTx = Transaction.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
-    const signature = { hash };
+
+    const pubKey = tx.getSenderPublicKey();
+    const signature = { hash, pubKey: compactPublicKey(pubKey.toString('hex')) };
     return {
       serialized: newTx.serialize().toString('hex'),
       signatures: [signature],
     };
   }
 
-  async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
+  async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
     const { serialized, network } = req as Required<SendTransactionRequest>;
     const { provider } = network!;
     const web3 = new Web3(provider!);
@@ -261,7 +257,7 @@ export class Provider {
     });
   }
 
-  buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): BuildMultisigTransferInputReply {
+  buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): TransactionReply {
     const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
     if (!(sequenceId > 0)) {
       throw new Error('sequenceId should be positive integer');
@@ -287,7 +283,7 @@ export class Provider {
     };
   }
 
-  signMultisigTransferInput(req: SignMultisigTransferInputRequest): SignMultisigTransferInputReply {
+  signMultisigTransferInput(req: SignMultisigTransferInputRequest): TransactionReply {
     const { serialized, signatures } = req as Required<SignMultisigTransferInputRequest>;
     const { signature } = signatures[0];
     const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
@@ -305,7 +301,7 @@ export class Provider {
     };
   }
 
-  async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<BuildMultisigTransferTransactionReply> {
+  async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<TransactionReply> {
     const { network, contract, input, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
@@ -343,7 +339,7 @@ export class Provider {
     };
   }
 
-  buildMultisigTokenTransferInput(req: BuildMultisigTokenTransferInputRequest): BuildMultisigTokenTransferInputReply {
+  buildMultisigTokenTransferInput(req: BuildMultisigTokenTransferInputRequest): TransactionReply {
     const { toAddress, quantity, sequenceId, tokenAddress } = req as Required<BuildMultisigTokenTransferInputRequest>;
     const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
     const hash = this.getSha3ForConfirmationTokenTx(
@@ -364,7 +360,7 @@ export class Provider {
     };
   }
 
-  signMultisigTokenTransferInput(req: SignMultisigTokenTransferInputRequest): SignMultisigTokenTransferInputReply {
+  signMultisigTokenTransferInput(req: SignMultisigTokenTransferInputRequest): TransactionReply {
     const { serialized, signatures } = req as Required<SignMultisigTokenTransferInputRequest>;
     const { signature } = signatures[0];
     const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
@@ -382,7 +378,7 @@ export class Provider {
     };
   }
 
-  hashForSignature(req: HashForSignatureRequest): HashForSignatureReply {
+  hashForSignature(req: HashForSignatureRequest): TransactionReply {
     const { serialized, network } = req as Required<HashForSignatureRequest>;
     const common = this.getTxCommon(network!);
     const txOptions = { common };

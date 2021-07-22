@@ -9,3 +9,10 @@ export const pubToBIP55Address = (key: string) => {
   const bip55 = toChecksumAddress(address);
   return bip55;
 };
+
+export const compactPublicKey = (key: string) => {
+  if (!key.startsWith('04')) {
+    key = '04' + key;
+  }
+  return ec.keyFromPublic(key, 'hex').getPublic(true, 'hex');
+};

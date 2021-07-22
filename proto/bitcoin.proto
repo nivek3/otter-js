@@ -67,17 +67,6 @@ message HashForSignatureRequest {
     repeated UnspentTransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }
 
-message Signature {
-    string pub_key   = 1;
-    string hash      = 2;
-    string signature = 3;
-}
-
-message HashForSignatureReply {
-    string serialized             = 1;
-    repeated Signature signatures = 2;
-}
-
 message SignTransactionRequest {
     Network network                         = 1;
     string serialized                       = 2;
@@ -93,8 +82,8 @@ message SendTransactionRequest {
 service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
-    rpc BuildTransaction(BuildTransactionRequest) returns (BuildTransactionReply) {}
-    rpc HashForSignature(HashForSignatureRequest) returns (HashForSignatureReply) {}
+    rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
-    rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
 }

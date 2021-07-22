@@ -7,8 +7,8 @@ import { transfer } from './transfer';
 import { pubKeyToBlack2Address, preparePrefix } from './utils';
 import { ApiCache } from './cache';
 
-import { SendTransactionReply } from '../../../__proto__/common/types';
 import {
+  TransactionReply,
   DeployAccountRequest,
   DeployMultisigAccountRequest,
   BuildTransferRequest,
@@ -17,7 +17,6 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   BuildBatchTransferTransactionRequest,
-  TransactionReply,
   BuildBatchTransactionRequest,
 } from '../../../__proto__/polkadot/types';
 
@@ -214,7 +213,7 @@ export class Provider {
     };
   }
 
-  async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
+  async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
     const { serialized, network } = req as Required<SendTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);

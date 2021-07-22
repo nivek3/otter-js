@@ -116,7 +116,7 @@ service Polkadot {
     rpc BuildMultisigApproveTransaction(BuildMultisigApproveRequest) returns (TransactionReply) {}
     rpc BuildMultisigCancelTransaction(BuildMultisigCancelRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
-    rpc SendTransaction(SendTransactionRequest) returns (SendTransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
     rpc BuildBatchTransferTransaction(BuildBatchTransferTransactionRequest) returns (TransactionReply) {}
     rpc BuildBatchTransaction(BuildBatchTransactionRequest) returns (TransactionReply) {}
 }

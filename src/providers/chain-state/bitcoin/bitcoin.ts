@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
 import { parseSignature } from './../../../utils/signature';
 
-import { TransactionReply, BuildTransactionReply, SendTransactionReply } from '../../../__proto__/common/types';
+import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
   UnspentTransactionOutput,
@@ -17,8 +17,6 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   HashForSignatureRequest,
-  HashForSignatureReply,
-  Signature,
 } from '../../../__proto__/bitcoin/types';
 
 const DUST_AMOUNT = 546;
@@ -46,7 +44,7 @@ export class BitcoinStateProvider {
     return bitGoUTXO.address.fromOutputScript(scriptPubKey, network);
   }
 
-  async buildTransaction(req: BuildTransactionRequest): Promise<BuildTransactionReply> {
+  async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
     if (!network) throw new Error('Do not support such network');
@@ -82,7 +80,7 @@ export class BitcoinStateProvider {
     };
   }
 
-  hashForSignature(req: HashForSignatureRequest): HashForSignatureReply {
+  hashForSignature(req: HashForSignatureRequest): TransactionReply {
     const { utxos, serialized, network: reqNetWork } = req as Required<HashForSignatureRequest>;
     const network = this.getNetWork(reqNetWork!);
     if (!network) throw new Error('Do not support such network');
@@ -179,7 +177,7 @@ export class BitcoinStateProvider {
     };
   }
 
-  async sendTransaction(req: SendTransactionRequest): Promise<SendTransactionReply> {
+  async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
     const { network } = req as Required<SendTransactionRequest>;
     const { provider } = network!;
     const { result, error } = await this.makeRequest({

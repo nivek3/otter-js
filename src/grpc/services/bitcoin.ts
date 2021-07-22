@@ -7,7 +7,7 @@ import { GRpcError } from '../internals/error';
 import errors from '../errors';
 
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
-import { TransactionReply, SendTransactionReply } from '../../__proto__/common/types';
+import { TransactionReply } from '../../__proto__/common/types';
 import {
   BitcoinHandlers,
   DeployAccountRequest,
@@ -17,7 +17,6 @@ import {
   BuildTransactionRequest,
   SignTransactionRequest,
   SendTransactionRequest,
-  HashForSignatureReply,
   HashForSignatureRequest,
 } from '../../__proto__/bitcoin/types';
 
@@ -58,7 +57,7 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     ctx.body = await provider.buildTransaction(req);
   },
 
-  HashForSignature: function (ctx: ImplContext<HashForSignatureRequest, HashForSignatureReply>): void {
+  HashForSignature: function (ctx: ImplContext<HashForSignatureRequest, TransactionReply>): void {
     const req = ctx.call.request;
     ctx.body = provider.hashForSignature(req);
   },
@@ -68,7 +67,7 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     ctx.body = provider.signTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, SendTransactionReply>): Promise<void> {
+  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
   },
