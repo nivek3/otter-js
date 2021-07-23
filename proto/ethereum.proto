@@ -134,6 +134,11 @@ message HashForSignatureRequest {
     string serialized = 3;
 }
 
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
@@ -148,4 +153,5 @@ service Ethereum {
     rpc BuildMultisigTokenTransferInput(BuildMultisigTokenTransferInputRequest) returns (TransactionReply) {}
     rpc SignMultisigTokenTransferInput(SignMultisigTokenTransferInputRequest) returns (TransactionReply) {}
     rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
 }

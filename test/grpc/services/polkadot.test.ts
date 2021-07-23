@@ -320,5 +320,63 @@ describe('Polkadot service', () => {
         );
       });
     });
+
+    describe('rebuild transaction', () => {
+      test('rebuild batch transfer transaction', async () => {
+        const RebuildTransaction = promisify(client.RebuildTransaction.bind(client));
+        const response = await RebuildTransaction({
+          serialized:
+            'fd028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001101001a0008070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b00a0724e1809070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b0040e59c3012',
+          params: {
+            nonce: 1000,
+          },
+          network: {
+            provider: 'wss://api.clover.finance',
+            ss58Format: 42,
+          },
+        });
+        const { serialized, signatures } = response;
+        expect(serialized).toEqual(
+          'fd028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca461202000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100a10f001a0008070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b00a0724e1809070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b0040e59c3012',
+        );
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '919c6d4de45cdeda035e385ccf0abbd9ef9497717f37e4c11b204ffec828dcf1',
+            }),
+          ]),
+        );
+      });
+    });
+
+    describe('decode transaction', () => {
+      test('decode transaction', async () => {
+        const DecodeTransaction = promisify(client.DecodeTransaction.bind(client));
+        const response = await DecodeTransaction({
+          serialized:
+            'fd028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001101001a0008070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b00a0724e1809070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b0040e59c3012',
+          network: {
+            provider: 'wss://api.clover.finance',
+            ss58Format: 42,
+          },
+        });
+        const { nonce } = response;
+        expect(nonce).toEqual(68);
+      });
+
+      test('decode transaction', async () => {
+        const DecodeTransaction = promisify(client.DecodeTransaction.bind(client));
+        const response = await DecodeTransaction({
+          serialized:
+            'fd028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca461202000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100a10f001a0008070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b00a0724e1809070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaa0b0040e59c3012',
+          network: {
+            provider: 'wss://api.clover.finance',
+            ss58Format: 42,
+          },
+        });
+        const { nonce } = response;
+        expect(nonce).toEqual(1000);
+      });
+    });
   });
 });

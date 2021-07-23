@@ -108,6 +108,17 @@ message BuildBatchTransactionRequest {
     TransactionParams params = 4;
 }
 
+message RebuildTransactionRequest {
+    Network network          = 1;
+    string serialized        = 2;
+    TransactionParams params = 3;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
@@ -119,4 +130,6 @@ service Polkadot {
     rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
     rpc BuildBatchTransferTransaction(BuildBatchTransferTransactionRequest) returns (TransactionReply) {}
     rpc BuildBatchTransaction(BuildBatchTransactionRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+    rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
 }

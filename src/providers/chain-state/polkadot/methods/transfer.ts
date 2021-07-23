@@ -1,8 +1,8 @@
 import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { SIGN_PLACEHOLDER } from './const';
-import { trimObjectPrefix } from './utils';
+import { SIGN_PLACEHOLDER } from '../const';
+import { trimObjectPrefix } from '../utils';
 export interface TransferParams {
   api: ApiPromise;
   quantity: string;

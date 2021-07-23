@@ -135,6 +135,16 @@ router.post('/hashForSignature', async function (req: Request, res: Response, ne
   }
 });
 
+router.post('/decodeTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = provider.decodeTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('DecodeTransaction =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/ethereum',

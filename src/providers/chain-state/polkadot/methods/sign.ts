@@ -1,7 +1,7 @@
+import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import { ApiPromise } from '@polkadot/api';
 
-import { SIGN_PLACEHOLDER } from './const';
-import { preparePrefix, trimPrefix } from './utils';
+import { SIGN_PLACEHOLDER } from '../const';
 
 export interface SignParams {
   api: ApiPromise;
@@ -10,10 +10,9 @@ export interface SignParams {
 }
 
 export function sign({ api, serialized, signature }: SignParams) {
-  const prefix = '0x';
-  serialized = preparePrefix(serialized, prefix);
-  signature = trimPrefix(signature, prefix);
-  const placeholder = trimPrefix(SIGN_PLACEHOLDER);
+  serialized = addHexPrefix(serialized);
+  signature = stripHexPrefix(signature);
+  const placeholder = stripHexPrefix(SIGN_PLACEHOLDER);
   const hex = serialized.replace(placeholder, signature);
   return api.createType('Extrinsic', hex).toHex();
 }

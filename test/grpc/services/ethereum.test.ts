@@ -178,7 +178,7 @@ describe('Ethereum service', () => {
       });
     });
 
-    describe('multisig transfer', () => {
+    describe('BuildMultisigTransactionInput', () => {
       test('build multisig transfer input', async () => {
         const BuildMultisigTransferInput = promisify(client.BuildMultisigTransferInput.bind(client));
         const response = await BuildMultisigTransferInput({
@@ -301,7 +301,7 @@ describe('Ethereum service', () => {
       });
     });
 
-    describe('hash for signature', () => {
+    describe('HashForSignature', () => {
       test('without signature', async () => {
         const HashForSignature = promisify(client.HashForSignature.bind(client));
         const response = await HashForSignature({
@@ -322,6 +322,28 @@ describe('Ethereum service', () => {
               hash: '24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c',
             }),
           ]),
+        );
+      });
+    });
+
+    describe('DecodeTransaction', () => {
+      test('multisig transfer transaction', async () => {
+        const DecodeTransaction = promisify(client.DecodeTransaction.bind(client));
+        const response = await DecodeTransaction({
+          serialized:
+            'f9018b05850147d357008301710e94317028fb803594ebcc310481303965f984fb3e1980b9016439125215000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac24300000000000000000000000000000000000000000000000000005af3107a400000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000060e416f8000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000418ce70739fc4b55cd5f21912e4a67a9eac893369062185acf5256e514ff582d015ee7c57c91b7aa40ed8d1e2b6741ae78bafc94dbac1edb229fec660e3d6490141b00000000000000000000000000000000000000000000000000000000000000808080',
+          network: {
+            provider: 'https://kovan.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+            chainId: 42,
+          },
+        });
+
+        expect(response).toEqual(
+          expect.objectContaining({
+            nonce: 5,
+            gasPrice: '0x147d35700',
+            gasLimit: '0x1710e',
+          }),
         );
       });
     });

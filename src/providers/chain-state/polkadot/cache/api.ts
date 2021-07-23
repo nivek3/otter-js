@@ -8,7 +8,6 @@ export class ApiCache extends LRUCache<ApiPromise> {
     super({
       ...options,
       dispose: async function (_key: string, api: ApiPromise) {
-        console.log('api dispose');
         api.disconnect().catch();
       },
       updateAgeOnGet: true,

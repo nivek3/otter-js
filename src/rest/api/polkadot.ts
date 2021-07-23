@@ -97,12 +97,22 @@ router.post('/buildBatchTransferTransaction', async function (req: Request, res:
   }
 });
 
-router.post('/BuildBatchTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildBatchTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildBatchTransaction(req.body);
     return res.json(data);
   } catch (err) {
     logger.info('BuildBatchTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/rebuildTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.rebuildTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('RebuildTransaction Tx =>', err);
     return next(err);
   }
 });

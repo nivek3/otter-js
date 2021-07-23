@@ -1,7 +1,7 @@
 import { ApiPromise, Keyring } from '@polkadot/api';
 const { u8aToHex, hexToU8a } = require('@polkadot/util');
-import { transfer } from '../../../../src/providers/chain-state/polkadot/transfer';
-import { sign } from '../../../../src/providers/chain-state/polkadot/sign';
+import { transfer } from '../../../../src/providers/chain-state/polkadot/methods/transfer';
+import { sign } from '../../../../src/providers/chain-state/polkadot/methods/sign';
 import { disconnect, setupConnection } from './setup';
 
 let api: ApiPromise;

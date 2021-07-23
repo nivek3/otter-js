@@ -10,6 +10,7 @@ import { parseSignature } from './../../../utils/signature';
 import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
+  TransactionParams,
   DeployAccountRequest,
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
@@ -230,8 +231,12 @@ export class Provider {
     const newTx = Transaction.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
 
-    const pubKey = tx.getSenderPublicKey();
-    const signature = { hash, pubKey: compactPublicKey(pubKey.toString('hex')) };
+    let pubKey = '';
+    if (tx.isSigned()) {
+      const decompose = tx.getSenderPublicKey().toString('hex');
+      pubKey = compactPublicKey(decompose);
+    }
+    const signature = { hash, pubKey };
     return {
       serialized: newTx.serialize().toString('hex'),
       signatures: [signature],
@@ -392,6 +397,20 @@ export class Provider {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
     };
+  }
+
+  decodeTransaction(req: HashForSignatureRequest): TransactionParams {
+    const { serialized, network } = req as Required<HashForSignatureRequest>;
+    const common = this.getTxCommon(network!);
+    const txOptions = { common };
+    const buf = Buffer.from(stripHexPrefix(serialized), 'hex');
+    const tx = Transaction.fromSerializedTx(buf, txOptions);
+    const params: TransactionParams = {
+      nonce: tx.nonce.toNumber(),
+      gasPrice: addHexPrefix(tx.gasPrice.toString('hex')),
+      gasLimit: addHexPrefix(tx.gasLimit.toString('hex')),
+    };
+    return params;
   }
 
   private getTxCommon(network: Network) {

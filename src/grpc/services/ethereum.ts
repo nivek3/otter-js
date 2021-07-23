@@ -7,6 +7,7 @@ import { ImplContext, ProxyImp } from '../utils/context';
 import { ProtoGrpcType } from '../../__proto__/ethereum';
 import { TransactionReply } from '../../__proto__/common/types';
 import {
+  TransactionParams,
   DeployAccountRequest,
   DeployAccountReply,
   EthereumHandlers,
@@ -25,6 +26,7 @@ import {
   BuildMultisigTokenTransferInputRequest,
   SignMultisigTokenTransferInputRequest,
   HashForSignatureRequest,
+  DecodeTransactionRequest,
 } from '../../__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
@@ -103,5 +105,10 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
   HashForSignature: async function (ctx: ImplContext<HashForSignatureRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.hashForSignature(req);
+  },
+
+  DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>) {
+    const req = ctx.call.request;
+    ctx.body = provider.decodeTransaction(req);
   },
 };

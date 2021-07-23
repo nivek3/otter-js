@@ -2,12 +2,13 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
-import { sign } from './sign';
-import { transfer } from './transfer';
+
+import { transfer, rebuild, sign, decode } from './methods';
 import { pubKeyToBlack2Address, preparePrefix } from './utils';
 import { ApiCache } from './cache';
 
 import {
+  TransactionParams,
   TransactionReply,
   DeployAccountRequest,
   DeployMultisigAccountRequest,
@@ -18,6 +19,8 @@ import {
   SendTransactionRequest,
   BuildBatchTransferTransactionRequest,
   BuildBatchTransactionRequest,
+  RebuildTransactionRequest,
+  DecodeTransactionRequest,
 } from '../../../__proto__/polkadot/types';
 
 export class Provider {
@@ -221,6 +224,39 @@ export class Provider {
 
     return {
       hash: hash.toString(),
+    };
+  }
+
+  async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
+    const { serialized: originTx, network, params = {} } = req as Required<RebuildTransactionRequest>;
+    const { provider: wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const { method, serialized, hash } = rebuild({
+      api,
+      serialized: originTx!,
+      nonce: params?.nonce!,
+    });
+    const signature = { hash };
+    return {
+      method,
+      serialized,
+      signatures: [signature],
+    };
+  }
+
+  async decodeTransaction(req: DecodeTransactionRequest): Promise<TransactionParams> {
+    const { serialized, network } = req as Required<DecodeTransactionRequest>;
+    const { provider: wss, ss58Format } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const { nonce } = decode({
+      api,
+      serialized,
+    });
+
+    return {
+      nonce,
     };
   }
 

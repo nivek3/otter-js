@@ -7,6 +7,7 @@ import { ImplContext, ProxyImp } from '../utils/context';
 import { ProtoGrpcType } from '../../__proto__/polkadot';
 import { TransactionReply } from '../../__proto__/common/types';
 import {
+  TransactionParams,
   PolkadotHandlers,
   DeployAccountRequest,
   DeployAccountReply,
@@ -17,6 +18,8 @@ import {
   SendTransactionRequest,
   BuildBatchTransferTransactionRequest,
   BuildBatchTransactionRequest,
+  RebuildTransactionRequest,
+  DecodeTransactionRequest,
 } from '../../__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -81,5 +84,15 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
   BuildBatchTransaction: async function (ctx: ImplContext<BuildBatchTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildBatchTransaction(req);
+  },
+
+  RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.rebuildTransaction(req);
+  },
+
+  DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.decodeTransaction(req);
   },
 };
