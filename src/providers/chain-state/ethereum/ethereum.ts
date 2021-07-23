@@ -201,8 +201,14 @@ export class Provider {
     const common = this.getTxCommon(network!);
     const web3 = new Web3(provider!);
     const txOptions = { common };
-    const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
+    let tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
     const { r, s, v, ...jsonTx } = tx.toJSON();
+
+    let pubKey = '';
+    if (tx.isSigned()) {
+      const decompose = tx.getSenderPublicKey().toString('hex');
+      pubKey = compactPublicKey(decompose);
+    }
 
     const txData = {
       ...jsonTx,
@@ -228,17 +234,13 @@ export class Provider {
       txData.gasLimit = '0x' + new BigNumber(gasLimit).toString(16);
     }
 
-    const newTx = Transaction.fromTxData(txData, txOptions);
+    tx = Transaction.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
+    const reserialized = tx.serialize().toString('hex');
 
-    let pubKey = '';
-    if (tx.isSigned()) {
-      const decompose = tx.getSenderPublicKey().toString('hex');
-      pubKey = compactPublicKey(decompose);
-    }
     const signature = { hash, pubKey };
     return {
-      serialized: newTx.serialize().toString('hex'),
+      serialized: reserialized,
       signatures: [signature],
     };
   }

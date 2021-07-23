@@ -164,7 +164,7 @@ describe('Ethereum service', () => {
           expect.arrayContaining([
             expect.objectContaining({
               pubKey: '02bd64864ea4f839d65cad1dc4576b1d52b83a48a18482ac9513dec3dae1ee9315',
-              hash: '24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c',
+              hash: 'f82536bb1134f6929e8270a0947f7536e1f1fc2974185162477067218abf6142',
             }),
           ]),
         );
@@ -192,7 +192,7 @@ describe('Ethereum service', () => {
         expect(response.signatures).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              hash: '24bc7e40046ea7d2ef8c6ab9212ac3bdc6032122f4d14518a23737a9c300579c',
+              hash: 'f82536bb1134f6929e8270a0947f7536e1f1fc2974185162477067218abf6142',
             }),
           ]),
         );
