@@ -211,23 +211,23 @@ export class Provider {
 
     if (params?.nonce !== undefined) {
       const nonce = '0x' + new BigNumber(params.nonce).toString(16);
-      jsonTx.nonce = nonce;
+      txData.nonce = nonce;
     }
 
     if (!params?.gasPrice) {
       const gasPrice = await this.getReqGasPrice(web3);
-      jsonTx.gasPrice = '0x' + new BigNumber(gasPrice).toString(16);
+      txData.gasPrice = '0x' + new BigNumber(gasPrice).toString(16);
     }
 
     if (!params?.gasLimit) {
-      delete jsonTx.gasLimit;
+      delete txData.gasLimit;
       const rebuildTx = {
-        ...jsonTx,
+        ...txData,
       };
       const gasLimit = await this.getReqGasLimit(web3, rebuildTx);
-      jsonTx.gasLimit = '0x' + new BigNumber(gasLimit).toString(16);
+      txData.gasLimit = '0x' + new BigNumber(gasLimit).toString(16);
     }
-    Object.assign(txData, jsonTx);
+
     const newTx = Transaction.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
 
