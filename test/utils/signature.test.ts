@@ -1,4 +1,4 @@
-import { parseSignature } from './../../src/utils/signature';
+import { parseSignature } from '../../src/utils/signature';
 
 describe('utils signature', () => {
   describe('parseSignature', () => {

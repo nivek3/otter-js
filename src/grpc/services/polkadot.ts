@@ -2,7 +2,7 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '../../providers/chain-state/polkadot';
-import { ImplContext, ProxyImp } from '../utils/context';
+import { ImplContext, ProxyImp } from '../../utils/context';
 
 import { ProtoGrpcType } from '../../__proto__/polkadot';
 import { TransactionReply } from '../../__proto__/common/types';

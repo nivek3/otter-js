@@ -1,6 +1,8 @@
 import type { ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
+
+import { AppError, errors } from './../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash, trimObjectPrefix } from '../utils';
 
@@ -36,7 +38,7 @@ export const transfer = async function ({
   const { callMethodHash } = getCallHexAndHash(api, to, quantity);
   const info = await api.query.multisig.multisigs(from, callMethodHash);
   if (info.isSome) {
-    throw new Error('should be the first approval.');
+    throw new AppError(errors.TIME_POINT_FOUND);
   }
 
   // approveAsMulti

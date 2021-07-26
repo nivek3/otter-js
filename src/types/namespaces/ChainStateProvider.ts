@@ -1,21 +1,7 @@
-import { ChainNetwork } from '../ChainNetwork';
+export type Response<S> = S | Promise<S>;
 
-export declare namespace CSP {
-  export type DeployAccountParams = {
-    keys: Array<string>;
-    requiredConfirmations: number;
-  };
-  export type RequestParams = {
-    payload: any;
-    network: ChainNetwork & any;
-  };
-  export type Provider<T> = { get(params: { platform: string }): T };
-  export type ChainStateProvider = Provider<IChainStateService> & IChainStateService;
-  export interface IChainStateService {
-    deployAccount(params: RequestParams): string | Promise<string>;
-    buildTransaction(params: RequestParams): Promise<any>;
-    signTransaction(params: RequestParams): Promise<any>;
-  }
-
-  type ChainStateServices = { [key: string]: IChainStateService };
+export interface IChainStateService {
+  buildTransaction<Q, S>(req: Q): Response<S>;
+  hashForSignature<Q, S>(req: Q): Response<S>;
+  signTransaction<Q, S>(req: Q): Response<S>;
 }

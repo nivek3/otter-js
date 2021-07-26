@@ -1,11 +1,11 @@
 import { ec as EC } from 'elliptic';
 import rp from 'request-promise';
 import bitGoUTXO from '@bitgo/utxo-lib';
-import { payments, Network as bitcoinNetwork, address, networks } from 'bitcoinjs-lib';
+import { payments, Network as bitcoinNetwork, address } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
-import { parseSignature } from './../../../utils/signature';
-
+import { parseSignature } from '../../../utils/signature';
+import { AppError, errors } from '../../../error';
 import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
@@ -25,7 +25,7 @@ export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
     const { key, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!) as bitcoinNetwork;
-    if (!network) throw new Error('Do not support such network');
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
 
     const pubkey = Buffer.from(key!, 'hex');
     const { address } = payments.p2pkh({ pubkey, network });
@@ -35,7 +35,7 @@ export class BitcoinStateProvider {
   deployMultisigAccount(req: DeployMultisigAccountRequest): string {
     const { keys, threshold, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!);
-    if (!network) throw new Error('Do not support such network');
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
 
     const pubKeys = keys!.map((hex) => Buffer.from(hex, 'hex'));
     const redeemScript = bitGoUTXO.script.multisig.output.encode(threshold, pubKeys);
@@ -47,20 +47,18 @@ export class BitcoinStateProvider {
   async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
-    if (!network) throw new Error('Do not support such network');
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
+    if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
 
     const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
     const feePerKb = await this.getReqFeePerKb(reqNetWork!.provider!, params?.feeRate, 1);
-
-    if (!utxos) {
-      throw new Error('Should provider the utxos');
-    }
 
     this.calcInputBytes(utxos);
 
     const { inputs, outputs } = this.selectCoins(utxos, recipients, feePerKb);
 
-    if (!inputs || !outputs) throw new Error(`No enough balance`);
+    if (!inputs || !outputs) throw new AppError(errors.NOT_ENOUGH_BALANCE);
+
     const txb = new bitGoUTXO.TransactionBuilder(network);
     inputs.forEach((input) => {
       let prevOutScript: Buffer | undefined;
@@ -83,8 +81,9 @@ export class BitcoinStateProvider {
   hashForSignature(req: HashForSignatureRequest): TransactionReply {
     const { utxos, serialized, network: reqNetWork } = req as Required<HashForSignatureRequest>;
     const network = this.getNetWork(reqNetWork!);
-    if (!network) throw new Error('Do not support such network');
-    if (!utxos) throw new Error('Should provider the utxos');
+
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
+    if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
 
     const utxoMap = new Map(utxos.map((utxo: any) => [this.getUtxoKey(utxo), utxo]));
     const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
@@ -97,8 +96,11 @@ export class BitcoinStateProvider {
       const txid = this.getTxId(hash);
       const utxo = utxoMap.get(this.getUtxoKey({ txid, vout: index }));
       if (!utxo) {
-        throw new Error(`Not found UTXO: ${txid}-${index}`);
+        throw new AppError(errors.NO_MATCHING_UTXO_FOUND, {
+          details: `${errors.NO_MATCHING_UTXO_FOUND.details}: ${txid}-${index}`,
+        });
       }
+
       const { redeemScript, signers } = utxo;
       const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
       for (const pub of signers!) {
@@ -121,7 +123,10 @@ export class BitcoinStateProvider {
     const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
     const { serialized, utxos, signatures, network: reqNetwork } = req as Required<SignTransactionRequest>;
     const network = this.getNetWork(reqNetwork!);
-    if (!network) throw new Error('Do not support such network');
+
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
+    if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
+
     const utxoMap: Map<string, UnspentTransactionOutput> = new Map(utxos.map((utxo) => [this.getUtxoKey(utxo), utxo]));
     const signatureMap = signatures.reduce((acc, cur) => {
       const { signature, pubKey } = cur;
@@ -141,7 +146,9 @@ export class BitcoinStateProvider {
       const txid = this.getTxId(hash);
       const utxo = utxoMap.get(this.getUtxoKey({ txid, vout: index }));
       if (!utxo) {
-        throw new Error(`Not found UTXO: ${txid}-${index}`);
+        throw new AppError(errors.NO_MATCHING_UTXO_FOUND, {
+          details: `${errors.NO_MATCHING_UTXO_FOUND.details}: ${txid}-${index}`,
+        });
       }
       const { signers } = utxo;
       const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
@@ -153,19 +160,20 @@ export class BitcoinStateProvider {
         const signingData: Buffer = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
         const data = signatureMap[pub];
         if (!(Array.isArray(data) && data.length)) {
-          throw new Error(`No matching signatures found`);
+          throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
         }
         const sig = data.find((sig) => {
           const signature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.from(sig, 'hex'));
           return key.verify(signingData, signature.toDER());
         });
-        if (!sig) throw new Error(`No matching signature found`);
+        if (!sig) throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
+
         const ecSignature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.from(sig!, 'hex'));
 
         let sin = 0;
         if (redeemScriptBuffer && redeemScriptType === bitGoUTXO.script.types.MULTISIG) {
           sin = input?.pubKeys?.findIndex((pub: Buffer) => pub.equals(pubKey));
-          if (-1 === sin) throw new Error('PublicKey unmatched');
+          if (-1 === sin) throw new AppError(errors.NO_MATCHING_PUBKEY_FOUND);
         }
         txb.signInput(i, sin, ecSignature, hashType);
       }
@@ -186,7 +194,7 @@ export class BitcoinStateProvider {
       params: [req.serialized],
     });
     if (error) {
-      throw new Error(error);
+      throw new AppError(errors.MAKE_REQUEST_FAILED, { details: error.message });
     }
     return {
       hash: result,
@@ -281,7 +289,7 @@ export class BitcoinStateProvider {
         method: 'estimatesmartfee',
         params: [blocks],
       });
-      if (error) throw new Error('Could not fetch the fee rate');
+      if (error) throw new AppError(errors.MAKE_REQUEST_FAILED, { details: 'Could not fetch the fee rate' });
       const feePreKb = new BigNumber(result.feerate).multipliedBy(8).div(1024).toFixed(0);
       feeRate = new BigNumber(feePreKb).toNumber();
     }

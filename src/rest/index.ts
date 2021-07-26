@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
 import express from 'express';
 import cors from 'cors';
 import { CacheMiddleware, CacheTimes } from './middleware';
@@ -53,11 +52,14 @@ app.use(function (err, req, res, _) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.statusCode || 500);
-  res.send({
-    code: err.code || err.statusCode || 500,
-    message: err.message || err,
-  });
+  const result = err.toJSON
+    ? err.toJSON()
+    : {
+        code: err.code || err.statusCode || 500,
+        message: err.message || err,
+      };
+  res.status(result.statusCode || result.status || 500);
+  res.send(result);
 });
 
 export default app;

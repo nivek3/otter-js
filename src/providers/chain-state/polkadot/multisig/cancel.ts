@@ -1,6 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
+
+import { errors, AppError } from '../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash, trimObjectPrefix } from '../utils';
 
@@ -34,9 +36,9 @@ export async function cancel({
 
   const { callMethodHash } = getCallHexAndHash(api, to, quantity);
   const info = await api.query.multisig.multisigs(from, callMethodHash);
-  if (!info.isSome) {
-    throw new Error('do not found the time point..');
-  }
+
+  if (!info.isSome) throw new AppError(errors.TIME_POINT_NOT_FOUND);
+
   const timepoint = info.unwrap().when;
 
   const tx = api.tx.multisig.cancelAsMulti(

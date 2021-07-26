@@ -1,6 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
+
+import { errors, AppError } from '../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash, trimObjectPrefix } from '../utils';
 
@@ -37,15 +39,12 @@ export async function approve({
     ss58Format,
   );
 
-  if (from !== MULTISIG) {
-    throw new Error('multsig should be same as from');
-  }
+  if (from !== MULTISIG) throw new AppError(errors.MULTISIG_ADDRESS_UNMATCHED);
 
   const { callMethodHash, callMethodHex } = getCallHexAndHash(api, to, quantity);
   const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
-  if (!info.isSome) {
-    throw new Error('do not found the time point..');
-  }
+
+  if (!info.isSome) throw new AppError(errors.TIME_POINT_NOT_FOUND);
 
   const timePoint = info.unwrap().when;
 

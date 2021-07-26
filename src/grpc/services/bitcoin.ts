@@ -2,9 +2,8 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { bitcoinStateProvider as provider } from '../../providers/chain-state/bitcoin/bitcoin';
-import { ImplContext, ProxyImp } from '../utils/context';
-import { GRpcError } from '../internals/error';
-import errors from '../errors';
+import { ImplContext, ProxyImp } from '../../utils/context';
+import { AppError, errors } from '../../error';
 
 import { ProtoGrpcType } from '../../__proto__/bitcoin';
 import { TransactionReply } from '../../__proto__/common/types';
@@ -41,12 +40,7 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
   DeployMultisigAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
     const req = ctx.call.request;
     if (!req.threshold || req.threshold < 1) {
-      throw new GRpcError({
-        ...errors.INVALID_ARGUMENT,
-        code: grpc.status.INVALID_ARGUMENT,
-        details: 'INVALID ARGUMENT',
-        ctx,
-      });
+      throw new AppError(errors.INVALID_ARGUMENT);
     }
     const address = provider.deployMultisigAccount(req);
     ctx.body = { address };

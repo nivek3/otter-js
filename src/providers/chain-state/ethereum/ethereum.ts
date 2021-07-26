@@ -4,8 +4,7 @@ import { Transaction } from '@ethereumjs/tx';
 import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
-import { trimPrefix, preparePrefix } from './../../../utils/hash';
-import { parseSignature } from './../../../utils/signature';
+import { parseSignature } from '../../../utils/signature';
 
 import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
@@ -136,7 +135,7 @@ export class Provider {
     const amount = new BigNumber(quantity).toString(16);
     const input =
       '0xa9059cbb000000000000000000000000' + // token transfer method
-      trimPrefix(to) + // to address
+      stripHexPrefix(to) + // to address
       raw.substring(0, raw.length - amount.length) + // placeholder
       amount; // amount
 
@@ -249,7 +248,7 @@ export class Provider {
     const { serialized, network } = req as Required<SendTransactionRequest>;
     const { provider } = network!;
     const web3 = new Web3(provider!);
-    const data = preparePrefix(serialized);
+    const data = addHexPrefix(serialized);
     return new Promise((resolve, reject) => {
       web3.eth
         .sendSignedTransaction(data)

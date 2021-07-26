@@ -1,10 +1,13 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
+import { addHexPrefix } from 'ethereumjs-util';
+
+import { AppError, errors } from './../../../error';
+
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
-
 import { transfer, rebuild, sign, decode } from './methods';
-import { pubKeyToBlack2Address, preparePrefix } from './utils';
+import { pubKeyToBlack2Address } from './utils';
 import { ApiCache } from './cache';
 
 import {
@@ -157,7 +160,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     if (!(Array.isArray(signatures) && signatures.length)) {
-      throw new Error('please provider the signature');
+      throw new AppError(errors.INVALID_SIGNATURES);
     }
     const replaceSignature = '02' + signatures[0].signature!;
     const hex = sign({ api, serialized, signature: replaceSignature });
@@ -173,9 +176,7 @@ export class Provider {
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    if (!(Array.isArray(recipients) && recipients.length)) {
-      throw new Error('please provider the recipients');
-    }
+    if (!(Array.isArray(recipients) && recipients.length)) throw new AppError(errors.REQUIRE_RECIPIENTS);
 
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const { serialized, hash, method } = await batchTransfer({
@@ -197,14 +198,12 @@ export class Provider {
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    if (!(Array.isArray(txs) && txs.length)) {
-      throw new Error('please provider the txs');
-    }
+    if (!(Array.isArray(txs) && txs.length)) throw new AppError(errors.REQUIRE_TRANSACTIONS);
 
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const { serialized, hash, method } = await batchUtility({
       api,
-      txs: txs.map((tx) => preparePrefix(tx)),
+      txs: txs.map((tx) => addHexPrefix(tx)),
       sender,
       nonce,
     });
@@ -301,7 +300,7 @@ export class Provider {
     ]);
     if (!api) {
       await provider.disconnect().catch();
-      throw new Error('can not create the api');
+      throw new AppError(errors.CREATE_API_FAILED);
     }
     clearTimeout(timer!);
     this.apis.set(apiKey, api);

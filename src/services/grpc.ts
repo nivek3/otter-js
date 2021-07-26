@@ -2,7 +2,7 @@ import 'dotenv/config';
 import * as grpc from '@grpc/grpc-js';
 import { LoggifyClass } from '../decorators/Loggify';
 import { Middleware } from 'koa-compose';
-import { ImplContext, ProxyImp } from '../grpc/utils/context';
+import { ImplContext, ProxyImp } from '../utils/context';
 import { loggerInterceptor } from '../grpc/interceptors/logger';
 import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
 import { EthereumService, EthereumImp, PolkadotService, PolkadotImp, BitcoinService, BitcoinImp } from '../grpc/services';

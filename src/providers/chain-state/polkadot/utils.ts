@@ -1,4 +1,5 @@
-import { ApiPromise } from '@polkadot/api';
+import type { ApiPromise } from '@polkadot/api';
+import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto';
 
 export const getCallHexAndHash = function (api: ApiPromise, to: string, amount: string) {
@@ -8,28 +9,14 @@ export const getCallHexAndHash = function (api: ApiPromise, to: string, amount: 
   return { call, callMethodHash, callMethodHex };
 };
 
-export const preparePrefix = (key: string, prefix = '0x') => {
-  if (!key.startsWith(prefix)) {
-    key = prefix + key;
-  }
-  return key;
-};
-
-export const trimPrefix = (key: string, prefix = '0x') => {
-  if (key.startsWith(prefix)) {
-    key = key.slice(prefix.length);
-  }
-  return key;
-};
-
-export const trimObjectPrefix = <T = Record<string, string>>(source: T, prefix = '0x'): T => {
+export const trimObjectPrefix = <T = Record<string, string>>(source: T): T => {
   return Object.entries(source).reduce((pre, [k, v]) => {
-    pre[k] = trimPrefix(v, prefix);
+    pre[k] = stripHexPrefix(v);
     return pre;
   }, {} as T);
 };
 
 export const pubKeyToBlack2Address = (publicKey: string, ss58Format?: number) => {
-  publicKey = preparePrefix(publicKey, '0x');
+  publicKey = addHexPrefix(publicKey);
   return encodeAddress(blake2AsU8a(publicKey), ss58Format);
 };
