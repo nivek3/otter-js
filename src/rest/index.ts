@@ -1,17 +1,20 @@
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
+import { json, raw } from 'body-parser';
 import { CacheMiddleware, CacheTimes } from './middleware';
 import { router as Health } from './health';
 
 const app = express();
-const bodyParser = require('body-parser');
+app.use(morgan('combined'));
+
 app.use(
-  bodyParser.json({
+  json({
     limit: 100000000,
   }),
 );
 app.use(
-  bodyParser.raw({
+  raw({
     limit: 100000000,
   }),
 );

@@ -5,6 +5,7 @@ import { payments, Network as bitcoinNetwork, address } from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
 import { parseSignature } from '../../../utils/signature';
+import { Validator } from '../../../utils/ajv';
 import { AppError, errors } from '../../../error';
 import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
@@ -19,10 +20,24 @@ import {
   HashForSignatureRequest,
 } from '../../../__proto__/bitcoin/types';
 
+import {
+  BitCoinRefSchema,
+  DeployAccountRequestSchema,
+  DeployMultisigAccountRequestSchema,
+  BuildTransactionRequestSchema,
+  HashForSignatureRequestSchema,
+  SignTransactionRequestSchema,
+  SendTransactionRequestSchema,
+} from './bitcoin.schema';
+
 const DUST_AMOUNT = 546;
 const ec = new EC('secp256k1');
+
+const validator = new Validator({ schemas: [BitCoinRefSchema] });
 export class BitcoinStateProvider {
   deployAccount(req: DeployAccountRequest): string {
+    validator.assert(DeployAccountRequestSchema, req);
+
     const { key, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!) as bitcoinNetwork;
     if (!network) throw new AppError(errors.INVALID_NETWORK);
@@ -33,6 +48,8 @@ export class BitcoinStateProvider {
   }
 
   deployMultisigAccount(req: DeployMultisigAccountRequest): string {
+    validator.assert(DeployMultisigAccountRequestSchema, req);
+
     const { keys, threshold, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!);
     if (!network) throw new AppError(errors.INVALID_NETWORK);
@@ -45,6 +62,8 @@ export class BitcoinStateProvider {
   }
 
   async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildTransactionRequestSchema, req);
+
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
     if (!network) throw new AppError(errors.INVALID_NETWORK);
@@ -79,6 +98,8 @@ export class BitcoinStateProvider {
   }
 
   hashForSignature(req: HashForSignatureRequest): TransactionReply {
+    validator.assert(HashForSignatureRequestSchema, req);
+
     const { utxos, serialized, network: reqNetWork } = req as Required<HashForSignatureRequest>;
     const network = this.getNetWork(reqNetWork!);
 
@@ -120,6 +141,8 @@ export class BitcoinStateProvider {
   }
 
   signTransaction(req: SignTransactionRequest): TransactionReply {
+    validator.assert(SignTransactionRequestSchema, req);
+
     const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
     const { serialized, utxos, signatures, network: reqNetwork } = req as Required<SignTransactionRequest>;
     const network = this.getNetWork(reqNetwork!);
@@ -186,6 +209,8 @@ export class BitcoinStateProvider {
   }
 
   async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
+    validator.assert(SendTransactionRequestSchema, req);
+
     const { network } = req as Required<SendTransactionRequest>;
     const { provider } = network!;
     const { result, error } = await this.makeRequest({

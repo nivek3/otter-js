@@ -5,6 +5,7 @@ import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
 import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
 import { parseSignature } from '../../../utils/signature';
+import { Validator } from '../../../utils/ajv';
 
 import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
@@ -24,8 +25,27 @@ import {
   BuildMultisigTokenTransferInputRequest,
   SignMultisigTokenTransferInputRequest,
   HashForSignatureRequest,
+  DecodeTransactionRequest,
 } from '../../../__proto__/ethereum/types';
 import { pubToBIP55Address, compactPublicKey } from './utils';
+
+import {
+  EthereumRefSchema,
+  DeployAccountRequestSchema,
+  BuildAccountTransactionRequestSchema,
+  BuildTransferTransactionRequestSchema,
+  BuildTokenTransferTransactionRequestSchema,
+  SignTransactionRequestSchema,
+  RebuildTransactionRequestSchema,
+  SendTransactionRequestSchema,
+  SignMultisigTransferInputRequestSchema,
+  BuildMultisigTransferInputRequestSchema,
+  BuildMultisigTokenTransferInputRequestSchema,
+  SignMultisigTokenTransferInputRequestSchema,
+  HashForSignatureRequestSchema,
+  DecodeTransactionRequestSchema,
+  BuildMultisigTransferTransactionRequestSchema,
+} from './ethereum.schema';
 
 const abiDecoder = require('abi-decoder');
 const Contract = require('web3-eth-contract');
@@ -34,13 +54,18 @@ const bytecode = require('./bytecodes/multisig');
 const contract = new Contract(abi);
 abiDecoder.addABI(abi);
 
+const validator = new Validator({ schemas: [EthereumRefSchema] });
 export class Provider {
   deployAccount(req: DeployAccountRequest): string {
+    validator.assert(DeployAccountRequestSchema, req);
+
     const { key } = req as Required<DeployAccountRequest>;
     return pubToBIP55Address(key);
   }
 
   async buildAccountTransaction(req: BuildAccountTransactionRequest): Promise<BuildAccountTransactionReply> {
+    validator.assert(BuildAccountTransactionRequestSchema, req);
+
     const { keys, sender, network, params } = req as Required<BuildAccountTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
@@ -87,6 +112,8 @@ export class Provider {
   }
 
   async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildTransferTransactionRequestSchema, req);
+
     const { from, to, quantity, network, params } = req as Required<BuildTransferTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
@@ -125,6 +152,8 @@ export class Provider {
   }
 
   async buildTokenTransferTransaction(req: BuildTokenTransferTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildTokenTransferTransactionRequestSchema, req);
+
     const { from, to, tokenAddress, quantity, network, params } = req as Required<BuildTokenTransferTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
@@ -172,6 +201,8 @@ export class Provider {
   }
 
   signTransaction(req: SignTransactionRequest) {
+    validator.assert(SignTransactionRequestSchema, req);
+
     const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
     const { chainId } = network!;
     const common = this.getTxCommon(network!);
@@ -195,6 +226,8 @@ export class Provider {
   }
 
   async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
+    validator.assert(RebuildTransactionRequestSchema, req);
+
     const { serialized, params = {}, network } = req as Required<RebuildTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
@@ -245,6 +278,8 @@ export class Provider {
   }
 
   async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
+    validator.assert(SendTransactionRequestSchema, req);
+
     const { serialized, network } = req as Required<SendTransactionRequest>;
     const { provider } = network!;
     const web3 = new Web3(provider!);
@@ -264,6 +299,8 @@ export class Provider {
   }
 
   buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): TransactionReply {
+    validator.assert(BuildMultisigTransferInputRequestSchema, req);
+
     const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
     if (!(sequenceId > 0)) {
       throw new Error('sequenceId should be positive integer');
@@ -290,6 +327,8 @@ export class Provider {
   }
 
   signMultisigTransferInput(req: SignMultisigTransferInputRequest): TransactionReply {
+    validator.assert(SignMultisigTransferInputRequestSchema, req);
+
     const { serialized, signatures } = req as Required<SignMultisigTransferInputRequest>;
     const { signature } = signatures[0];
     const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
@@ -308,6 +347,8 @@ export class Provider {
   }
 
   async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigTransferTransactionRequestSchema, req);
+
     const { network, contract, input, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
@@ -346,6 +387,8 @@ export class Provider {
   }
 
   buildMultisigTokenTransferInput(req: BuildMultisigTokenTransferInputRequest): TransactionReply {
+    validator.assert(BuildMultisigTokenTransferInputRequestSchema, req);
+
     const { toAddress, quantity, sequenceId, tokenAddress } = req as Required<BuildMultisigTokenTransferInputRequest>;
     const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
     const hash = this.getSha3ForConfirmationTokenTx(
@@ -367,6 +410,8 @@ export class Provider {
   }
 
   signMultisigTokenTransferInput(req: SignMultisigTokenTransferInputRequest): TransactionReply {
+    validator.assert(SignMultisigTokenTransferInputRequestSchema, req);
+
     const { serialized, signatures } = req as Required<SignMultisigTokenTransferInputRequest>;
     const { signature } = signatures[0];
     const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
@@ -385,6 +430,8 @@ export class Provider {
   }
 
   hashForSignature(req: HashForSignatureRequest): TransactionReply {
+    validator.assert(HashForSignatureRequestSchema, req);
+
     const { serialized, network } = req as Required<HashForSignatureRequest>;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
@@ -400,8 +447,10 @@ export class Provider {
     };
   }
 
-  decodeTransaction(req: HashForSignatureRequest): TransactionParams {
-    const { serialized, network } = req as Required<HashForSignatureRequest>;
+  decodeTransaction(req: DecodeTransactionRequest): TransactionParams {
+    validator.assert(DecodeTransactionRequestSchema, req);
+
+    const { serialized, network } = req as Required<DecodeTransactionRequest>;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const buf = Buffer.from(stripHexPrefix(serialized), 'hex');

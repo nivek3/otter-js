@@ -3,6 +3,7 @@ import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 import { addHexPrefix } from 'ethereumjs-util';
 
 import { AppError, errors } from './../../../error';
+import { Validator } from '../../../utils/ajv';
 
 import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
@@ -25,7 +26,21 @@ import {
   RebuildTransactionRequest,
   DecodeTransactionRequest,
 } from '../../../__proto__/polkadot/types';
+import {
+  BuildBatchTransactionRequestSchema,
+  BuildBatchTransferTransactionRequestSchema,
+  BuildMultisigCancelRequestSchema,
+  BuildMultisigTransferRequestSchema,
+  BuildTransferRequestSchema,
+  DecodeTransactionRequestSchema,
+  DeployAccountRequestSchema,
+  DeployMultisigAccountRequestSchema,
+  PolkadotRefSchema,
+  SendTransactionRequestSchema,
+  SignTransactionRequestSchema,
+} from './polkadot.schema';
 
+const validator = new Validator({ schemas: [PolkadotRefSchema] });
 export class Provider {
   apis: ApiCache;
 
@@ -34,12 +49,16 @@ export class Provider {
   }
 
   deployAccount(req: DeployAccountRequest): string {
+    validator.assert(DeployAccountRequestSchema, req);
+
     const { key, network } = req as Required<DeployAccountRequest>;
     const { ss58Format } = network!;
     return pubKeyToBlack2Address(key, ss58Format);
   }
 
   deployMultisigAccount(req: DeployMultisigAccountRequest): string {
+    validator.assert(DeployMultisigAccountRequestSchema, req);
+
     const { keys, threshold, network } = req;
     const { ss58Format } = network!;
     const addresses = keys!.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
@@ -47,9 +66,12 @@ export class Provider {
   }
 
   async buildTransferTransaction(req: BuildTransferRequest): Promise<TransactionReply> {
+    validator.assert(BuildTransferRequestSchema, req);
+
     const { from, to, quantity, network, params } = req as Required<BuildTransferRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
     const { method, serialized, hash } = transfer({
       api,
@@ -68,6 +90,8 @@ export class Provider {
   }
 
   async buildMultisigTransaction(req: BuildMultisigTransferRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigTransferRequestSchema, req);
+
     const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigTransferRequest>;
     const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
@@ -98,6 +122,8 @@ export class Provider {
   }
 
   async buildMultisigApproveTransaction(req: BuildMultisigApproveRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigTransferRequestSchema, req);
+
     const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveRequest>;
     const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
@@ -127,6 +153,8 @@ export class Provider {
   }
 
   async buildMultisigCancelTransaction(req: BuildMultisigApproveRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigCancelRequestSchema, req);
+
     const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveRequest>;
     const { provider: wss, ss58Format } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
@@ -155,6 +183,8 @@ export class Provider {
   }
 
   async signTransaction(req: SignTransactionRequest): Promise<TransactionReply> {
+    validator.assert(SignTransactionRequestSchema, req);
+
     const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
@@ -172,6 +202,8 @@ export class Provider {
   }
 
   async buildBatchTransferTransaction(req: BuildBatchTransferTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildBatchTransferTransactionRequestSchema, req);
+
     const { recipients, sender, params, network } = req as Required<BuildBatchTransferTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
@@ -194,6 +226,8 @@ export class Provider {
   }
 
   async buildBatchTransaction(req: BuildBatchTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildBatchTransactionRequestSchema, req);
+
     const { txs, sender, params, network } = req as Required<BuildBatchTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
@@ -216,6 +250,8 @@ export class Provider {
   }
 
   async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
+    validator.assert(SendTransactionRequestSchema, req);
+
     const { serialized, network } = req as Required<SendTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
@@ -245,6 +281,8 @@ export class Provider {
   }
 
   async decodeTransaction(req: DecodeTransactionRequest): Promise<TransactionParams> {
+    validator.assert(DecodeTransactionRequestSchema, req);
+
     const { serialized, network } = req as Required<DecodeTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);

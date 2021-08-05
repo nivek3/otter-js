@@ -9,15 +9,16 @@ export const loggerInterceptor: Middleware<ImplContext<unknown, unknown>> = asyn
     ctx.call.metadata.set('requestId', uuidV4());
   }
   const requestId = ctx.call.metadata.get('requestId')[0];
+  const method = (ctx.call as any).call.handler.path;
   try {
     logger.info(
-      `[Req] ${new Date().toISOString()}, ${requestId}, req: ${JSON.stringify(ctx.call.request)}, metadata: ${JSON.stringify(
+      `[Req] ${new Date().toISOString()}, ${requestId}, ${method} ,req: ${JSON.stringify(ctx.call.request)}, metadata: ${JSON.stringify(
         ctx.call.metadata,
       )}`,
     );
     await next();
   } catch (error) {
-    logger.error(`[Res] ${new Date().toISOString()}}, ${requestId}, metadata: ${JSON.stringify(ctx.call.metadata.getMap())}`, error);
+    logger.error(`[Res] ${new Date().toISOString()}, ${requestId}, metadata: ${JSON.stringify(ctx.call.metadata.getMap())}`, error);
     throw error;
   } finally {
     const costTime = Date.now() - startAt;

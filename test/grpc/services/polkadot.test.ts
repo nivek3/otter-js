@@ -44,8 +44,8 @@ describe('Polkadot service', () => {
 
     test('generate a 2-of-3 multisig P2SH address, expect valid address', async () => {
       const address = '5EjXLmCHWyo5SVTQEo9JBgozVNZgWYheAdENAuEZ1UvaGD3e';
-      const DeployAccount = promisify(client.DeployMultisigAccount.bind(client));
-      const response = await DeployAccount({
+      const DeployMultisigAccount = promisify(client.DeployMultisigAccount.bind(client));
+      const response = await DeployMultisigAccount({
         keys: [
           '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',
           '0x020c0ad3825f41eda2c533659a8ce891c0e4fd78e8f1c753fa85992fdfd38236bd',
@@ -53,11 +53,8 @@ describe('Polkadot service', () => {
         ],
         threshold: 2,
         network: {
-          platform: 'polkadot',
-          params: {
-            provider: 'wss://api.clover.finance',
-            ss58Format: 42,
-          },
+          provider: 'wss://api.clover.finance',
+          ss58Format: 42,
         },
       });
       expect(response).toHaveProperty('address', address);
@@ -288,7 +285,7 @@ describe('Polkadot service', () => {
         );
       });
 
-      test('build batch transfer transaction', async () => {
+      test('build batch transaction', async () => {
         const BuildBatchTransaction = promisify(client.BuildBatchTransaction.bind(client));
         const response = await BuildBatchTransaction({
           txs: [
