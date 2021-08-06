@@ -22,7 +22,7 @@ export const PolkadotRefSchema = {
       properties: {
         pubKey: { type: 'string' },
         hash: { type: 'string' },
-        signature: { type: 'string', pattern: '^(0x).?[A-Za-z0-9]{64}[A-Za-z0-9]{64}[0-9]{2}' },
+        signature: { type: 'string', pattern: '^(0x)?[A-Za-z0-9]{130}$' },
       },
     },
     recipient: {
@@ -57,7 +57,7 @@ export const DeployMultisigAccountRequestSchema = {
 
 export const BuildTransferRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'to', 'quantity', 'params'],
+  required: ['network', 'from', 'to', 'quantity'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     from: { type: 'string' },
@@ -69,7 +69,7 @@ export const BuildTransferRequestSchema = {
 
 export const BuildMultisigTransferRequestSchema = {
   type: 'object',
-  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender', 'params'],
+  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     to: { type: 'string' },
@@ -83,7 +83,7 @@ export const BuildMultisigTransferRequestSchema = {
 
 export const BuildMultisigApproveRequestSchema = {
   type: 'object',
-  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender', 'params'],
+  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     to: { type: 'string' },
@@ -97,7 +97,7 @@ export const BuildMultisigApproveRequestSchema = {
 
 export const BuildMultisigCancelRequestSchema = {
   type: 'object',
-  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender', 'params'],
+  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     to: { type: 'string' },
@@ -152,7 +152,7 @@ export const BuildBatchTransactionRequestSchema = {
 
 export const RebuildTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'serialized', 'params'],
+  required: ['network', 'serialized'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },

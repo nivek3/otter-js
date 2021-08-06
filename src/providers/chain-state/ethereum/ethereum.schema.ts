@@ -23,7 +23,7 @@ export const EthereumRefSchema = {
       properties: {
         pubKey: { type: 'string' },
         hash: { type: 'string' },
-        signature: { type: 'string', pattern: '^(0x).?[A-Za-z0-9]{32}[A-Za-z0-9]{32}[A-Za-z0-9]{2}' },
+        signature: { type: 'string', pattern: '^(0x)?[A-Za-z0-9]{66}$|^(0x)?[A-Za-z0-9]{130}$' },
       },
     },
   },

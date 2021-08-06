@@ -60,56 +60,65 @@ describe('Polkadot service', () => {
       expect(response).toHaveProperty('address', address);
     });
 
-    test('build transfer transaction', async () => {
-      const BuildTransferTransaction = promisify(client.BuildTransferTransaction.bind(client));
-      const response = await BuildTransferTransaction({
-        to: '5Gj9zP2Rr7ZTu9RWfSZ8W62tf1kcmsoLYSeX6BqDwUHQKw7j',
-        quantity: '1000',
-        from: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
-        network: {
-          provider: 'wss://api.clover.finance',
-          ss58Format: 42,
-        },
-        params: {
-          nonce: 4,
-        },
-      });
-      const { method, serialized, signatures } = response;
-      expect(serialized).toEqual(
-        '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f',
-      );
-      expect(signatures).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            hash: '5a8e80660ee83243ac0646c63a5ab32962d43eb7b030459c36aaee9990dd34d4',
-          }),
-        ]),
-      );
-      expect(method).toEqual('070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f');
-    });
-
-    test.skip('replace the tx signature', async () => {
-      const SignTransaction = promisify(client.SignTransaction.bind(client));
-      const response = await SignTransaction({
-        serialized:
-          '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f',
-        signatures: [
-          {
-            signature:
-              '0732d882ebd406a8ae8b02a12b53bfb55697545bf20847b3812b61ffe9d0e0c8b614ea1da9689cc2a91a3ef4913938dc2f07307b9fc55d7704bc3785f25ff7b500',
-            pubkey: '',
+    test(
+      'build transfer transaction',
+      async () => {
+        const BuildTransferTransaction = promisify(client.BuildTransferTransaction.bind(client));
+        const response = await BuildTransferTransaction({
+          to: '5Gj9zP2Rr7ZTu9RWfSZ8W62tf1kcmsoLYSeX6BqDwUHQKw7j',
+          quantity: '1000',
+          from: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
+          network: {
+            provider: 'wss://api.clover.finance',
+            ss58Format: 42,
           },
-        ],
-        network: {
-          provider: 'wss://api.clover.finance',
-          ss58Format: 42,
-        },
-      });
-      const { serialized } = response;
-      expect(serialized).toEqual(
-        '0x31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020732d882ebd406a8ae8b02a12b53bfb55697545bf20847b3812b61ffe9d0e0c8b614ea1da9689cc2a91a3ef4913938dc2f07307b9fc55d7704bc3785f25ff7b500001000070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f',
-      );
-    });
+          params: {
+            nonce: 4,
+          },
+        });
+        const { method, serialized, signatures } = response;
+        expect(serialized).toEqual(
+          '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f',
+        );
+        expect(signatures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              hash: '5a8e80660ee83243ac0646c63a5ab32962d43eb7b030459c36aaee9990dd34d4',
+            }),
+          ]),
+        );
+        expect(method).toEqual('070000ce443b069ff258086572e00ab19b72728b27f810d3535eefd0bae5e4805984c8a10f');
+      },
+      10 * 1000,
+    );
+
+    test(
+      'replace the tx signature',
+      async () => {
+        const SignTransaction = promisify(client.SignTransaction.bind(client));
+        const response = await SignTransaction({
+          serialized:
+            '5503840078fa2a61b6f9ee896d847d9363417fa984e40853dd72e05f7ea12fe9db4ead05000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100ad04001d020200080e5797b5449c8a6526fb5fcf1a159fbc2bbdd197405aed62a9db35d1b9946e7a84d13ae19a2723ba391eebeaf096f27be25e8c7e5c477d631537ee9b5b746d440065222f6881191b6640f1e2609dc4c72b8a5cb9aded400f6e7f2b6b9c2997d97b00a0252600000000',
+          signatures: [
+            {
+              signature:
+                'eaac3319839c99e5da70aa177c457bd2d74d86acbefef1f666348b07b53d4d7a0b407f0f6f421c0f29c550265d1ef3304e1a4a7946319132ad1a1e6c3edb638a01',
+              pubkey: '',
+            },
+          ],
+          network: {
+            provider: 'wss://api.clover.finance',
+            ss58Format: 42,
+          },
+        });
+        const { serialized, hash } = response;
+        expect(serialized).toEqual(
+          '5503840078fa2a61b6f9ee896d847d9363417fa984e40853dd72e05f7ea12fe9db4ead05000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100ad04001d020200080e5797b5449c8a6526fb5fcf1a159fbc2bbdd197405aed62a9db35d1b9946e7a84d13ae19a2723ba391eebeaf096f27be25e8c7e5c477d631537ee9b5b746d440065222f6881191b6640f1e2609dc4c72b8a5cb9aded400f6e7f2b6b9c2997d97b00a0252600000000',
+        );
+        expect(hash).toEqual('14cedaedf010e4dd03c08afb0b1334b892053e8144de2d74384be1c80ad3e6af');
+      },
+      10 * 1000,
+    );
 
     describe('build multisig transaction', () => {
       test('build multisig transfer transaction', async () => {

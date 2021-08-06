@@ -193,11 +193,11 @@ export class Provider {
       throw new AppError(errors.INVALID_SIGNATURES);
     }
     const replaceSignature = '02' + signatures[0].signature!;
-    const hex = sign({ api, serialized, signature: replaceSignature });
-    const extrinsic = api.createType('Extrinsic', hex);
+    const signed = sign({ api, serialized, signature: replaceSignature });
 
     return {
-      serialized: extrinsic.toHex(),
+      hash: signed.txHash,
+      serialized: signed.serialized,
     };
   }
 
@@ -267,13 +267,14 @@ export class Provider {
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    const { method, serialized, hash } = rebuild({
+    const { method, serialized, hash, txHash } = rebuild({
       api,
       serialized: originTx!,
       nonce: params?.nonce!,
     });
     const signature = { hash };
     return {
+      hash: txHash,
       method,
       serialized,
       signatures: [signature],

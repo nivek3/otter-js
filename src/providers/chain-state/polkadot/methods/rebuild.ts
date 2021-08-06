@@ -32,9 +32,11 @@ export const rebuild = function ({ api, serialized, nonce }: RebuildParams) {
   extrinsic.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 
   const extrinsicHex = extrinsic.toHex();
+  const txHash = u8aToHex(extrinsic.hash);
   const hash = u8aToHex(blake2AsU8a(payload.toRaw().data));
 
   return trimObjectPrefix({
+    txHash,
     method,
     serialized: extrinsicHex,
     hash,
