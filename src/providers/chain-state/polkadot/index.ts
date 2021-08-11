@@ -1,6 +1,6 @@
+import { addHexPrefix } from 'ethereumjs-util';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
-import { addHexPrefix } from 'ethereumjs-util';
 
 import { AppError, errors } from './../../../error';
 import { Validator } from '../../../utils/ajv';
@@ -255,7 +255,7 @@ export class Provider {
     const { serialized, network } = req as Required<SendTransactionRequest>;
     const { provider: wss, ss58Format } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const hash = await api.rpc.author.submitExtrinsic(serialized as any);
+    const hash = await api.rpc.author.submitExtrinsic(addHexPrefix(serialized) as any);
 
     return {
       hash: hash.toString(),
