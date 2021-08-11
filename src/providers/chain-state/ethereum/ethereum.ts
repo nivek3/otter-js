@@ -484,7 +484,7 @@ export class Provider {
 
   private async getReqNonce(address: string, web3: Web3, nonce?: number) {
     if (nonce === undefined) {
-      nonce = await web3.eth.getTransactionCount(address);
+      nonce = await web3.eth.getTransactionCount(address, 'pending');
     }
     return nonce;
   }
