@@ -51,7 +51,7 @@ export const BuildAccountTransactionRequestSchema = {
 
 export const BuildTransferTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'to', 'quantity', 'params'],
+  required: ['network', 'from', 'to', 'quantity'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     from: { type: 'string' },
@@ -63,7 +63,7 @@ export const BuildTransferTransactionRequestSchema = {
 
 export const BuildTokenTransferTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'to', 'quantity', 'tokenAddress', 'params'],
+  required: ['network', 'from', 'to', 'quantity', 'tokenAddress'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     from: { type: 'string' },
@@ -94,7 +94,7 @@ export const SendTransactionRequestSchema = {
 
 export const RebuildTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'serialized', 'params'],
+  required: ['network', 'serialized'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },
