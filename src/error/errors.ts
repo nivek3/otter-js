@@ -91,4 +91,16 @@ export const errors = {
     errno: '40014',
     details: 'Time point not found',
   },
+  BROADCAST_FAILED: {
+    code: GRpcStatus.INVALID_ARGUMENT,
+    status: 400,
+    errno: '40015',
+    details: 'broadcast signed tx failed',
+  },
+  INTERNAL: {
+    code: GRpcStatus.INTERNAL,
+    status: 500,
+    errno: '50000',
+    details: 'internal error',
+  },
 };

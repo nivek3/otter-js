@@ -79,7 +79,7 @@ export const SignTransactionRequestSchema = {
   properties: {
     network: { $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature' } },
+    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
   },
 };
 
@@ -119,7 +119,7 @@ export const SignMultisigTransferInputRequestSchema = {
   required: ['serialized', 'signatures'],
   properties: {
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature' } },
+    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
   },
 };
 
@@ -152,7 +152,7 @@ export const SignMultisigTokenTransferInputRequestSchema = {
   required: ['serialized', 'signatures'],
   properties: {
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature' } },
+    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
   },
 };
 

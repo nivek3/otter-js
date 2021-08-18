@@ -1,7 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 import compose, { Middleware } from 'koa-compose';
 import { ImplContext } from '../../utils/context';
-import { AppError } from '../../error/app';
+import { AppError, errors } from '../../error';
 export class GrpcInterceptorProxy {
   interceptors: Middleware<ImplContext<unknown, unknown>>[] = [];
 
@@ -36,7 +36,10 @@ export class GrpcInterceptorProxy {
                 await compose([...interceptors, originFn])(ctx);
                 success(ctx, callback);
               } catch (err) {
-                fail(err instanceof AppError ? err.toJSON(ctx) : err, callback, ctx);
+                if (!(err instanceof AppError)) {
+                  err = new AppError(errors.INTERNAL, { details: err.message || err });
+                }
+                fail(err.toJSON(ctx), callback, ctx);
               }
             };
           }

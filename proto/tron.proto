@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package tron;
+option go_package = "./tron";
+import "common.proto";
+
+message Network {
+    string provider = 1;
+}
+
+message DeployAccountRequest {
+    Network network = 1;
+    string key      = 2;
+}
+
+message DeployAccountReply {
+    string address = 1;
+}
+
+message TransactionParams {
+    string permission_id = 1;
+    string note          = 2;
+    uint32 fee_limit     = 3;
+    uint32 call_value    = 4;
+    uint32 extension     = 5;
+    uint32 expiration    = 6;
+}
+
+message BuildTransferTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    TransactionParams params = 5;
+}
+
+message BuildTRC10TransferTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string token_id          = 5;
+    TransactionParams params = 6;
+}
+
+message BuildTRC20TransferTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string contract          = 5;
+    TransactionParams params = 6;
+}
+
+message SignTransactionRequest {
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SendTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message HashForSignatureRequest {
+    Network network   = 1;
+    string pub_key    = 2;
+    string serialized = 3;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message RebuildTransactionRequest {
+    Network network          = 1;
+    string serialized        = 2;
+    TransactionParams params = 3;
+}
+
+service Tron {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTRC10TransferTransaction(BuildTRC10TransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTRC20TransferTransaction(BuildTRC20TransferTransactionRequest) returns (TransactionReply) {}
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+    rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+}

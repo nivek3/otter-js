@@ -5,7 +5,16 @@ import { Middleware } from 'koa-compose';
 import { ImplContext, ProxyImp } from '../utils/context';
 import { loggerInterceptor } from '../grpc/interceptors/logger';
 import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
-import { EthereumService, EthereumImp, PolkadotService, PolkadotImp, BitcoinService, BitcoinImp } from '../grpc/services';
+import {
+  EthereumService,
+  EthereumImp,
+  PolkadotService,
+  PolkadotImp,
+  BitcoinService,
+  BitcoinImp,
+  TronImp,
+  TronService,
+} from '../grpc/services';
 
 import logger from '../logger';
 
@@ -78,6 +87,7 @@ export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 grpcServer.addService(PolkadotService, PolkadotImp);
 grpcServer.addService(BitcoinService, BitcoinImp);
 grpcServer.addService(EthereumService, EthereumImp);
+grpcServer.addService(TronService, TronImp);
 
 // interceptors
 grpcServer.use(loggerInterceptor);
