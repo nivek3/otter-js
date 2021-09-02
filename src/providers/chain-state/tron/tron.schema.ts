@@ -10,7 +10,6 @@ export const TronRefSchema = {
     },
     params: {
       type: 'object',
-      minProperties: 1,
       properties: {
         note: { type: 'string' },
         permissionId: { type: 'string' },

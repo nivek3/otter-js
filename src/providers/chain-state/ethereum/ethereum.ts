@@ -3,7 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { Transaction } from '@ethereumjs/tx';
 import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
-import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
+import { BN, bufferToHex, generateAddress, toChecksumAddress, Address, stripHexPrefix, addHexPrefix, unpadBuffer } from 'ethereumjs-util';
 import { parseSignature } from '../../../utils/signature';
 import { Validator } from '../../../utils/ajv';
 
@@ -207,13 +207,13 @@ export class Provider {
     const { chainId } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
-    const tx = Transaction.fromSerializedTx(Buffer.from(serialized, 'hex'), txOptions);
-    const sign = signatures[0].signature;
+    const tx = Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(serialized), 'hex'), txOptions);
+    const sign = stripHexPrefix(signatures[0].signature!);
     const { r, s, v } = parseSignature(sign!);
     const signedData = {
       ...tx.toJSON(),
-      r: Buffer.from(r!, 'hex'),
-      s: Buffer.from(s!, 'hex'),
+      r: unpadBuffer(Buffer.from(r!, 'hex')),
+      s: unpadBuffer(Buffer.from(s!, 'hex')),
       v: this.getChainIdVBN(v!, chainId!),
     };
 
