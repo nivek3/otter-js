@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { bitcoinStateProvider } from '../../../../src/providers/chain-state/bitcoin/bitcoin';
+import { provider } from '../../../../src/providers/chain-state/bitcoin/bitcoin';
 
 describe('ChainStateProvider BitCoin', () => {
   describe('DeployAccount', () => {
@@ -18,7 +18,7 @@ describe('ChainStateProvider BitCoin', () => {
         },
       };
 
-      const address = bitcoinStateProvider.deployMultisigAccount(req);
+      const address = provider.deployMultisigAccount(req);
       expect(address).toEqual('2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL');
     });
   });
@@ -64,7 +64,7 @@ describe('ChainStateProvider BitCoin', () => {
         },
       };
 
-      const { serialized } = await bitcoinStateProvider.buildTransaction(req);
+      const { serialized } = await provider.buildTransaction(req);
       expect(serialized).toEqual(
         '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187fb1800000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
       );
@@ -104,7 +104,7 @@ describe('ChainStateProvider BitCoin', () => {
         },
       };
 
-      const { serialized, signatures } = bitcoinStateProvider.hashForSignature(req);
+      const { serialized, signatures } = provider.hashForSignature(req);
       expect(serialized).toEqual(
         '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd010000006f000000004c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
       );
@@ -178,7 +178,7 @@ describe('ChainStateProvider BitCoin', () => {
         },
       };
 
-      const { serialized } = bitcoinStateProvider.signTransaction(req);
+      const { serialized } = provider.signTransaction(req);
       expect(serialized).toEqual(
         '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd01000000fdfe0000483045022100b55cd0a2721d850a064bab91b1fabc85cd84214c539d7a70cc32504bd4e793e402204ab7684b4daae0aa0ea12789c848d8daf0b35ffe477370e13ed62a224114978a01483045022100848a041a9172d9de0f8c7097ba0da143b2073ddc564eec6c7d4e628e8e4b53ab022023a7aa0da73bf3328d0d6dbfc76a4bbd4a4a8a97f127db99f86383d7fcafa287014c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b7000000006a47304402204dec81ebbc7e4983d657eeab7a50cd533e950be7e8689e3f7fb713efd6aeac36022026a8d9862b703c47f2227c3ad58f9682c0ef89b0f37cc48ae2db9828f7026d59012102ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
       );
@@ -233,7 +233,7 @@ describe('ChainStateProvider BitCoin', () => {
         },
       };
 
-      const { serialized } = bitcoinStateProvider.signTransaction(req);
+      const { serialized } = provider.signTransaction(req);
       expect(serialized).toEqual(
         '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd01000000fdfe0000483045022100b55cd0a2721d850a064bab91b1fabc85cd84214c539d7a70cc32504bd4e793e402204ab7684b4daae0aa0ea12789c848d8daf0b35ffe477370e13ed62a224114978a01483045022100848a041a9172d9de0f8c7097ba0da143b2073ddc564eec6c7d4e628e8e4b53ab022023a7aa0da73bf3328d0d6dbfc76a4bbd4a4a8a97f127db99f86383d7fcafa287014c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b7000000006a47304402204dec81ebbc7e4983d657eeab7a50cd533e950be7e8689e3f7fb713efd6aeac36022026a8d9862b703c47f2227c3ad58f9682c0ef89b0f37cc48ae2db9828f7026d59012102ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
       );

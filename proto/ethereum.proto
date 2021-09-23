@@ -130,8 +130,7 @@ message BuildMultisigTokenTransferTransactionRequest {
 
 message HashForSignatureRequest {
     Network network   = 1;
-    string pub_key    = 2;
-    string serialized = 3;
+    string serialized = 2;
 }
 
 message DecodeTransactionRequest {

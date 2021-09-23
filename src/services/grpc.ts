@@ -12,6 +12,8 @@ import {
   PolkadotImp,
   BitcoinService,
   BitcoinImp,
+  RippleImp,
+  RippleService,
   TronImp,
   TronService,
 } from '../grpc/services';
@@ -87,6 +89,7 @@ export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 grpcServer.addService(PolkadotService, PolkadotImp);
 grpcServer.addService(BitcoinService, BitcoinImp);
 grpcServer.addService(EthereumService, EthereumImp);
+grpcServer.addService(RippleService, RippleImp);
 grpcServer.addService(TronService, TronImp);
 
 // interceptors

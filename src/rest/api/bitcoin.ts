@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 const router = require('express').Router({ mergeParams: true });
-import { bitcoinStateProvider as provider } from '../../providers/chain-state/bitcoin/bitcoin';
+import { provider } from '../../providers/chain-state/bitcoin/bitcoin';
 import logger from '../../logger';
 
 router.post('/deployAccount', async function (req: Request, res: Response, next) {

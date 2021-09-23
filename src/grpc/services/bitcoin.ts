@@ -1,7 +1,8 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { bitcoinStateProvider as provider } from '../../providers/chain-state/bitcoin/bitcoin';
+
+import { provider } from '../../providers/chain-state/bitcoin/bitcoin';
 import { ImplContext, ProxyImp } from '../../utils/context';
 import { AppError, errors } from '../../error';
 

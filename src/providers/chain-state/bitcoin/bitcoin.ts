@@ -34,7 +34,7 @@ const DUST_AMOUNT = 546;
 const ec = new EC('secp256k1');
 
 const validator = new Validator({ schemas: [BitCoinRefSchema] });
-export class BitcoinStateProvider {
+export class Provider {
   deployAccount(req: DeployAccountRequest): string {
     validator.assert(DeployAccountRequestSchema, req);
 
@@ -322,4 +322,4 @@ export class BitcoinStateProvider {
   }
 }
 
-export const bitcoinStateProvider = new BitcoinStateProvider();
+export const provider = new Provider();

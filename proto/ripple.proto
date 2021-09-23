@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package ripple;
+option go_package = "./ripple";
+import "common.proto";
+
+message Network {
+    string provider = 1;
+    bool test       = 2;
+}
+
+message Account {
+    string pub_key = 1;
+    string address = 2;
+}
+
+message TransactionParams {
+    string sequence             = 1;
+    string last_ledger_sequence = 2;
+    string fee                  = 3;
+}
+
+message DeployAccountRequest {
+    Network network = 1;
+    string key      = 2;
+}
+
+message DeployAccountReply {
+    string address = 1;
+}
+
+message BuildPaymentTransactionRequest {
+    Network network          = 1;
+    Account from             = 2;
+    string quantity          = 3;
+    string destination       = 4;
+    string destination_tag   = 5;
+    int32 signers_count      = 6;
+    TransactionParams params = 7;
+}
+
+message HashForSignatureRequest {
+    Network network           = 1;
+    string serialized         = 2;
+    repeated Account accounts = 3;
+    uint32 signers_count      = 4;
+}
+
+message SignTransactionRequest {
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SendTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message BuildAccountSetTransactionRequest {
+    Network network = 1;
+    Account account = 2;
+    oneof test_oneof {
+        uint32 set_flag   = 3;
+        uint32 clear_flag = 4;
+    }
+    TransactionParams params = 5;
+    uint32 signers_count     = 6;
+}
+
+message SignerEntry {
+    string account       = 1;
+    uint32 signer_weight = 2;
+}
+
+message BuildSignerListSetTransactionRequest {
+    Network network                     = 1;
+    Account account                     = 2;
+    uint32 signer_quorum                = 3;
+    repeated SignerEntry signer_entries = 4;
+    TransactionParams params            = 5;
+    uint32 signers_count                = 6;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message RebuildTransactionRequest {
+    Network network          = 1;
+    string serialized        = 2;
+    TransactionParams params = 3;
+}
+
+service Ripple {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc BuildPaymentTransaction(BuildPaymentTransactionRequest) returns (TransactionReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
+    rpc BuildAccountSetTransaction(BuildAccountSetTransactionRequest) returns (TransactionReply) {}
+    rpc BuildSignerListSetTransaction(BuildSignerListSetTransactionRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+    rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+}
