@@ -16,6 +16,8 @@ import {
   RippleService,
   TronImp,
   TronService,
+  SolanaImp,
+  SolanaService
 } from '../grpc/services';
 
 import logger from '../logger';
@@ -91,6 +93,7 @@ grpcServer.addService(BitcoinService, BitcoinImp);
 grpcServer.addService(EthereumService, EthereumImp);
 grpcServer.addService(RippleService, RippleImp);
 grpcServer.addService(TronService, TronImp);
+grpcServer.addService(SolanaService, SolanaImp);
 
 // interceptors
 grpcServer.use(loggerInterceptor);
