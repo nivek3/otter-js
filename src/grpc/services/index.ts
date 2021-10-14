@@ -1,4 +1,5 @@
 export * from './bitcoin';
+export * from './cosmos';
 export * from './ethereum';
 export * from './polkadot';
 export * from './ripple';

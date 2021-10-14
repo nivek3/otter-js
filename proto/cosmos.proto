@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package cosmos;
+option go_package = "./cosmos";
+import "common.proto";
+
+message Network {
+    string chain_id      = 1;
+    string provider      = 2;
+    string bech32_prefix = 3;
+    string derive_path   = 4;
+    string memo          = 5;
+}
+
+message Amount {
+    string amount = 1;
+    string denom  = 2;
+}
+
+message Fee {
+    Amount amount = 1;
+    string gas    = 2;
+}
+message TransactionParams {
+    Fee fee              = 1;
+    int32 account_number = 2;
+    int32 sequence       = 3;
+    string memo          = 4;
+    string pub_key       = 5;
+}
+
+message DeployAccountRequest {
+    string key      = 1;
+    Network network = 2;
+}
+
+message DeployAccountReply {
+    string address = 1;
+}
+
+message BuildTransferTransactionRequest {
+    Network network          = 1;
+    string to                = 2;
+    Amount amount            = 3;
+    string from              = 4;
+    TransactionParams params = 5;
+}
+
+message SignTransactionRequest {
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SendTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message RebuildTransactionRequest {
+    Network network          = 1;
+    string serialized        = 2;
+    TransactionParams params = 3;
+}
+
+service Cosmos {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+    rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+}

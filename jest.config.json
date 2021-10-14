@@ -11,7 +11,8 @@
         "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "transformIgnorePatterns": [
-        "node_modules/(?!@polkadot)/"
+        "node_modules/(?!@polkadot)/",
+        "node_modules/libsodium-wrappers/"
     ],
     "testMatch": [
         "**/test/**/*.test.(ts|js)"

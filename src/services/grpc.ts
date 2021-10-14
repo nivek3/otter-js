@@ -12,12 +12,14 @@ import {
   PolkadotImp,
   BitcoinService,
   BitcoinImp,
+  CosmosImp,
+  CosmosService,
   RippleImp,
   RippleService,
   TronImp,
   TronService,
   SolanaImp,
-  SolanaService
+  SolanaService,
 } from '../grpc/services';
 
 import logger from '../logger';
@@ -88,9 +90,10 @@ const GRPC_PORT = process.env.GRPC_PORT || '50051';
 export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 
 // services
-grpcServer.addService(PolkadotService, PolkadotImp);
 grpcServer.addService(BitcoinService, BitcoinImp);
+grpcServer.addService(CosmosService, CosmosImp);
 grpcServer.addService(EthereumService, EthereumImp);
+grpcServer.addService(PolkadotService, PolkadotImp);
 grpcServer.addService(RippleService, RippleImp);
 grpcServer.addService(TronService, TronImp);
 grpcServer.addService(SolanaService, SolanaImp);
