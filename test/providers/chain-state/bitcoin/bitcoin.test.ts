@@ -30,14 +30,14 @@ describe('ChainStateProvider BitCoin', () => {
         recipients: [
           {
             address: '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL',
-            value: 13000,
+            value: '13000',
           },
         ],
         utxos: [
           {
             vout: 1,
             txid: 'fd9b44753db382c410aaf63778aba38a51c43825b21aa5a230148b3fb20d1322',
-            amount: 10000,
+            amount: '10000',
             scriptPubKey: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
             redeemScript:
               '522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae',
@@ -49,13 +49,13 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 0,
             txid: 'b779a919a3f6c4f8b2730cc497626c4703b5d99e9676ca937115ebcbcdcbddd8',
-            amount: 10000,
+            amount: '10000',
             scriptPubKey: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
             signers: ['02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231'],
           },
         ],
         params: {
-          feeRate: 1,
+          feeRate: '1',
         },
         network: {
           pubKeyHash: '0x6f',
@@ -78,7 +78,7 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 1,
             txid: 'fd9b44753db382c410aaf63778aba38a51c43825b21aa5a230148b3fb20d1322',
-            amount: 10000,
+            amount: '10000',
             script: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
             redeemScript:
               '522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae',
@@ -90,7 +90,7 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 0,
             txid: 'b779a919a3f6c4f8b2730cc497626c4703b5d99e9676ca937115ebcbcdcbddd8',
-            amount: 10000,
+            amount: '10000',
             script: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
             signers: ['02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231'],
           },
@@ -135,7 +135,7 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 1,
             txid: 'fd9b44753db382c410aaf63778aba38a51c43825b21aa5a230148b3fb20d1322',
-            amount: 10000,
+            amount: '10000',
             script: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
             redeemScript:
               '522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae',
@@ -147,7 +147,7 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 0,
             txid: 'b779a919a3f6c4f8b2730cc497626c4703b5d99e9676ca937115ebcbcdcbddd8',
-            amount: 10000,
+            amount: '10000',
             script: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
             signers: ['02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231'],
           },
@@ -190,7 +190,7 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 1,
             txid: 'fd9b44753db382c410aaf63778aba38a51c43825b21aa5a230148b3fb20d1322',
-            amount: 10000,
+            amount: '10000',
             script: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
             redeemScript:
               '522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae',
@@ -202,7 +202,7 @@ describe('ChainStateProvider BitCoin', () => {
           {
             vout: 0,
             txid: 'b779a919a3f6c4f8b2730cc497626c4703b5d99e9676ca937115ebcbcdcbddd8',
-            amount: 10000,
+            amount: '10000',
             script: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
             signers: ['02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231'],
           },

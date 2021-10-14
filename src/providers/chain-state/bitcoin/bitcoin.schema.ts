@@ -14,14 +14,14 @@ export const BitCoinRefSchema = {
     },
     utxo: {
       type: 'object',
-      required: ['vout', 'txid'],
+      required: ['txid'],
       properties: {
         vout: { type: 'integer' },
         txid: { type: 'string' },
         scriptPubKey: { type: 'string' },
         redeemScript: { type: 'string' },
-        witnessScript: { type: 'number' },
-        amount: { type: 'integer' },
+        witnessScript: { type: 'string' },
+        amount: { type: 'string' },
         signers: { type: 'array', items: { type: 'string' } },
       },
     },
@@ -30,14 +30,14 @@ export const BitCoinRefSchema = {
       type: 'object',
       required: ['address', 'value'],
       properties: {
-        value: { type: 'integer' },
+        value: { type: 'string' },
         address: { type: 'string' },
       },
     },
     params: {
       type: 'object',
       properties: {
-        feeRate: { type: 'integer' },
+        feeRate: { type: 'string' },
       },
     },
     signature: {

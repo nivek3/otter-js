@@ -84,7 +84,7 @@ export class Provider {
       if (input.scriptPubKey) {
         prevOutScript = Buffer.from(input.scriptPubKey, 'hex');
       }
-      txb.addInput(input.txid, input.vout, input.sequence, prevOutScript);
+      txb.addInput(input.txid, input.vout || 0, input.sequence, prevOutScript);
     });
 
     outputs.forEach((output: { address: string; value: number }) => {
@@ -227,7 +227,11 @@ export class Provider {
   }
 
   selectCoins(utxos: UnspentTransactionOutput[], recipients: Recipient[], feeRate: number) {
-    return finalize(utxos, recipients, feeRate);
+    const output = recipients.map((output: any) => {
+      output['value'] = +output.value!;
+      return output;
+    });
+    return finalize(utxos, output, feeRate);
   }
 
   async makeRequest({ url, method, params }): Promise<any> {
@@ -275,7 +279,7 @@ export class Provider {
     };
 
     utxos.forEach((utxo) => {
-      utxo['value'] = utxo.amount;
+      utxo['value'] = +(utxo.amount || 0);
       utxo['txId'] = utxo.txid;
 
       const { scriptPubKey, redeemScript } = utxo;
@@ -307,7 +311,7 @@ export class Provider {
   }
 
   // https://chainquery.com/bitcoin-cli/estimatesmartfee
-  private async getReqFeePerKb(url: string, feeRate = 0, blocks = 1) {
+  private async getReqFeePerKb(url: string, feeRate = '0', blocks = 1) {
     if (!feeRate) {
       const { result, error } = await this.makeRequest({
         url,
@@ -315,10 +319,9 @@ export class Provider {
         params: [blocks],
       });
       if (error) throw new AppError(errors.MAKE_REQUEST_FAILED, { details: 'Could not fetch the fee rate' });
-      const feePreKb = new BigNumber(result.feerate).multipliedBy(8).div(1024).toFixed(0);
-      feeRate = new BigNumber(feePreKb).toNumber();
+      feeRate = new BigNumber(result.feerate).multipliedBy(8).div(1024).toFixed(0);
     }
-    return feeRate;
+    return new BigNumber(feeRate).toNumber();
   }
 }
 

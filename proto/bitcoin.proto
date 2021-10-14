@@ -38,17 +38,17 @@ message UnspentTransactionOutput {
     string script_pub_key   = 3;
     string redeem_script    = 4;
     string witness_script   = 5;
-    int32 amount            = 6;
+    string amount           = 6;
     repeated string signers = 7;
 }
 
 message Recipient {
     string address = 1;
-    int32 value    = 2;
+    string value   = 2;
 }
 
 message TransactionParams {
-    int32 fee_rate = 1;
+    string fee_rate = 1;
 }
 
 message BuildTransactionRequest {
