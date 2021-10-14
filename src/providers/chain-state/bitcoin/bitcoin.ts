@@ -256,7 +256,7 @@ export class Provider {
   }
 
   getUtxoKey(utxo: UnspentTransactionOutput) {
-    return `${utxo.txid}+${utxo.vout}`;
+    return `${utxo.txid}+${utxo.vout || 0}`;
   }
 
   getTxId(hash: Buffer) {
