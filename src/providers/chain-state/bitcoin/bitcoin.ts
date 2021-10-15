@@ -235,7 +235,7 @@ export class Provider {
   }
 
   async makeRequest({ url, method, params }): Promise<any> {
-    const { body } = await rp({
+    return await rp({
       url: url,
       method: 'POST',
       json: true,
@@ -246,7 +246,6 @@ export class Provider {
         params,
       },
     });
-    return body;
   }
 
   getNetWork({ scriptHash, pubKeyHash, coin }: Network): any {
@@ -311,7 +310,7 @@ export class Provider {
   }
 
   // https://chainquery.com/bitcoin-cli/estimatesmartfee
-  private async getReqFeePerKb(url: string, feeRate = '0', blocks = 1) {
+  private async getReqFeePerKb(url: string, feeRate = '', blocks = 1) {
     if (!feeRate) {
       const { result, error } = await this.makeRequest({
         url,
@@ -319,7 +318,7 @@ export class Provider {
         params: [blocks],
       });
       if (error) throw new AppError(errors.MAKE_REQUEST_FAILED, { details: 'Could not fetch the fee rate' });
-      feeRate = new BigNumber(result.feerate).multipliedBy(8).div(1024).toFixed(0);
+      feeRate = new BigNumber(result.feerate).shiftedBy(8).div(1024).toFixed(0);
     }
     return new BigNumber(feeRate).toNumber();
   }
