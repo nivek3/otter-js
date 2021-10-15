@@ -133,7 +133,7 @@ export const BuildBatchTransferTransactionRequestSchema = {
   required: ['network', 'recipients', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
-    recipients: { type: 'array', uniqueItems: true, items: { $ref: 'base#/definitions/recipient' } },
+    recipients: { type: 'array', items: { $ref: 'base#/definitions/recipient' } },
     sender: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
   },
