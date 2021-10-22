@@ -202,9 +202,10 @@ export class Provider {
       }
     }
 
+    const utxoTx = txb.build();
     return {
-      hash: txb.tx.getHash().toString('hex'),
-      serialized: txb.build().toHex(),
+      hash: utxoTx.getId(),
+      serialized: utxoTx.toHex(),
     };
   }
 

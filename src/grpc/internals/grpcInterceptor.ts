@@ -35,7 +35,7 @@ export class GrpcInterceptorProxy {
               try {
                 await compose([...interceptors, originFn])(ctx);
                 success(ctx, callback);
-              } catch (err) {
+              } catch (err: any) {
                 if (!(err instanceof AppError)) {
                   err = new AppError(errors.INTERNAL, { details: err.message || err });
                 }
