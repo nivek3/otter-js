@@ -8,6 +8,8 @@ import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
 import {
   EthereumService,
   EthereumImp,
+  HealthService,
+  HealthImp,
   PolkadotService,
   PolkadotImp,
   BitcoinService,
@@ -93,6 +95,7 @@ export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 grpcServer.addService(BitcoinService, BitcoinImp);
 grpcServer.addService(CosmosService, CosmosImp);
 grpcServer.addService(EthereumService, EthereumImp);
+grpcServer.addService(HealthService, HealthImp);
 grpcServer.addService(PolkadotService, PolkadotImp);
 grpcServer.addService(RippleService, RippleImp);
 grpcServer.addService(TronService, TronImp);

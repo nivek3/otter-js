@@ -1,0 +1,26 @@
+import path from 'path';
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+import { ImplContext, ProxyImp } from '../../utils/context';
+
+import { ProtoGrpcType } from '../../__proto__/health';
+import { HealthCheckRequest, HealthCheckResponse, HealthHandlers, ServingStatus } from '../../__proto__/grpc/types';
+
+const filename = path.join(__dirname, '../../../proto/health.proto');
+const options = {
+  longs: String,
+  defaults: false,
+  oneofs: true,
+};
+const packageDefinition = protoLoader.loadSync(filename, options);
+const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown as ProtoGrpcType;
+
+export const HealthService = protoDescriptor.grpc.health.v1.Health.service;
+
+export const HealthImp: ProxyImp<HealthHandlers> = {
+  Check: function (ctx: ImplContext<HealthCheckRequest, HealthCheckResponse>) {
+    ctx.body = {
+      status: ServingStatus.SERVING,
+    };
+  },
+};
