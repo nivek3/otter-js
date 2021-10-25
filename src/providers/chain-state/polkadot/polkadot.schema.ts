@@ -3,7 +3,6 @@ export const PolkadotRefSchema = {
   definitions: {
     network: {
       type: 'object',
-      required: ['ss58Format'],
       properties: {
         provider: { type: 'string' },
         ss58Format: { type: 'integer' },
