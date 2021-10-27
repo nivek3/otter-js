@@ -58,7 +58,7 @@
     "typescript-eslint-parser": "^15.0.0"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "https://gitpkg.now.sh/cryptoless/BitGoJS/modules/utxo-lib?3971064c7d1c06b08ef237646ea22df8bb1600fd",
+    "@bitgo/utxo-lib": "https://gitpkg.now.sh/cryptoless/BitGoJS/modules/utxo-lib?9d399970482fc5e14ae62c70f10d52eecb450b56",
     "@clover-network/node-types": "^1.0.4",
     "@cosmjs/amino": "^0.25.6",
     "@cosmjs/crypto": "^0.25.6",

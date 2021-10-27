@@ -40,7 +40,6 @@ export class Provider {
 
     const { key, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!) as bitcoinNetwork;
-    if (!network) throw new AppError(errors.INVALID_NETWORK);
 
     const pubkey = Buffer.from(key!, 'hex');
     const { address } = payments.p2pkh({ pubkey, network });
@@ -52,7 +51,6 @@ export class Provider {
 
     const { keys, threshold, network: reqNetWork } = req;
     const network = this.getNetWork(reqNetWork!);
-    if (!network) throw new AppError(errors.INVALID_NETWORK);
 
     const pubKeys = keys!.map((hex) => Buffer.from(hex, 'hex'));
     const redeemScript = bitGoUTXO.script.multisig.output.encode(threshold, pubKeys);
@@ -250,9 +248,14 @@ export class Provider {
   }
 
   getNetWork({ scriptHash, pubKeyHash, coin }: Network): any {
-    return Object.values(bitGoUTXO.networks).find(
+    const network = Object.values(bitGoUTXO.networks).find(
       (network: any) => network.scriptHash === Number(scriptHash) && network.pubKeyHash === Number(pubKeyHash) && network.coin === coin,
     );
+    if (network) return network;
+
+    const name = `${coin}-${scriptHash}-${pubKeyHash}`;
+    bitGoUTXO.networks[name] = { scriptHash: Number(scriptHash), pubKeyHash: Number(pubKeyHash), coin };
+    return bitGoUTXO.networks[name];
   }
 
   getUtxoKey(utxo: UnspentTransactionOutput) {
