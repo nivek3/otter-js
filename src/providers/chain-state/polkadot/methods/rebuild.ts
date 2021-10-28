@@ -3,20 +3,22 @@ import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { SIGN_PLACEHOLDER } from '../const';
-import { trimObjectPrefix } from '../utils';
+import { trimObjectPrefix, getExtrinsicEra } from '../utils';
 
 export interface RebuildParams {
   api: ApiPromise;
   serialized: string;
   nonce: number;
+  period?: number;
 }
 
-export const rebuild = function ({ api, serialized, nonce }: RebuildParams) {
+export const rebuild = async function ({ api, serialized, nonce, period }: RebuildParams) {
   const extrinsic = api.createType('Extrinsic', addHexPrefix(serialized));
 
   const method = extrinsic.method.toHex();
   const sender = extrinsic.signer.toString();
-  const payload = api.createType('SignerPayload', {
+
+  const options = {
     genesisHash: api.genesisHash,
     blockHash: api.genesisHash,
     runtimeVersion: api.runtimeVersion,
@@ -27,7 +29,14 @@ export const rebuild = function ({ api, serialized, nonce }: RebuildParams) {
     method,
 
     nonce,
-  });
+  };
+
+  if (period) {
+    const extras = await getExtrinsicEra(api, period);
+    Object.assign(options, extras);
+  }
+
+  const payload = api.createType('SignerPayload', options);
 
   extrinsic.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 

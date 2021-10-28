@@ -4,7 +4,7 @@ import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
 
 import { AppError, errors } from './../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
-import { getCallHexAndHash, trimObjectPrefix } from '../utils';
+import { getCallHexAndHash, trimObjectPrefix, getSignerPayload } from '../utils';
 
 export interface TransferParams {
   api: ApiPromise;
@@ -17,6 +17,7 @@ export interface TransferParams {
   sender: string;
   maxWeight?: number;
   nonce: number;
+  period?: number;
 }
 
 export const transfer = async function ({
@@ -30,6 +31,7 @@ export const transfer = async function ({
   from,
   to,
   maxWeight = 640000000,
+  period,
 }: TransferParams) {
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
@@ -53,15 +55,7 @@ export const transfer = async function ({
   const method = tx.method.toHex();
 
   // // create the payload
-  const payload = api.createType('SignerPayload', {
-    method,
-    nonce,
-    genesisHash: api.genesisHash,
-    blockHash: api.genesisHash,
-    runtimeVersion: api.runtimeVersion,
-    version: api.extrinsicVersion,
-    address: sender,
-  });
+  const payload = await getSignerPayload(api, method, nonce, period);
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 

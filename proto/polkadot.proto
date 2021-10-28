@@ -38,6 +38,7 @@ message DeployMultisigAccountReply {
 message TransactionParams {
     int32 nonce      = 1;
     int32 max_weight = 2;
+    int32 period     = 3;
 }
 
 message BuildTransferRequest {

@@ -117,6 +117,16 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
   }
 });
 
+router.post('/decodeTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.decodeTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('DecodeTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/polkadot',

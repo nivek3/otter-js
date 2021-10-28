@@ -73,12 +73,13 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
-    const { method, serialized, hash } = transfer({
+    const { method, serialized, hash } = await transfer({
       api,
       nonce,
       quantity,
       from,
       to,
+      ...params,
     });
 
     const signature = { hash };
@@ -111,6 +112,7 @@ export class Provider {
       from,
       to,
       maxWeight,
+      ...params,
     });
 
     const signature = { hash };
@@ -173,6 +175,7 @@ export class Provider {
       nonce: nonce,
       from,
       to,
+      ...params,
     });
     const signature = { hash };
     return {
@@ -267,10 +270,11 @@ export class Provider {
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    const { method, serialized, hash, txHash } = rebuild({
+    const { method, serialized, hash, txHash } = await rebuild({
       api,
       serialized: originTx!,
       nonce: params?.nonce!,
+      ...params,
     });
     const signature = { hash };
     return {
@@ -288,14 +292,10 @@ export class Provider {
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    const { nonce } = decode({
+    return decode({
       api,
       serialized,
     });
-
-    return {
-      nonce,
-    };
   }
 
   getApiTypes(ss58Format: number) {

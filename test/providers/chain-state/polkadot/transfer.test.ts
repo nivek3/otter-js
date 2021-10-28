@@ -25,7 +25,7 @@ describe('ChainStateProvider Polkadot', () => {
         from: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
         to: '5F1GPrYp5Q32Hr3hczZXoJCTxNhuQxsBbABtSjDnVK9Fn9dZ',
       };
-      const { serialized, hash } = transfer(req);
+      const { serialized, hash } = await transfer(req);
       expect(serialized).toEqual(
         '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaaa10',
       );

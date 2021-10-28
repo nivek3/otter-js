@@ -4,7 +4,7 @@ import { blake2AsU8a, sortAddresses, encodeMultiAddress } from '@polkadot/util-c
 
 import { errors, AppError } from '../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
-import { getCallHexAndHash, trimObjectPrefix } from '../utils';
+import { getCallHexAndHash, trimObjectPrefix, getSignerPayload } from '../utils';
 
 export interface ApproveParams {
   api: ApiPromise;
@@ -18,6 +18,7 @@ export interface ApproveParams {
   maxWeight?: number;
   storeCall?: boolean;
   nonce: number;
+  period?: number;
 }
 
 export async function approve({
@@ -32,6 +33,7 @@ export async function approve({
   to,
   storeCall = false,
   maxWeight = 640000000,
+  period,
 }: ApproveParams) {
   const MULTISIG = encodeMultiAddress(addresses, threshold, ss58Format);
   const otherSignatories = sortAddresses(
@@ -59,14 +61,7 @@ export async function approve({
 
   const method = tx.method.toHex();
 
-  const payload = api.createType('SignerPayload', {
-    method,
-    nonce,
-    genesisHash: api.genesisHash,
-    blockHash: api.genesisHash,
-    runtimeVersion: api.runtimeVersion,
-    version: api.extrinsicVersion,
-  });
+  const payload = await getSignerPayload(api, method, nonce, period);
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 

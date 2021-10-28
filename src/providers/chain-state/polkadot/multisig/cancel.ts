@@ -4,7 +4,7 @@ import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
 
 import { errors, AppError } from '../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
-import { getCallHexAndHash, trimObjectPrefix } from '../utils';
+import { getCallHexAndHash, trimObjectPrefix, getSignerPayload } from '../utils';
 
 export interface CancelParams {
   api: ApiPromise;
@@ -16,6 +16,7 @@ export interface CancelParams {
   to: string;
   sender: string;
   nonce: number;
+  period?: number;
 }
 
 export async function cancel({
@@ -28,6 +29,7 @@ export async function cancel({
   nonce,
   from,
   to,
+  period,
 }: CancelParams) {
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
@@ -50,15 +52,7 @@ export async function cancel({
 
   const method = tx.method.toHex();
 
-  const payload = api.createType('SignerPayload', {
-    method,
-    nonce,
-    genesisHash: api.genesisHash,
-    blockHash: api.genesisHash,
-    runtimeVersion: api.runtimeVersion,
-    version: api.extrinsicVersion,
-    address: sender,
-  });
+  const payload = await getSignerPayload(api, method, nonce, period);
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 

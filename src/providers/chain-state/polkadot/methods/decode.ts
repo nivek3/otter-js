@@ -9,8 +9,12 @@ export interface DecodeParams {
 export const decode = function ({ api, serialized }: DecodeParams) {
   const extrinsic = api.createType('Extrinsic', addHexPrefix(serialized));
   const nonce = extrinsic.nonce.toNumber();
-
+  let period: number | undefined;
+  if (extrinsic.era?.isMortalEra) {
+    period = extrinsic.era.asMortalEra?.period.toNumber();
+  }
   return {
     nonce,
+    period,
   };
 };
