@@ -10,6 +10,7 @@ message Network {
     string coin         = 3;
     string provider     = 4;
     int32 dust_limit    = 5;
+    string fork_chain   = 6;
 }
 
 message DeployAccountRequest {
@@ -62,7 +63,7 @@ message BuildTransactionRequest {
 
 message HashForSignatureRequest {
     Network network                         = 1;
-    string pub_key                          = 2;
+    string pub_key                          = 2 [deprecated = true];
     string serialized                       = 3;
     repeated UnspentTransactionOutput utxos = 4;  // required for multisig and wintiness txns
 }

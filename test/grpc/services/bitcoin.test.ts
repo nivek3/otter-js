@@ -17,7 +17,7 @@ const Bitcoin = (grpc.loadPackageDefinition(packageDefinition) as any)?.bitcoin.
 let client;
 
 describe('Bitcoin service', () => {
-  describe('BuildAccount', () => {
+  describe('Bitcoin', () => {
     beforeAll(async () => {
       await grpcServer.start();
       client = new Bitcoin(`localhost:${process.env.GRPC_PORT}`, grpc.credentials.createInsecure());
@@ -183,7 +183,7 @@ describe('Bitcoin service', () => {
           const HashForSignature = promisify(client.HashForSignature.bind(client));
           const { serialized, signatures } = await HashForSignature(req);
           expect(serialized).toEqual(
-            '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd010000006f000000004c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
+            '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
           );
           expect(signatures).toEqual(
             expect.arrayContaining([
@@ -229,7 +229,7 @@ describe('Bitcoin service', () => {
               },
             ],
             serialized:
-              '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd010000006f000000004c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
+              '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
             signatures: [
               {
                 signature:
@@ -275,6 +275,7 @@ describe('Bitcoin service', () => {
                 pubKeyHash: '0x71',
                 scriptHash: '0xc4',
                 coin: 'doge',
+                forkChain: 'bitcoin',
               },
             },
             (err: grpc.ServiceError, response) => {
@@ -300,6 +301,7 @@ describe('Bitcoin service', () => {
                 pubKeyHash: '0x71',
                 scriptHash: '0xc4',
                 coin: 'doge',
+                forkChain: 'bitcoin',
               },
             },
             (_err: grpc.ServiceError, response) => {
@@ -311,7 +313,7 @@ describe('Bitcoin service', () => {
       });
 
       describe('BuildTransaction', () => {
-        test('multi utxos', async () => {
+        test('one utxos', async () => {
           const req = {
             changer: 'nbR3zkkjqKUhYxmm1sJkkwzAhjFESTr2X6',
             recipients: [
@@ -332,6 +334,7 @@ describe('Bitcoin service', () => {
               pubKeyHash: '0x71',
               scriptHash: '0xc4',
               coin: 'doge',
+              forkChain: 'bitcoin',
             },
             params: {
               feeRate: '55',
@@ -360,6 +363,7 @@ describe('Bitcoin service', () => {
               pubKeyHash: '0x71',
               scriptHash: '0xc4',
               coin: 'doge',
+              forkChain: 'bitcoin',
             },
             serialized:
               '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff01001edc0c170000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
@@ -396,6 +400,7 @@ describe('Bitcoin service', () => {
               pubKeyHash: '0x71',
               scriptHash: '0xc4',
               coin: 'doge',
+              forkChain: 'bitcoin',
             },
             serialized:
               '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',

@@ -1,9 +1,9 @@
+import 'dotenv/config';
 import * as http from 'http';
 
 import app from '../rest';
 import logger from '../logger';
 import { LoggifyClass } from '../decorators/Loggify';
-
 @LoggifyClass
 export class ApiService {
   port: number;

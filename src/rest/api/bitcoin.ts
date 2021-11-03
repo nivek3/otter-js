@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 const router = require('express').Router({ mergeParams: true });
 import { provider } from '../../providers/chain-state/bitcoin/bitcoin';
 import logger from '../../logger';
@@ -15,7 +15,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
-router.post('/deployMultisigAccount', async function (req: Request, res: Response, next) {
+router.post('/deployMultisigAccount', async function (req: Request, res: Response, next: NextFunction) {
   try {
     const account = provider.deployMultisigAccount(req.body);
     return res.json({
@@ -27,7 +27,7 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
   }
 });
 
-router.post('/buildTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildTransaction', async function (req: Request, res: Response, next: NextFunction) {
   try {
     const data = await provider.buildTransaction(req.body);
     return res.json(data);
@@ -37,7 +37,7 @@ router.post('/buildTransaction', async function (req: Request, res: Response, ne
   }
 });
 
-router.post('/hashForSignature', async function (req: Request, res: Response, next) {
+router.post('/hashForSignature', async function (req: Request, res: Response, next: NextFunction) {
   try {
     const data = provider.hashForSignature(req.body);
     return res.json(data);
@@ -47,7 +47,7 @@ router.post('/hashForSignature', async function (req: Request, res: Response, ne
   }
 });
 
-router.post('/signTransaction', async function (req: Request, res: Response, next) {
+router.post('/signTransaction', async function (req: Request, res: Response, next: NextFunction) {
   try {
     const data = provider.signTransaction(req.body);
     return res.json(data);
@@ -57,7 +57,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
   }
 });
 
-router.post('/sendTransaction', async function (req: Request, res: Response, next) {
+router.post('/sendTransaction', async function (req: Request, res: Response, next: NextFunction) {
   try {
     const data = await provider.sendTransaction(req.body);
     return res.json(data);

@@ -1,7 +1,7 @@
 import { ec as EC } from 'elliptic';
+import ECSignature from 'elliptic/lib/elliptic/ec/signature';
 import rp from 'request-promise';
-import bitGoUTXO from '@bitgo/utxo-lib';
-import { payments, Network as bitcoinNetwork, address } from 'bitcoinjs-lib';
+import { payments, bitgo, networks, Network as BitgoNetwork, classify, BitcoinJSNetwork, Transaction } from '@cryptoless/utxo-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
 import { parseSignature } from '../../../utils/signature';
@@ -39,9 +39,10 @@ export class Provider {
     validator.assert(DeployAccountRequestSchema, req);
 
     const { key, network: reqNetWork } = req;
-    const network = this.getNetWork(reqNetWork!) as bitcoinNetwork;
-
+    const network = this.getNetWork(reqNetWork!) as BitcoinJSNetwork;
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
     const pubkey = Buffer.from(key!, 'hex');
+
     const { address } = payments.p2pkh({ pubkey, network });
     return address!;
   }
@@ -50,13 +51,17 @@ export class Provider {
     validator.assert(DeployMultisigAccountRequestSchema, req);
 
     const { keys, threshold, network: reqNetWork } = req;
-    const network = this.getNetWork(reqNetWork!);
+    const network = this.getNetWork(reqNetWork!) as BitcoinJSNetwork;
+    if (!network) throw new AppError(errors.INVALID_NETWORK);
 
     const pubKeys = keys!.map((hex) => Buffer.from(hex, 'hex'));
-    const redeemScript = bitGoUTXO.script.multisig.output.encode(threshold, pubKeys);
-    const scriptPubKey = bitGoUTXO.script.scriptHash.output.encode(bitGoUTXO.crypto.hash160(redeemScript));
 
-    return bitGoUTXO.address.fromOutputScript(scriptPubKey, network);
+    const { address } = payments.p2sh({
+      redeem: payments.p2ms({ m: threshold, pubkeys: pubKeys, network }),
+      network,
+    });
+
+    return address!;
   }
 
   async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
@@ -64,19 +69,21 @@ export class Provider {
 
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
+
     if (!network) throw new AppError(errors.INVALID_NETWORK);
     if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
 
     const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
     const feePerKb = await this.getReqFeePerKb(reqNetWork!.provider!, params?.feeRate, 1);
 
-    this.calcInputBytes(utxos);
+    this.calcInputBytes(utxos, network as BitcoinJSNetwork);
 
     const { inputs, outputs } = this.selectCoins(utxos, recipients, feePerKb);
 
     if (!inputs || !outputs) throw new AppError(errors.NOT_ENOUGH_BALANCE);
 
-    const txb = new bitGoUTXO.TransactionBuilder(network);
+    const txb = bitgo.createTransactionBuilderForNetwork(network);
+
     inputs.forEach((input) => {
       let prevOutScript: Buffer | undefined;
       if (input.scriptPubKey) {
@@ -84,9 +91,8 @@ export class Provider {
       }
       txb.addInput(input.txid, input.vout || 0, input.sequence, prevOutScript);
     });
-
     outputs.forEach((output: { address: string; value: number }) => {
-      if (!address && output.value < dustLimit) return;
+      if (!output.address && output.value < dustLimit) return;
       txb.addOutput(output.address || changer, output.value);
     });
 
@@ -100,17 +106,18 @@ export class Provider {
 
     const { utxos, serialized, network: reqNetWork } = req as Required<HashForSignatureRequest>;
     const network = this.getNetWork(reqNetWork!);
+    const hashType = bitgo.getDefaultSigHash(network);
 
     if (!network) throw new AppError(errors.INVALID_NETWORK);
     if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
 
     const utxoMap = new Map(utxos.map((utxo: any) => [this.getUtxoKey(utxo), utxo]));
-    const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
-    const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
-    const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
+
+    const tx = bitgo.createTransactionFromHex(serialized, network);
+    const txb = bitgo.createTransactionBuilderFromTransaction(tx);
 
     const signatures: Signature[] = [];
-    for (let i = 0; i < txb.inputs.length; i++) {
+    for (let i = 0; i < tx.ins.length; i++) {
       const { hash, index } = txb.tx.ins[i];
       const txid = this.getTxId(hash);
       const utxo = utxoMap.get(this.getUtxoKey({ txid, vout: index }));
@@ -124,16 +131,16 @@ export class Provider {
       const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
       for (const pub of signers!) {
         const pubKey = Buffer.from(pub, 'hex');
-        txb.prepareInput(i, pubKey, redeemScriptBuffer);
-        const hash: Buffer = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
+        const { signatureHash } = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
         signatures.push({
           pubKey: pub,
-          hash: hash.toString('hex'),
+          hash: signatureHash.toString('hex'),
         });
       }
     }
+
     return {
-      serialized: txb.buildIncomplete().toHex(),
+      serialized,
       signatures,
     };
   }
@@ -141,9 +148,9 @@ export class Provider {
   signTransaction(req: SignTransactionRequest): TransactionReply {
     validator.assert(SignTransactionRequestSchema, req);
 
-    const hashType = bitGoUTXO.Transaction.SIGHASH_ALL;
     const { serialized, utxos, signatures, network: reqNetwork } = req as Required<SignTransactionRequest>;
     const network = this.getNetWork(reqNetwork!);
+    const hashType = bitgo.getDefaultSigHash(network);
 
     if (!network) throw new AppError(errors.INVALID_NETWORK);
     if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
@@ -156,14 +163,12 @@ export class Provider {
       return acc;
     }, {});
 
-    const tx = bitGoUTXO.Transaction.fromHex(serialized, network);
-    const txb = bitGoUTXO.TransactionBuilder.fromTransaction(tx, network);
+    const tx = bitgo.createTransactionFromHex(serialized, network);
+    const txb = bitgo.createTransactionBuilderFromTransaction(tx);
 
-    for (let i = 0; i < txb.inputs.length; i++) {
-      const input = txb.inputs[i];
-      const ins = txb.tx.ins[i];
+    for (let i = 0; i < tx.ins.length; i++) {
+      const ins = tx.ins[i];
       const { hash, index } = ins;
-      const { redeemScript, redeemScriptType } = input;
       const txid = this.getTxId(hash);
       const utxo = utxoMap.get(this.getUtxoKey({ txid, vout: index }));
       if (!utxo) {
@@ -171,35 +176,28 @@ export class Provider {
           details: `${errors.NO_MATCHING_UTXO_FOUND.details}: ${txid}-${index}`,
         });
       }
-      const { signers } = utxo;
+      const { signers, redeemScript } = utxo;
       const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
 
       for (const pub of signers!) {
         const pubKey = Buffer.from(pub, 'hex');
         const key = ec.keyFromPublic(pub, 'hex');
-        txb.prepareInput(i, pubKey, redeemScriptBuffer);
-        const signingData: Buffer = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
+        const { signatureHash } = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
         const data = signatureMap[pub];
         if (!(Array.isArray(data) && data.length)) {
           throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
         }
         const sig = data.find((sig) => {
-          const signature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.from(sig, 'hex'));
-          return key.verify(signingData, signature.toDER());
+          const signature = new ECSignature({
+            r: sig.slice(0, sig.length / 2),
+            s: sig.slice(sig.length / 2, sig.length),
+          });
+          return key.verify(signatureHash, signature);
         });
         if (!sig) throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
-
-        const ecSignature = bitGoUTXO.ECSignature.fromRSBuffer(Buffer.from(sig!, 'hex'));
-
-        let sin = 0;
-        if (redeemScriptBuffer && redeemScriptType === bitGoUTXO.script.types.MULTISIG) {
-          sin = input?.pubKeys?.findIndex((pub: Buffer) => pub.equals(pubKey));
-          if (-1 === sin) throw new AppError(errors.NO_MATCHING_PUBKEY_FOUND);
-        }
-        txb.signInput(i, sin, ecSignature, hashType);
+        txb.signInput(i, pubKey, Buffer.from(sig, 'hex'), hashType);
       }
     }
-
     const utxoTx = txb.build();
     return {
       hash: utxoTx.getId(),
@@ -247,15 +245,20 @@ export class Provider {
     });
   }
 
-  getNetWork({ scriptHash, pubKeyHash, coin }: Network): any {
-    const network = Object.values(bitGoUTXO.networks).find(
+  getNetWork({ scriptHash, pubKeyHash, coin, forkChain }: Network): BitgoNetwork {
+    const bitgoNetwork: any = Object.values(networks).find(
       (network: any) => network.scriptHash === Number(scriptHash) && network.pubKeyHash === Number(pubKeyHash) && network.coin === coin,
     );
-    if (network) return network;
+    let forkNetwork = bitgoNetwork || (forkChain && networks[forkChain]) || networks.bitcoin;
 
-    const name = `${coin}-${scriptHash}-${pubKeyHash}`;
-    bitGoUTXO.networks[name] = { scriptHash: Number(scriptHash), pubKeyHash: Number(pubKeyHash), coin };
-    return bitGoUTXO.networks[name];
+    const network = {
+      ...forkNetwork,
+      scriptHash: Number(scriptHash),
+      pubKeyHash: Number(pubKeyHash),
+      coin,
+      forkChain: forkNetwork,
+    };
+    return network as BitgoNetwork;
   }
 
   getUtxoKey(utxo: UnspentTransactionOutput) {
@@ -268,9 +271,8 @@ export class Provider {
   }
 
   // https://gist.github.com/junderw/b43af3253ea5865ed52cb51c200ac19c
-  calcInputBytes(utxos: UnspentTransactionOutput[]) {
-    const types = bitGoUTXO.script.types;
-    const classifyOutput = bitGoUTXO.script.classifyOutput;
+  calcInputBytes(utxos: UnspentTransactionOutput[], network: BitcoinJSNetwork) {
+    const types = classify.types;
     const inputs: Record<string, number> = {
       'MULTISIG-P2SH': 49 * 4,
       'MULTISIG-P2WSH': 6 + 41 * 4,
@@ -287,18 +289,19 @@ export class Provider {
 
       const { scriptPubKey, redeemScript } = utxo;
       if (!scriptPubKey) return;
-      const type: string = classifyOutput(Buffer.from(scriptPubKey, 'hex'));
+
+      const type: string = classify.output(Buffer.from(scriptPubKey, 'hex'));
       if (!inputs[type]) return;
 
       let length: number = 0;
       if (redeemScript) {
         const redeemScriptBuffer = Buffer.from(redeemScript, 'hex');
-        const redeemScriptType = classifyOutput(redeemScriptBuffer);
-        if (redeemScriptType == types.MULTISIG) {
+        const redeemScriptType = classify.output(redeemScriptBuffer);
+        if (redeemScriptType === types.P2MS) {
           const typeKey = Object.keys(types).find((key) => types[key] === type);
           const newKey = `MULTISIG-${typeKey}`;
-          const { m, pubKeys } = bitGoUTXO.script.multisig.output.decode(redeemScriptBuffer);
-          const n = pubKeys.length;
+          const { m = 0, pubkeys = [] } = payments.p2ms({ output: redeemScriptBuffer, network });
+          const n = pubkeys.length;
           const multiplier = newKey === 'MULTISIG-P2SH' ? 4 : 1;
           const weight = inputs[newKey] + (73 * m + 34 * n) * multiplier;
           length = Math.ceil(weight / 4);

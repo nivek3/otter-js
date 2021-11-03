@@ -17,7 +17,7 @@ export async function setupConnection(): Promise<ApiPromise> {
     } else {
       return api;
     }
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(error.message);
   }
 }
