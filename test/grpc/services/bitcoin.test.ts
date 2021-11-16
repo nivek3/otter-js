@@ -235,16 +235,19 @@ describe('Bitcoin service', () => {
                 signature:
                   'b55cd0a2721d850a064bab91b1fabc85cd84214c539d7a70cc32504bd4e793e44ab7684b4daae0aa0ea12789c848d8daf0b35ffe477370e13ed62a224114978a',
                 pubKey: '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
+                hash: '5d7e57fd02edcb9d8b31e711d0a38c1c31a3403158d617ca6589773a057b053f',
               },
               {
                 signature:
                   '848a041a9172d9de0f8c7097ba0da143b2073ddc564eec6c7d4e628e8e4b53ab23a7aa0da73bf3328d0d6dbfc76a4bbd4a4a8a97f127db99f86383d7fcafa287',
                 pubKey: '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
+                hash: '5d7e57fd02edcb9d8b31e711d0a38c1c31a3403158d617ca6589773a057b053f',
               },
               {
                 signature:
                   '4dec81ebbc7e4983d657eeab7a50cd533e950be7e8689e3f7fb713efd6aeac3626a8d9862b703c47f2227c3ad58f9682c0ef89b0f37cc48ae2db9828f7026d59',
                 pubKey: '02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231',
+                hash: '53ef79ac4212fb3d6ee4d224f8699fe38f0273320cbadd5e038b48a9f23d73af',
               },
             ],
             network: {
@@ -409,6 +412,7 @@ describe('Bitcoin service', () => {
                 signature:
                   'd36d9fbc911d80a7fe503baaddfc67ffbca024cba19fc3891898030dbdf83fa134b5f3c1ca24bb55768d63656f2dbdc74fafb7db6e84f6e3471a65b65e24586e',
                 pubKey: '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
+                hash: '1c4d9579f614365d7c45005a429c840e4dcee590dea794bbcd212919b764fbd5',
               },
             ],
           };

@@ -156,12 +156,6 @@ export class Provider {
     if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
 
     const utxoMap: Map<string, UnspentTransactionOutput> = new Map(utxos.map((utxo) => [this.getUtxoKey(utxo), utxo]));
-    const signatureMap = signatures.reduce((acc, cur) => {
-      const { signature, pubKey } = cur;
-      const { r, s } = parseSignature(signature!);
-      acc[pubKey!] = [...new Set(acc[pubKey!]).add(r + s)];
-      return acc;
-    }, {});
 
     const tx = bitgo.createTransactionFromHex(serialized, network);
     const txb = bitgo.createTransactionBuilderFromTransaction(tx);
@@ -176,26 +170,26 @@ export class Provider {
           details: `${errors.NO_MATCHING_UTXO_FOUND.details}: ${txid}-${index}`,
         });
       }
-      const { signers, redeemScript } = utxo;
+      const { signers = [], redeemScript } = utxo;
       const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
+      const prepare = signers[0];
+      const pubKey = Buffer.from(prepare, 'hex');
+      const { signatureHash } = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
 
-      for (const pub of signers!) {
-        const pubKey = Buffer.from(pub, 'hex');
-        const key = ec.keyFromPublic(pub, 'hex');
-        const { signatureHash } = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
-        const data = signatureMap[pub];
-        if (!(Array.isArray(data) && data.length)) {
+      const related = signatures.filter((sig) => sig.hash === signatureHash.toString('hex'));
+      if (!related.length) throw new AppError(errors.INVALID_SIGNATURES);
+
+      for (const { signature, pubKey } of related!) {
+        const pubKeyBuf = Buffer.from(pubKey!, 'hex');
+        const key = ec.keyFromPublic(pubKeyBuf, 'hex');
+        if (!signature) {
           throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
         }
-        const sig = data.find((sig) => {
-          const signature = new ECSignature({
-            r: sig.slice(0, sig.length / 2),
-            s: sig.slice(sig.length / 2, sig.length),
-          });
-          return key.verify(signatureHash, signature);
-        });
-        if (!sig) throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
-        txb.signInput(i, pubKey, Buffer.from(sig, 'hex'), hashType);
+        const { r, s } = parseSignature(signature!);
+        const ecSignature = new ECSignature({ r, s });
+
+        if (!key.verify(signatureHash, ecSignature)) throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
+        txb.signInput(i, pubKeyBuf, Buffer.from(r + s, 'hex'), hashType);
       }
     }
     const utxoTx = txb.build();
