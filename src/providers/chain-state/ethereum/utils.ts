@@ -1,6 +1,7 @@
-import { bufferToHex, pubToAddress, toChecksumAddress } from 'ethereumjs-util';
+import { BNLike, bufferToHex, pubToAddress, toChecksumAddress } from 'ethereumjs-util';
 import { ec as EC } from 'elliptic';
 const ec = new EC('secp256k1');
+import { toBN } from 'web3-utils';
 
 export const pubToBIP55Address = (key: string) => {
   const pair = ec.keyFromPublic(key, 'hex');
@@ -15,4 +16,8 @@ export const compactPublicKey = (key: string) => {
     key = '04' + key;
   }
   return ec.keyFromPublic(key, 'hex').getPublic(true, 'hex');
+};
+
+export const isBip1559Transaction = (type?: BNLike) => {
+  return type && toBN(type.toString()).eqn(2);
 };

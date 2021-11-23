@@ -14,7 +14,7 @@ import {
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
   BuildTransferTransactionRequest,
-  BuildTokenTransferTransactionRequest,
+  BuildERC20TransferTransactionRequest,
   SignTransactionRequest,
   RebuildTransactionRequest,
   SendTransactionRequest,
@@ -23,8 +23,8 @@ import {
   SignMultisigTransferInputRequest,
   SignMultisigTransferInputReply,
   BuildMultisigTransferTransactionRequest,
-  BuildMultisigTokenTransferInputRequest,
-  SignMultisigTokenTransferInputRequest,
+  BuildMultisigERC20TransferInputRequest,
+  SignMultisigERC20TransferInputRequest,
   HashForSignatureRequest,
   DecodeTransactionRequest,
 } from '../../__proto__/ethereum/types';
@@ -57,9 +57,15 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
     ctx.body = await provider.buildTransferTransaction(req);
   },
 
-  BuildTokenTransferTransaction: async function (ctx: ImplContext<BuildTokenTransferTransactionRequest, TransactionReply>) {
+  BuildERC20TransferTransaction: async function (ctx: ImplContext<BuildERC20TransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildTokenTransferTransaction(req);
+    ctx.body = await provider.buildERC20TransferTransaction(req);
+  },
+
+  // deprecated
+  BuildTokenTransferTransaction: async function (ctx: ImplContext<BuildERC20TransferTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildERC20TransferTransaction(req);
   },
 
   SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
@@ -92,14 +98,26 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
     ctx.body = await provider.buildMultisigTransferTransaction(req);
   },
 
-  BuildMultisigTokenTransferInput: async function (ctx: ImplContext<BuildMultisigTokenTransferInputRequest, TransactionReply>) {
+  BuildMultisigERC20TransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.buildMultisigTokenTransferInput(req);
+    ctx.body = provider.buildMultisigERC20TransferInput(req);
   },
 
-  SignMultisigTokenTransferInput: async function (ctx: ImplContext<SignMultisigTokenTransferInputRequest, TransactionReply>) {
+  SignMultisigERC20TransferInput: async function (ctx: ImplContext<SignMultisigERC20TransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.signMultisigTokenTransferInput(req);
+    ctx.body = provider.signMultisigERC20TransferInput(req);
+  },
+
+  // deprecated
+  BuildMultisigTokenTransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.buildMultisigERC20TransferInput(req);
+  },
+
+  // deprecated
+  SignMultisigTokenTransferInput: async function (ctx: ImplContext<SignMultisigERC20TransferInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.signMultisigERC20TransferInput(req);
   },
 
   HashForSignature: async function (ctx: ImplContext<HashForSignatureRequest, TransactionReply>) {
