@@ -142,8 +142,11 @@ export class Provider {
     validator.assert(DecodeTransactionRequestSchema, req);
 
     const { serialized } = req as Required<DecodeTransactionRequest>;
-    const tx = TxRaw.decode(fromHex(serialized));
-    const authInfo = AuthInfo.decode(tx.authInfoBytes);
+    const { bodyBytes, authInfoBytes } = TxRaw.decode(fromHex(serialized));
+
+    const authInfo = AuthInfo.decode(authInfoBytes);
+    const txBody = registry.decodeTxBody(bodyBytes);
+
     const { signerInfos, fee } = AuthInfo.toJSON(authInfo) as any;
     const params: TransactionParams = {
       fee: {
@@ -151,7 +154,9 @@ export class Provider {
         gas: fee.gasLimit,
       },
       sequence: Number(signerInfos[0].sequence),
+      memo: txBody.memo,
     };
+
     return params;
   }
 
