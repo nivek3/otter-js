@@ -69,6 +69,15 @@ message SendTransactionRequest {
     string serialized = 2;
 }
 
+message BuildTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string data              = 5;
+    TransactionParams params = 6;
+}
+
 message RebuildTransactionRequest {
     Network network          = 1;
     string serialized        = 2;
@@ -77,11 +86,13 @@ message RebuildTransactionRequest {
 }
 
 message BuildMultisigTransferInputRequest {
-    string to_address = 1;
-    string quantity   = 2;
-    string data       = 3;
-    int32 expire_time = 4;
-    int32 sequence_id = 5;
+    Network network   = 1;
+    string to_address = 2;
+    string quantity   = 3;
+    string data       = 4;
+    int32 expire_time = 5;
+    int32 sequence_id = 6;
+    string contract   = 7;
 }
 
 message BuildMultisigTransferInputReply {
@@ -100,31 +111,28 @@ message SignMultisigTransferInputReply {
 }
 
 message BuildMultisigTransferTransactionRequest {
-    Network network          = 1;
-    string contract          = 2;
-    string input             = 3;
-    string sender            = 4;
-    TransactionParams params = 5;
+    Network network               = 1;
+    string contract               = 2;
+    string data                   = 3;
+    string sender                 = 4;
+    TransactionParams params      = 5;
+    string serialized             = 6;
+    repeated Signature signatures = 7;
 }
+
 message BuildMultisigERC20TransferInputRequest {
-    string token_address = 1;
-    string to_address    = 2;
-    string quantity      = 3;
-    int32 expire_time    = 4;
-    int32 sequence_id    = 5;
+    Network network      = 1;
+    string token_address = 2;
+    string to_address    = 3;
+    string quantity      = 4;
+    int32 expire_time    = 5;
+    int32 sequence_id    = 6;
+    string contract      = 7;
 }
 
 message SignMultisigERC20TransferInputRequest {
     string serialized             = 2;
     repeated Signature signatures = 3;
-}
-
-message BuildMultisigTokenTransferTransactionRequest {
-    Network network          = 1;
-    string contract          = 2;
-    string input             = 3;
-    string sender            = 4;
-    TransactionParams params = 5;
 }
 
 message HashForSignatureRequest {
@@ -146,6 +154,7 @@ service Ethereum {
     }
     rpc BuildERC20TransferTransaction(BuildERC20TransferTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
     rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}

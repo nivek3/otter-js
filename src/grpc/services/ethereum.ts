@@ -7,6 +7,7 @@ import { ImplContext, ProxyImp } from '../../utils/context';
 import { ProtoGrpcType } from '../../__proto__/ethereum';
 import { TransactionReply } from '../../__proto__/common/types';
 import {
+  BuildTransactionRequest,
   TransactionParams,
   DeployAccountRequest,
   DeployAccountReply,
@@ -73,6 +74,11 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
     ctx.body = provider.signTransaction(req);
   },
 
+  BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildTransaction(req);
+  },
+
   RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.rebuildTransaction(req);
@@ -85,7 +91,7 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
 
   BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, BuildMultisigTransferInputReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.buildMultisigTransferInput(req);
+    ctx.body = await provider.buildMultisigTransferInput(req);
   },
 
   SignMultisigTransferInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, SignMultisigTransferInputReply>) {
@@ -100,7 +106,7 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
 
   BuildMultisigERC20TransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.buildMultisigERC20TransferInput(req);
+    ctx.body = await provider.buildMultisigERC20TransferInput(req);
   },
 
   SignMultisigERC20TransferInput: async function (ctx: ImplContext<SignMultisigERC20TransferInputRequest, TransactionReply>) {
@@ -111,7 +117,7 @@ export const EthereumImp: ProxyImp<EthereumHandlers> = {
   // deprecated
   BuildMultisigTokenTransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.buildMultisigERC20TransferInput(req);
+    ctx.body = await provider.buildMultisigERC20TransferInput(req);
   },
 
   // deprecated

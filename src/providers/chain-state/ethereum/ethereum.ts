@@ -1,7 +1,7 @@
 import { isNil, pick } from 'lodash';
 import Web3 from 'web3';
+import { toBN, toHex } from 'web3-utils';
 import type { TransactionConfig } from 'web3-core';
-import { toHex, toBN } from 'web3-utils';
 import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx';
 import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
@@ -18,10 +18,12 @@ import {
 } from 'ethereumjs-util';
 import { canonicalSignature } from '../../../utils/signature';
 import { Validator } from '../../../utils/ajv';
+import { errors, AppError } from '../../../error';
 
 import { TransactionReply, Signature } from '../../../__proto__/common/types';
 import {
   Network,
+  BuildTransactionRequest,
   TransactionParams,
   DeployAccountRequest,
   BuildAccountTransactionRequest,
@@ -42,6 +44,7 @@ import {
 import { pubToBIP55Address, compactPublicKey, isBip1559Transaction } from './utils';
 
 import {
+  BuildTransactionRequestSchema,
   EthereumRefSchema,
   DeployAccountRequestSchema,
   BuildAccountTransactionRequestSchema,
@@ -58,7 +61,6 @@ import {
   DecodeTransactionRequestSchema,
   BuildMultisigTransferTransactionRequestSchema,
 } from './ethereum.schema';
-import { AppError, errors } from '../../../error';
 
 type FactoryTxData = TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData;
 
@@ -123,7 +125,7 @@ export class Provider {
     const web3 = new Web3(provider!);
     const txInput = {
       to,
-      value: quantity,
+      value: toBN(quantity),
     };
     const txData = await this.getTxData(txInput, common, params!, web3, from);
     const tx = TransactionFactory.fromTxData(txData, txOptions);
@@ -193,6 +195,34 @@ export class Provider {
     return {
       serialized: serializedTx,
       hash: '0x' + signedTx.hash().toString('hex'),
+    };
+  }
+
+  async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildTransactionRequestSchema, req);
+
+    const { params = {}, network, from, to, quantity, data } = req as Required<BuildTransactionRequest>;
+    const { provider } = network!;
+    const common = this.getTxCommon(network!);
+    const web3 = this.getWeb3Provider(provider!);
+    const txOptions = { common };
+    const txInput = {
+      from,
+      to,
+      data,
+      value: toBN(quantity),
+    };
+
+    const txData = await this.getTxData(txInput, common, params!, web3, from);
+    const tx = TransactionFactory.fromTxData(txData, txOptions);
+
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const reserialized = tx.serialize().toString('hex');
+
+    const signature = { hash };
+    return {
+      serialized: reserialized,
+      signatures: [signature],
     };
   }
 
@@ -281,13 +311,12 @@ export class Provider {
     });
   }
 
-  buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): TransactionReply {
+  async buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigTransferInputRequestSchema, req);
 
-    const { toAddress, quantity, sequenceId } = req as Required<BuildMultisigTransferInputRequest>;
-    if (!(sequenceId > 0)) {
-      throw new Error('sequenceId should be positive integer');
-    }
+    const { toAddress, quantity, network } = req as Required<BuildMultisigTransferInputRequest>;
+
+    const sequenceId = await this.getReqSequenceId(network?.provider, req?.contract, req?.sequenceId);
     const prefix = 'ETHER';
     const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
     const data = req.data || '';
@@ -311,32 +340,48 @@ export class Provider {
 
   signMultisigTransferInput(req: SignMultisigTransferInputRequest): TransactionReply {
     validator.assert(SignMultisigTransferInputRequestSchema, req);
-
     const { serialized, signatures } = req as Required<SignMultisigTransferInputRequest>;
-    const { signature } = signatures[0];
-    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
-    if (decodedData?.name !== 'sendMultiSig') throw new Error('invalid hash');
-    const params = decodedData.params.reduce((accum, cur) => {
-      accum[cur.name] = cur.value;
-      return accum;
-    }, {});
-    const { toAddress, value: quantity, data, expireTime, sequenceId } = params;
-    const input = contract.methods
-      .sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, addHexPrefix(signature!))
-      .encodeABI();
+    const input = this.signSendMultiSigInput(serialized, signatures[0].signature!);
+
     return {
       serialized: stripHexPrefix(input),
     };
   }
 
+  signSendMultiSigInput(serialized: string, signature: string): string {
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
+    if (decodedData?.name !== 'sendMultiSig') throw new AppError(errors.INVALID_ARGUMENT, { details: 'invalid hash' });
+    const params = decodedData.params.reduce((accum, cur) => {
+      accum[cur.name] = cur.value;
+      return accum;
+    }, {});
+    const { toAddress, value: quantity, data, expireTime, sequenceId } = params;
+    return contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, addHexPrefix(signature!)).encodeABI();
+  }
+
+  signSendMultiSigTokenInput(serialized: string, signature: string): string {
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
+    if (decodedData?.name !== 'sendMultiSigToken') throw new AppError(errors.INVALID_ARGUMENT, { details: 'invalid hash' });
+    const params = decodedData.params.reduce((accum, cur) => {
+      accum[cur.name] = cur.value;
+      return accum;
+    }, {});
+    const { toAddress, value: quantity, tokenContractAddress, expireTime, sequenceId } = params;
+    return contract.methods
+      .sendMultiSigToken(toAddress, quantity, tokenContractAddress, expireTime, sequenceId, addHexPrefix(signature!))
+      .encodeABI();
+  }
+
   async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigTransferTransactionRequestSchema, req);
 
-    const { network, contract, input, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
+    const { network, contract, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
-    const web3 = this.getWeb3Provider(provider!);
+    const web3 = new Web3(provider!);
+    const input = stripHexPrefix(this.getReqInput(req));
+
     const data = addHexPrefix(input);
     const txInput: FactoryTxData = {
       to: contract,
@@ -353,10 +398,25 @@ export class Provider {
     };
   }
 
-  buildMultisigERC20TransferInput(req: BuildMultisigERC20TransferInputRequest): TransactionReply {
+  getReqInput(req: Pick<BuildMultisigTransferTransactionRequest, 'serialized' | 'signatures' | 'data'>): string {
+    const { serialized, signatures, data } = req;
+    if (data) return data;
+
+    const signature = signatures?.[0]?.signature;
+    if (!(signature && serialized)) throw new AppError(errors.INVALID_ARGUMENT, { details: 'required input and signature' });
+    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
+    if (decodedData?.name === 'sendMultiSigToken') return this.signSendMultiSigTokenInput(serialized, signature);
+    if (decodedData?.name === 'sendMultiSig') return this.signSendMultiSigInput(serialized, signature);
+
+    throw new AppError(errors.INVALID_ARGUMENT, { details: `can not decode the hex, decode name = ${decodedData?.name}` });
+  }
+
+  async buildMultisigERC20TransferInput(req: BuildMultisigERC20TransferInputRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigERC20TransferInputRequestSchema, req);
 
-    const { toAddress, quantity, sequenceId, tokenAddress } = req as Required<BuildMultisigERC20TransferInputRequest>;
+    const { toAddress, quantity, tokenAddress, network } = req as Required<BuildMultisigERC20TransferInputRequest>;
+    const sequenceId = await this.getReqSequenceId(network?.provider, req.contract, req.sequenceId);
+
     const expireTime = req.expireTime || Math.ceil(new Date().getTime() / 1000) + 600;
     const hash = this.getSha3ForConfirmationTokenTx(
       'ERC20',
@@ -380,17 +440,8 @@ export class Provider {
     validator.assert(SignMultisigERC20TransferInputRequestSchema, req);
 
     const { serialized, signatures } = req as Required<SignMultisigERC20TransferInputRequest>;
-    const { signature } = signatures[0];
-    const decodedData = abiDecoder.decodeMethod(addHexPrefix(serialized!));
-    if (decodedData?.name !== 'sendMultiSigToken') throw new Error('invalid hash');
-    const params = decodedData.params.reduce((accum, cur) => {
-      accum[cur.name] = cur.value;
-      return accum;
-    }, {});
-    const { toAddress, value: quantity, tokenContractAddress, expireTime, sequenceId } = params;
-    const input = contract.methods
-      .sendMultiSigToken(toAddress, quantity, tokenContractAddress, expireTime, sequenceId, addHexPrefix(signature!))
-      .encodeABI();
+    const input = this.signSendMultiSigTokenInput(serialized, signatures[0].signature!);
+
     return {
       serialized: stripHexPrefix(input),
     };
@@ -464,6 +515,20 @@ export class Provider {
       nonce = await web3.eth.getTransactionCount(address, 'pending');
     }
     return nonce;
+  }
+
+  private async getReqSequenceId(provider?: string, address?: string, sequenceId?: number) {
+    if (sequenceId === undefined) {
+      if (!provider || !address) throw new AppError(errors.INVALID_ARGUMENT);
+      const web3 = new Web3(provider);
+      sequenceId = toBN(
+        await web3.eth.call({
+          to: address,
+          data: '0xa0b7967b',
+        }),
+      ).toNumber();
+    }
+    return sequenceId;
   }
 
   private async getReqGasPrice(web3: Web3, gasPrice?: string) {

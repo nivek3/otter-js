@@ -15,6 +15,16 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
+router.post('/buildTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BuildTransaction =>', err);
+    return next(err);
+  }
+});
+
 router.post('/buildAccountTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildAccountTransaction(req.body);
@@ -77,7 +87,7 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
 
 router.post('/buildMultisigTransferInput', async function (req: Request, res: Response, next) {
   try {
-    const result = provider.buildMultisigTransferInput(req.body);
+    const result = await provider.buildMultisigTransferInput(req.body);
     return res.json(result);
   } catch (err) {
     logger.info('buildMultisigTransferInput =>', err);

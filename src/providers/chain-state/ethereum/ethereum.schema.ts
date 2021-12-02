@@ -92,6 +92,19 @@ export const SendTransactionRequestSchema = {
   },
 };
 
+export const BuildTransactionRequestSchema = {
+  type: 'object',
+  required: ['network', 'from', 'to', 'quantity', 'data'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    from: { type: 'string' },
+    to: { type: 'string' },
+    quantity: { type: 'string' },
+    data: { type: 'string' },
+    params: { $ref: 'base#/definitions/params' },
+  },
+};
+
 export const RebuildTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
@@ -104,7 +117,7 @@ export const RebuildTransactionRequestSchema = {
 
 export const BuildMultisigTransferInputRequestSchema = {
   type: 'object',
-  required: ['toAddress', 'quantity', 'data', 'expireTime', 'sequenceId'],
+  required: ['toAddress', 'quantity'],
   properties: {
     toAddress: { type: 'string' },
     quantity: { type: 'string' },
@@ -125,7 +138,7 @@ export const SignMultisigTransferInputRequestSchema = {
 
 export const BuildMultisigTransferTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'contract', 'input', 'sender'],
+  required: ['network', 'contract', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     contract: { type: 'string' },
@@ -137,7 +150,7 @@ export const BuildMultisigTransferTransactionRequestSchema = {
 
 export const BuildMultisigERC20TransferInputRequestSchema = {
   type: 'object',
-  required: ['tokenAddress', 'toAddress', 'quantity', 'expireTime', 'sequenceId'],
+  required: ['tokenAddress', 'toAddress', 'quantity'],
   properties: {
     tokenAddress: { type: 'string' },
     toAddress: { type: 'string' },
