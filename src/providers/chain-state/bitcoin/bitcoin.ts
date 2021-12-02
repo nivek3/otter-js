@@ -69,9 +69,11 @@ export class Provider {
 
     const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
+    const hashType = bitgo.getDefaultSigHash(network);
 
     if (!network) throw new AppError(errors.INVALID_NETWORK);
     if (!(Array.isArray(utxos) && utxos.length)) throw new AppError(errors.INVALID_UTXOS);
+    const utxoMap = new Map(utxos.map((utxo: any) => [this.getUtxoKey(utxo), utxo]));
 
     const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
     const feePerKb = await this.getReqFeePerKb(reqNetWork!.provider!, params?.feeRate, 1);
@@ -91,13 +93,39 @@ export class Provider {
       }
       txb.addInput(input.txid, input.vout || 0, input.sequence, prevOutScript);
     });
+
     outputs.forEach((output: { address: string; value: number }) => {
       if (!output.address && output.value < dustLimit) return;
       txb.addOutput(output.address || changer, output.value);
     });
+    const serialized = txb.buildIncomplete().toHex();
+    const signatures: Signature[] = [];
+
+    for (let i = 0; i < txb.tx.ins.length; i++) {
+      const { hash, index } = txb.tx.ins[i];
+      const txid = this.getTxId(hash);
+      const utxo = utxoMap.get(this.getUtxoKey({ txid, vout: index }));
+      if (!utxo) {
+        throw new AppError(errors.NO_MATCHING_UTXO_FOUND, {
+          details: `${errors.NO_MATCHING_UTXO_FOUND.details}: ${txid}-${index}`,
+        });
+      }
+
+      const { redeemScript, signers } = utxo;
+      const redeemScriptBuffer = redeemScript ? Buffer.from(redeemScript, 'hex') : undefined;
+      for (const pub of signers!) {
+        const pubKey = Buffer.from(pub, 'hex');
+        const { signatureHash } = txb.getSigningData(i, pubKey, redeemScriptBuffer, hashType);
+        signatures.push({
+          pubKey: pub,
+          hash: signatureHash.toString('hex'),
+        });
+      }
+    }
 
     return {
-      serialized: txb.buildIncomplete().toHex(),
+      serialized,
+      signatures,
     };
   }
 

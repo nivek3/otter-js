@@ -73,7 +73,7 @@ export const DeployMultisigAccountRequestSchema = {
 
 export const BuildTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'recipients', 'utxos', 'params'],
+  required: ['network', 'recipients', 'utxos'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     changer: { type: 'string' },
