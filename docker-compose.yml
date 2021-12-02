@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  crypto-wallet-core:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args:
+          GITHUB_TOKEN: ${GITHUB_TOKEN}
+    volumes:
+      - ./logs:/home/node/logs
+    ports:
+      - "3000:3000"
+      - "50051:50051"
+    env_file:
+      - .env
