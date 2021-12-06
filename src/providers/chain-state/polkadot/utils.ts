@@ -1,6 +1,7 @@
 import type { ApiPromise } from '@polkadot/api';
-import { Callback, Codec, Constructor, IKeyringPair, SignatureOptions } from '@polkadot/types/types';
+import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
+import { hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto';
 
 export const getCallHexAndHash = function (api: ApiPromise, to: string, amount: string) {
@@ -34,6 +35,12 @@ export const getSignerPayload = async function (api: ApiPromise, method: string,
   }
   return api.createType('SignerPayload', options);
 };
+
+export function getSignerSignatureHash(api: ApiPromise, payload: SignerPayload) {
+  const data = payload.toRaw().data;
+  const hash = data.length > 256 ? api.registry.hash(hexToU8a(data)).toHex() : data;
+  return hash;
+}
 
 export const trimObjectPrefix = <T = Record<string, string>>(source: T): T => {
   return Object.entries(source).reduce((pre, [k, v]) => {

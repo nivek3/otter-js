@@ -3,7 +3,7 @@ import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { SIGN_PLACEHOLDER } from '../const';
-import { trimObjectPrefix, getExtrinsicEra } from '../utils';
+import { trimObjectPrefix, getExtrinsicEra, getSignerSignatureHash } from '../utils';
 
 export interface RebuildParams {
   api: ApiPromise;
@@ -42,7 +42,8 @@ export const rebuild = async function ({ api, serialized, nonce, period }: Rebui
 
   const extrinsicHex = extrinsic.toHex();
   const txHash = u8aToHex(extrinsic.hash);
-  const hash = u8aToHex(blake2AsU8a(payload.toRaw().data));
+
+  const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
   return trimObjectPrefix({
     txHash,

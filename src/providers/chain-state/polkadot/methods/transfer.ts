@@ -2,7 +2,7 @@ import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { SIGN_PLACEHOLDER } from '../const';
-import { trimObjectPrefix, getSignerPayload } from '../utils';
+import { trimObjectPrefix, getSignerPayload, getSignerSignatureHash } from '../utils';
 export interface TransferParams {
   api: ApiPromise;
   quantity: string;
@@ -21,7 +21,7 @@ export const transfer = async function ({ api, quantity, nonce, from, to, period
   tx.addSignature(from, SIGN_PLACEHOLDER, payload.toPayload());
 
   const serialized = tx.toHex();
-  const hash = u8aToHex(blake2AsU8a(payload.toRaw().data));
+  const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
   return trimObjectPrefix({
     method,

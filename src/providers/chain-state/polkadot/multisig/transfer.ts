@@ -4,7 +4,7 @@ import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
 
 import { AppError, errors } from './../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
-import { getCallHexAndHash, trimObjectPrefix, getSignerPayload } from '../utils';
+import { getCallHexAndHash, trimObjectPrefix, getSignerPayload, getSignerSignatureHash } from '../utils';
 
 export interface TransferParams {
   api: ApiPromise;
@@ -60,7 +60,7 @@ export const transfer = async function ({
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
 
   const serialized = tx.toHex();
-  const hash = u8aToHex(blake2AsU8a(payload.toRaw().data));
+  const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
   return trimObjectPrefix({
     method,
