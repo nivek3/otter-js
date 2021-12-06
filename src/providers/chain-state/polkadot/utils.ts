@@ -29,6 +29,7 @@ export const getSignerPayload = async function (api: ApiPromise, method: string,
     version: api.extrinsicVersion,
     address,
   };
+
   if (period) {
     const extras = await getExtrinsicEra(api, period);
     Object.assign(options, extras);
@@ -36,10 +37,11 @@ export const getSignerPayload = async function (api: ApiPromise, method: string,
   return api.createType('SignerPayload', options);
 };
 
+// https://github.com/polkadot-js/api/blob/master/packages/types/src/extrinsic/util.ts
 export function getSignerSignatureHash(api: ApiPromise, payload: SignerPayload) {
-  const data = payload.toRaw().data;
-  const hash = data.length > 256 ? api.registry.hash(hexToU8a(data)).toHex() : data;
-  return hash;
+  const { data } = payload.toRaw();
+  const dataU8a = hexToU8a(data);
+  return dataU8a.length > 256 ? api.registry.hash(dataU8a).toHex() : data;
 }
 
 export const trimObjectPrefix = <T = Record<string, string>>(source: T): T => {

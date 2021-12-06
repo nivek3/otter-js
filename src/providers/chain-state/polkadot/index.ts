@@ -146,6 +146,7 @@ export class Provider {
       from,
       to,
       maxWeight,
+      ...params,
     });
     const signature = { hash };
     return {
@@ -219,6 +220,7 @@ export class Provider {
       recipients,
       sender,
       nonce,
+      ...params,
     });
     const signature = { hash };
     return {
@@ -243,6 +245,7 @@ export class Provider {
       txs: txs.map((tx) => addHexPrefix(tx)),
       sender,
       nonce,
+      ...params,
     });
     const signature = { hash };
     return {
