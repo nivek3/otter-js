@@ -99,7 +99,7 @@ export class Provider {
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const maxWeight = params?.maxWeight;
     const { method, serialized, hash } = await multisigTransfer({
       api,
@@ -132,7 +132,7 @@ export class Provider {
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const maxWeight = params?.maxWeight;
 
     const { serialized, hash } = await approveMultisig({
@@ -164,7 +164,7 @@ export class Provider {
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
 
     const { method, serialized, hash } = await cancelMultisig({
       api,
