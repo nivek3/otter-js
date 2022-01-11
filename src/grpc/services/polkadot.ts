@@ -12,9 +12,9 @@ import {
   DeployAccountRequest,
   DeployAccountReply,
   BuildTransferRequest,
-  BuildMultisigTransferRequest,
-  BuildMultisigApproveRequest,
-  BuildMultisigCancelRequest,
+  BuildMultisigApproveAsMultiRequest,
+  BuildMultisigAsMultiRequest,
+  BuildMultisigCancelAsMultiRequest,
   SendTransactionRequest,
   BuildBatchTransferTransactionRequest,
   BuildBatchTransactionRequest,
@@ -51,19 +51,23 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
     ctx.body = await provider.buildTransferTransaction(req);
   },
 
-  BuildMultisigTransaction: async function (ctx: ImplContext<BuildMultisigTransferRequest, TransactionReply>): Promise<void> {
+  BuildMultisigApproveAsMultiTransaction: async function (
+    ctx: ImplContext<BuildMultisigApproveAsMultiRequest, TransactionReply>,
+  ): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigTransaction(req);
+    ctx.body = await provider.buildMultisigApproveAsMultiTransaction(req);
   },
 
-  BuildMultisigApproveTransaction: async function (ctx: ImplContext<BuildMultisigApproveRequest, TransactionReply>): Promise<void> {
+  BuildMultisigAsMultiTransaction: async function (ctx: ImplContext<BuildMultisigAsMultiRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigApproveTransaction(req);
+    ctx.body = await provider.buildMultisigAsMultiTransaction(req);
   },
 
-  BuildMultisigCancelTransaction: async function (ctx: ImplContext<BuildMultisigCancelRequest, TransactionReply>): Promise<void> {
+  BuildMultisigCancelAsMultiTransaction: async function (
+    ctx: ImplContext<BuildMultisigCancelAsMultiRequest, TransactionReply>,
+  ): Promise<void> {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigCancelTransaction(req);
+    ctx.body = await provider.buildMultisigCancelAsMultiTransaction(req);
   },
 
   SignTransaction: async function (ctx: ImplContext<BuildTransferRequest, TransactionReply>): Promise<void> {

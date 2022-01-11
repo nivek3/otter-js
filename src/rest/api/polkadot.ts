@@ -37,32 +37,32 @@ router.post('/buildTransferTransaction', async function (req: Request, res: Resp
   }
 });
 
-router.post('/buildMultisigTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigApproveAsMultiTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.buildMultisigTransaction(req.body);
+    const data = await provider.buildMultisigApproveAsMultiTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('Multisig Transfer =>', err);
+    logger.info('BuildMultisigApproveAsMultiTransaction =>', err);
     return next(err);
   }
 });
 
-router.post('/buildMultisigApproveTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigAsMultiTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.buildMultisigApproveTransaction(req.body);
+    const data = await provider.buildMultisigAsMultiTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildMultisigApproveTransaction =>', err);
+    logger.info('BuildMultisigAsMultiTransaction =>', err);
     return next(err);
   }
 });
 
-router.post('/buildMultisigCancelTransaction', async function (req: Request, res: Response, next) {
+router.post('/BuildMultisigCancelAsMultiTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.buildMultisigCancelTransaction(req.body);
+    const data = await provider.buildMultisigCancelAsMultiTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildMultisigCancelTransaction =>', err);
+    logger.info('BuildMultisigCancelAsMultiTransaction =>', err);
     return next(err);
   }
 });

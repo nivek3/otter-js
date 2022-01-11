@@ -1,12 +1,12 @@
-import type { ApiPromise } from '@polkadot/api';
+import { ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
-import { blake2AsU8a, sortAddresses } from '@polkadot/util-crypto';
+import { blake2AsU8a, sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';
 
-import { AppError, errors } from './../../../../error';
+import { errors, AppError } from '../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash, trimObjectPrefix, getSignerPayload, getSignerSignatureHash } from '../utils';
 
-export interface TransferParams {
+export interface ApproveParams {
   api: ApiPromise;
   ss58Format: number;
   addresses: string[];
@@ -16,11 +16,12 @@ export interface TransferParams {
   to: string;
   sender: string;
   maxWeight?: number;
+  storeCall?: boolean;
   nonce: number;
   period?: number;
 }
 
-export const transfer = async function ({
+export async function multisigAsMulti({
   api,
   ss58Format, //
   addresses,
@@ -30,31 +31,36 @@ export const transfer = async function ({
   nonce,
   from,
   to,
+  storeCall = false,
   maxWeight = 640000000,
   period,
-}: TransferParams) {
+}: ApproveParams) {
+  const MULTISIG = encodeMultiAddress(addresses, threshold, ss58Format);
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
     ss58Format,
   );
-  const { callMethodHash } = getCallHexAndHash(api, to, quantity);
-  const info = await api.query.multisig.multisigs(from, callMethodHash);
-  if (info.isSome) {
-    throw new AppError(errors.TIME_POINT_FOUND);
-  }
 
-  // approveAsMulti
-  const tx = api.tx.multisig.approveAsMulti(
+  if (from !== MULTISIG) throw new AppError(errors.MULTISIG_ADDRESS_UNMATCHED);
+
+  const { callMethodHash, callMethodHex } = getCallHexAndHash(api, to, quantity);
+  const info = await api.query.multisig.multisigs(MULTISIG, callMethodHash);
+
+  if (!info.isSome) throw new AppError(errors.TIME_POINT_NOT_FOUND);
+
+  const timePoint = info.unwrap().when;
+
+  const tx = api.tx.multisig.asMulti(
     threshold,
     otherSignatories, //
-    null,
-    callMethodHash,
+    timePoint,
+    callMethodHex,
+    storeCall,
     maxWeight,
   );
 
   const method = tx.method.toHex();
 
-  // // create the payload
   const payload = await getSignerPayload(api, method, nonce, period);
 
   tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
@@ -67,4 +73,4 @@ export const transfer = async function ({
     serialized,
     hash,
   });
-};
+}

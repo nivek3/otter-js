@@ -66,7 +66,7 @@ export const BuildTransferRequestSchema = {
   },
 };
 
-export const BuildMultisigTransferRequestSchema = {
+export const BuildMultisigApproveAsMultiRequestSchema = {
   type: 'object',
   required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
   properties: {
@@ -79,8 +79,7 @@ export const BuildMultisigTransferRequestSchema = {
     params: { $ref: 'base#/definitions/params' },
   },
 };
-
-export const BuildMultisigApproveRequestSchema = {
+export const BuildMultisigAsMultiRequestSchema = {
   type: 'object',
   required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
   properties: {

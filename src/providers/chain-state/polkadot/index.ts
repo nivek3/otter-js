@@ -5,7 +5,7 @@ import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 import { AppError, errors } from './../../../error';
 import { Validator } from '../../../utils/ajv';
 
-import { transfer as multisigTransfer, approve as approveMultisig, cancel as cancelMultisig } from './multisig';
+import { multisigApproveAsMulti, multisigAsMulti, multisigCancelAsMulti } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
 import { transfer, rebuild, sign, decode } from './methods';
 import { pubKeyToBlack2Address } from './utils';
@@ -17,8 +17,9 @@ import {
   DeployAccountRequest,
   DeployMultisigAccountRequest,
   BuildTransferRequest,
-  BuildMultisigTransferRequest,
-  BuildMultisigApproveRequest,
+  BuildMultisigApproveAsMultiRequest,
+  BuildMultisigAsMultiRequest,
+  BuildMultisigCancelAsMultiRequest,
   SignTransactionRequest,
   SendTransactionRequest,
   BuildBatchTransferTransactionRequest,
@@ -30,7 +31,8 @@ import {
   BuildBatchTransactionRequestSchema,
   BuildBatchTransferTransactionRequestSchema,
   BuildMultisigCancelRequestSchema,
-  BuildMultisigTransferRequestSchema,
+  BuildMultisigAsMultiRequestSchema,
+  BuildMultisigApproveAsMultiRequestSchema,
   BuildTransferRequestSchema,
   DecodeTransactionRequestSchema,
   DeployAccountRequestSchema,
@@ -90,10 +92,10 @@ export class Provider {
     };
   }
 
-  async buildMultisigTransaction(req: BuildMultisigTransferRequest): Promise<TransactionReply> {
-    validator.assert(BuildMultisigTransferRequestSchema, req);
+  async buildMultisigApproveAsMultiTransaction(req: BuildMultisigApproveAsMultiRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigApproveAsMultiRequestSchema, req);
 
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigTransferRequest>;
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
@@ -101,7 +103,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const maxWeight = params?.maxWeight;
-    const { method, serialized, hash } = await multisigTransfer({
+    const { method, serialized, hash } = await multisigApproveAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -123,10 +125,10 @@ export class Provider {
     };
   }
 
-  async buildMultisigApproveTransaction(req: BuildMultisigApproveRequest): Promise<TransactionReply> {
-    validator.assert(BuildMultisigTransferRequestSchema, req);
+  async buildMultisigAsMultiTransaction(req: BuildMultisigAsMultiRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigAsMultiRequestSchema, req);
 
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveRequest>;
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
@@ -135,7 +137,7 @@ export class Provider {
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const maxWeight = params?.maxWeight;
 
-    const { serialized, hash } = await approveMultisig({
+    const { serialized, hash } = await multisigAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -155,10 +157,10 @@ export class Provider {
     };
   }
 
-  async buildMultisigCancelTransaction(req: BuildMultisigApproveRequest): Promise<TransactionReply> {
+  async buildMultisigCancelAsMultiTransaction(req: BuildMultisigCancelAsMultiRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigCancelRequestSchema, req);
 
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveRequest>;
+    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigCancelAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const from = encodeMultiAddress(addresses, threshold, ss58Format);
@@ -166,7 +168,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
 
-    const { method, serialized, hash } = await cancelMultisig({
+    const { method, serialized, hash } = await multisigCancelAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,

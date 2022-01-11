@@ -121,7 +121,7 @@ describe('Polkadot service', () => {
     );
 
     describe('build multisig transaction', () => {
-      test('build multisig transfer transaction', async () => {
+      test('BuildMultisigApproveAsMultiTransaction', async () => {
         const wss = 'wss://api.clover.finance';
         const ss58Format = 42;
         const to = '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn';
@@ -131,8 +131,8 @@ describe('Polkadot service', () => {
         jest.spyOn(provider, 'getApi').mockResolvedValueOnce(api);
         jest.spyOn(api.query.multisig, 'multisigs').mockResolvedValueOnce({ isSome: false } as any);
 
-        const BuildMultisigTransaction = promisify(client.BuildMultisigTransaction.bind(client));
-        const response = await BuildMultisigTransaction({
+        const BuildMultisigApproveAsMultiTransaction = promisify(client.BuildMultisigApproveAsMultiTransaction.bind(client));
+        const response = await BuildMultisigApproveAsMultiTransaction({
           pubKeys: [
             '0x0346219571358630cf0565dc9826f4583014a32d2230f04df77b6c2097c2e09624',
             '0x026970416978b59b81347a6764e2891d5f1894cb3c7f03874d77bcd65e8c3f8613',
@@ -163,7 +163,7 @@ describe('Polkadot service', () => {
         );
       });
 
-      test('build multisig cancel transaction', async () => {
+      test('BuildMultisigCancelTransaction', async () => {
         const wss = 'wss://api.clover.finance';
         const ss58Format = 42;
         const api = await provider.getApi(wss, ss58Format);
@@ -209,7 +209,7 @@ describe('Polkadot service', () => {
         );
       });
 
-      test('build multisig approve transaction', async () => {
+      test('BuildMultisigAsMultiTransaction', async () => {
         const to = '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn';
         const quantity = '100000';
         const wss = 'wss://api.clover.finance';
@@ -225,8 +225,8 @@ describe('Polkadot service', () => {
           },
         } as any);
 
-        const BuildMultisigApproveTransaction = promisify(client.BuildMultisigApproveTransaction.bind(client));
-        const response = await BuildMultisigApproveTransaction({
+        const BuildMultisigAsMultiTransaction = promisify(client.BuildMultisigAsMultiTransaction.bind(client));
+        const response = await BuildMultisigAsMultiTransaction({
           to,
           quantity,
           pubKeys: [

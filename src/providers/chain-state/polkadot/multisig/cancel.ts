@@ -6,7 +6,7 @@ import { errors, AppError } from '../../../../error';
 import { SIGN_PLACEHOLDER } from '../const';
 import { getCallHexAndHash, trimObjectPrefix, getSignerPayload, getSignerSignatureHash } from '../utils';
 
-export interface CancelParams {
+export interface CancelAsMultiParams {
   api: ApiPromise;
   ss58Format: number;
   addresses: string[];
@@ -19,7 +19,7 @@ export interface CancelParams {
   period?: number;
 }
 
-export async function cancel({
+export async function multisigCancelAsMulti({
   api,
   ss58Format, //
   addresses,
@@ -30,7 +30,7 @@ export async function cancel({
   from,
   to,
   period,
-}: CancelParams) {
+}: CancelAsMultiParams) {
   const otherSignatories = sortAddresses(
     addresses.filter((who) => who !== sender),
     ss58Format,
