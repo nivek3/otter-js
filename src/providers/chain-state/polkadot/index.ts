@@ -321,7 +321,7 @@ export class Provider {
     return types;
   }
 
-  async getApi(wss: string, ss58Format: number, autoConnectMs = 1000 * 5, timeout = 1000 * 10) {
+  async getApi(wss: string, ss58Format: number, autoConnectMs = 1000 * 10, timeout = 1000 * 60) {
     const apiKey = this.apis.getKey(wss, ss58Format);
     let api = this.apis.get(apiKey);
     if (api) return api;
