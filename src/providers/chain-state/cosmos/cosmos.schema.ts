@@ -56,6 +56,16 @@ export const DeployAccountRequestSchema = {
   },
 };
 
+export const DeployMultisigAccountRequestSchema = {
+  type: 'object',
+  required: ['pubKeys', 'network', 'threshold'],
+  properties: {
+    network: { $ref: 'base#/definitions/network', type: 'object', required: ['bech32Prefix'] },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    threshold: { type: 'integer' },
+  },
+};
+
 export const BuildTransferTransactionRequestSchema = {
   type: 'object',
   required: ['from', 'to', 'amount', 'params'],
@@ -96,17 +106,46 @@ export const DecodeTransactionRequestSchema = {
 
 export const RebuildTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'serialized', 'params'],
+  required: ['network', 'serialized', 'params', 'from', 'pubKey'],
   properties: {
     network: { $ref: 'base#/definitions/network', type: 'object', required: ['chainId'] },
     serialized: { type: 'string' },
+    from: { type: 'string' },
+    pubKey: { type: 'string' },
     params: {
       $ref: 'base#/definitions/params',
       type: 'object',
-      required: ['fee'],
       properties: {
         fee: { $ref: 'base#/definitions/params', type: 'object', required: ['gas'] },
       },
+    },
+  },
+};
+
+export const BuildMultisigTransferTransactionRequestSchema = {
+  type: 'object',
+  required: ['from', 'to', 'amount', 'params', 'pubKeys', 'threshold'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    from: { type: 'string' },
+    to: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    threshold: { type: 'integer' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const SignMultisigTransactionRequestSchema = {
+  type: 'object',
+  required: ['serialized', 'signatures', 'threshold'],
+  properties: {
+    threshold: { type: 'integer' },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    serialized: { type: 'string' },
+    signatures: {
+      type: 'array',
+      items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature', 'pubKey', 'hash'] },
     },
   },
 };

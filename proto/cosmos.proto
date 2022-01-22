@@ -21,17 +21,23 @@ message Fee {
     Amount amount = 1;
     string gas    = 2;
 }
+
 message TransactionParams {
     Fee fee              = 1;
     int32 account_number = 2;
     int32 sequence       = 3;
     string memo          = 4;
-    string pub_key       = 5;
 }
 
 message DeployAccountRequest {
     string key      = 1;
     Network network = 2;
+}
+
+message DeployMultisigAccountRequest {
+    Network network          = 1;
+    repeated string pub_keys = 2;
+    int32 threshold          = 3;
 }
 
 message DeployAccountReply {
@@ -43,7 +49,8 @@ message BuildTransferTransactionRequest {
     string to                = 2;
     Amount amount            = 3;
     string from              = 4;
-    TransactionParams params = 5;
+    string pub_key           = 5;
+    TransactionParams params = 6;
 }
 
 message SignTransactionRequest {
@@ -66,13 +73,35 @@ message RebuildTransactionRequest {
     Network network          = 1;
     string serialized        = 2;
     TransactionParams params = 3;
+    string from              = 4;
+    string pub_key           = 5;
+}
+
+message BuildMultisigTransferTransactionRequest {
+    Network network          = 1;
+    string to                = 2;
+    Amount amount            = 3;
+    string from              = 4;
+    repeated string pub_keys = 5;
+    int32 threshold          = 6;
+    TransactionParams params = 7;
+}
+
+message SignMultisigTransactionRequest {
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+    int32 threshold               = 4;
 }
 
 service Cosmos {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployAccountReply) {}
     rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+    rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (TransactionReply) {}
+    rpc SignMultisigTransaction(SignMultisigTransactionRequest) returns (TransactionReply) {}
 }

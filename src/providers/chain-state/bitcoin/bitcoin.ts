@@ -4,10 +4,10 @@ import rp from 'request-promise';
 import { payments, bitgo, networks, Network as BitgoNetwork, classify, BitcoinJSNetwork, Transaction } from '@cryptoless/utxo-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
-import { parseSignature } from '../../../utils/signature';
-import { Validator } from '../../../utils/ajv';
-import { AppError, errors } from '../../../error';
-import { TransactionReply, Signature } from '../../../__proto__/common/types';
+import { splitSignature } from '@src/utils/signature';
+import { Validator } from '@src/utils/ajv';
+import { AppError, errors } from '@src/error';
+import { TransactionReply, Signature } from '@src/__proto__/common/types';
 import {
   Network,
   UnspentTransactionOutput,
@@ -18,7 +18,7 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   HashForSignatureRequest,
-} from '../../../__proto__/bitcoin/types';
+} from '@src/__proto__/bitcoin/types';
 
 import {
   BitCoinRefSchema,
@@ -80,7 +80,7 @@ export class Provider {
 
     this.calcInputBytes(utxos, network as BitcoinJSNetwork);
 
-    const { inputs, outputs } = this.selectCoins(utxos, recipients, feePerKb);
+    const { inputs, outputs, fee } = this.selectCoins(utxos, recipients, feePerKb);
 
     if (!inputs || !outputs) throw new AppError(errors.NOT_ENOUGH_BALANCE);
 
@@ -126,6 +126,7 @@ export class Provider {
     return {
       serialized,
       signatures,
+      estimatedFee: fee,
     };
   }
 
@@ -167,9 +168,11 @@ export class Provider {
       }
     }
 
+    const estimatedFee = this.getTxestimatedFee(txb.tx, utxos);
     return {
       serialized,
       signatures,
+      estimatedFee,
     };
   }
 
@@ -213,7 +216,7 @@ export class Provider {
         if (!signature) {
           throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
         }
-        const { r, s } = parseSignature(signature!);
+        const { r, s } = splitSignature(signature!);
         const ecSignature = new ECSignature({ r, s });
 
         if (!key.verify(signatureHash, ecSignature)) throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
@@ -221,9 +224,12 @@ export class Provider {
       }
     }
     const utxoTx = txb.build();
+    const estimatedFee = this.getTxestimatedFee(txb.tx, utxos);
+
     return {
       hash: utxoTx.getId(),
       serialized: utxoTx.toHex(),
+      estimatedFee,
     };
   }
 
@@ -350,6 +356,18 @@ export class Provider {
       feeRate = new BigNumber(result.feerate).shiftedBy(8).div(1024).toFixed(0);
     }
     return new BigNumber(feeRate).toNumber();
+  }
+
+  getTxestimatedFee(tx: Transaction, utxos: UnspentTransactionOutput[]): string {
+    const inputs = BigNumber.sum.apply(
+      null,
+      utxos.map((utxo) => utxo.amount!),
+    );
+    const outputs = BigNumber.sum.apply(
+      null,
+      tx.outs.map((out) => out.value),
+    );
+    return new BigNumber(inputs).minus(outputs).toString();
   }
 }
 

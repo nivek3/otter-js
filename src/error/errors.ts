@@ -89,7 +89,7 @@ export const errors = {
     code: GRpcStatus.INVALID_ARGUMENT,
     status: 400,
     errno: '40014',
-    details: 'Time point not found',
+    details: 'Time point found',
   },
   BROADCAST_FAILED: {
     code: GRpcStatus.INVALID_ARGUMENT,

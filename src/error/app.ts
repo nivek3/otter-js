@@ -1,5 +1,5 @@
 import { StatusObject, status as Status, Metadata } from '@grpc/grpc-js';
-import type { ImplContext } from '../utils/context';
+import type { ImplContext } from '@src/utils/context';
 
 export interface ErrorOptions {
   code: Status;

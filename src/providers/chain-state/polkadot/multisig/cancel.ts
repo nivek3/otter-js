@@ -43,6 +43,13 @@ export async function multisigCancelAsMulti({
 
   const timepoint = info.unwrap().when;
 
+  const originTx = api.tx.multisig.cancelAsMulti(
+    threshold,
+    otherSignatories, //
+    timepoint,
+    callMethodHash,
+  );
+
   const tx = api.tx.multisig.cancelAsMulti(
     threshold,
     otherSignatories, //
@@ -59,9 +66,12 @@ export async function multisigCancelAsMulti({
   const serialized = tx.toHex();
   const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
-  return trimObjectPrefix({
-    method,
-    serialized,
-    hash,
-  });
+  return {
+    ...trimObjectPrefix({
+      method,
+      serialized,
+      hash,
+    }),
+    originTx,
+  };
 }

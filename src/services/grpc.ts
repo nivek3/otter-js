@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import * as grpc from '@grpc/grpc-js';
-import { LoggifyClass } from '../decorators/Loggify';
+import { LoggifyClass } from '@src/decorators/Loggify';
 import { Middleware } from 'koa-compose';
-import { ImplContext, ProxyImp } from '../utils/context';
-import { loggerInterceptor } from '../grpc/interceptors/logger';
-import { GrpcInterceptorProxy } from '../grpc/internals/grpcInterceptor';
+import { ImplContext, ProxyImp } from '@src/utils/context';
+import { loggerInterceptor } from '@src/grpc/interceptors/logger';
+import { GrpcInterceptorProxy } from '@src/grpc/internals/grpcInterceptor';
 import {
   EthereumService,
   EthereumImp,
@@ -22,9 +22,9 @@ import {
   TronService,
   SolanaImp,
   SolanaService,
-} from '../grpc/services';
+} from '@src/grpc/services';
 
-import logger from '../logger';
+import logger from '@src/logger';
 
 @LoggifyClass
 export class GRPCServer extends GrpcInterceptorProxy {

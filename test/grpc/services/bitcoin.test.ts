@@ -4,7 +4,7 @@ import { promisify } from 'util';
 
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { grpcServer } from '../../../src/services/grpc';
+import { grpcServer } from '@src/services/grpc';
 
 const PROTO_PATH = path.join(__dirname, '../../../proto/bitcoin.proto');
 
@@ -148,7 +148,7 @@ describe('Bitcoin service', () => {
       });
 
       describe('HashForSignature', () => {
-        test('multi utxo', async () => {
+        test('multi utxos', async () => {
           const req = {
             utxos: [
               {
@@ -181,10 +181,11 @@ describe('Bitcoin service', () => {
           };
 
           const HashForSignature = promisify(client.HashForSignature.bind(client));
-          const { serialized, signatures } = await HashForSignature(req);
+          const { serialized, signatures, estimatedFee } = await HashForSignature(req);
           expect(serialized).toEqual(
             '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
           );
+          expect(estimatedFee).toEqual('0');
           expect(signatures).toEqual(
             expect.arrayContaining([
               expect.objectContaining({
@@ -259,7 +260,8 @@ describe('Bitcoin service', () => {
 
           const SignTransaction = promisify(client.SignTransaction.bind(client));
 
-          const { serialized, hash } = await SignTransaction(req);
+          const { serialized, hash, estimatedFee } = await SignTransaction(req);
+          expect(estimatedFee).toEqual('0');
           expect(serialized).toEqual(
             '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd01000000fdfe0000483045022100b55cd0a2721d850a064bab91b1fabc85cd84214c539d7a70cc32504bd4e793e402204ab7684b4daae0aa0ea12789c848d8daf0b35ffe477370e13ed62a224114978a01483045022100848a041a9172d9de0f8c7097ba0da143b2073ddc564eec6c7d4e628e8e4b53ab022023a7aa0da73bf3328d0d6dbfc76a4bbd4a4a8a97f127db99f86383d7fcafa287014c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b7000000006a47304402204dec81ebbc7e4983d657eeab7a50cd533e950be7e8689e3f7fb713efd6aeac36022026a8d9862b703c47f2227c3ad58f9682c0ef89b0f37cc48ae2db9828f7026d59012102ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
           );
@@ -344,7 +346,8 @@ describe('Bitcoin service', () => {
             },
           };
           const BuildTransaction = promisify(client.BuildTransaction.bind(client));
-          const { serialized } = await BuildTransaction(req);
+          const { serialized, estimatedFee } = await BuildTransaction(req);
+          expect(estimatedFee).toEqual('12430');
           expect(serialized).toEqual(
             '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
           );
@@ -369,19 +372,21 @@ describe('Bitcoin service', () => {
               forkChain: 'bitcoin',
             },
             serialized:
-              '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff01001edc0c170000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
+              '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
           };
 
           const HashForSignature = promisify(client.HashForSignature.bind(client));
-          const { serialized, signatures } = await HashForSignature(req);
+          const { serialized, signatures, estimatedFee } = await HashForSignature(req);
+
+          expect(estimatedFee).toEqual('12430');
           expect(serialized).toEqual(
-            '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff01001edc0c170000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
+            '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
           );
           expect(signatures).toEqual(
             expect.arrayContaining([
               expect.objectContaining({
                 pubKey: '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
-                hash: '8a76b60486ad52c82cce0763846c1a9d7062399715b8caa91a3441116c3bdb96',
+                hash: '1c4d9579f614365d7c45005a429c840e4dcee590dea794bbcd212919b764fbd5',
               }),
             ]),
           );
@@ -419,7 +424,8 @@ describe('Bitcoin service', () => {
 
           const SignTransaction = promisify(client.SignTransaction.bind(client));
 
-          const { serialized, hash } = await SignTransaction(req);
+          const { serialized, hash, estimatedFee } = await SignTransaction(req);
+          expect(estimatedFee).toEqual('12430');
           expect(serialized).toEqual(
             '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d9000000006b483045022100d36d9fbc911d80a7fe503baaddfc67ffbca024cba19fc3891898030dbdf83fa1022034b5f3c1ca24bb55768d63656f2dbdc74fafb7db6e84f6e3471a65b65e24586e012102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
           );

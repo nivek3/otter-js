@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { multisigApproveAsMulti } from '../../../../../src/providers/chain-state/polkadot/multisig/approve';
+import { multisigApproveAsMulti } from '@src/providers/chain-state/polkadot/multisig/approve';
 import { disconnect, setupConnection } from '../setup';
 
 let api: ApiPromise;

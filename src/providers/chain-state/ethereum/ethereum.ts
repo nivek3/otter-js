@@ -2,7 +2,7 @@ import { isNil, pick } from 'lodash';
 import Web3 from 'web3';
 import { toBN, toHex } from 'web3-utils';
 import type { TransactionConfig } from 'web3-core';
-import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx';
+import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, TypedTransaction, Capability } from '@ethereumjs/tx';
 import ABI from 'ethereumjs-abi';
 import Common from '@ethereumjs/common';
 import {
@@ -107,11 +107,15 @@ export class Provider {
     const from = Address.fromString(sender).toBuffer();
     const address = toChecksumAddress(bufferToHex(generateAddress(from, new BN(txData.nonce!).toBuffer())));
     const hash = tx.getMessageToSign(true).toString('hex');
+
     const signature = { hash };
+    const estimatedFee = this.getTxestimatedFee(tx);
+
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
       address,
+      estimatedFee,
     };
   }
 
@@ -130,10 +134,14 @@ export class Provider {
     const txData = await this.getTxData(txInput, common, params!, web3, from);
     const tx = TransactionFactory.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
+
     const signature = { hash };
+    const estimatedFee = this.getTxestimatedFee(tx);
+
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -163,9 +171,11 @@ export class Provider {
     const hash = tx.getMessageToSign(true).toString('hex');
 
     const signature = { hash };
+    const estimatedFee = this.getTxestimatedFee(tx);
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -179,9 +189,9 @@ export class Provider {
     const txOptions = { common };
     const txBuf = Buffer.from(stripHexPrefix(serialized), 'hex');
     const tx = TransactionFactory.fromSerializedData(txBuf, txOptions);
+    const type = tx.type;
     const sign = stripHexPrefix(signatures[0].signature!);
     const { r, s, v } = canonicalSignature(sign!);
-    const type = this.getTxType(txBuf);
     const signedData = {
       ...tx.toJSON(),
       r: Buffer.from(padToEven(r), 'hex'),
@@ -192,9 +202,11 @@ export class Provider {
 
     const signedTx = TransactionFactory.fromTxData(signedData, txOptions);
     const serializedTx = signedTx.serialize().toString('hex');
+    const estimatedFee = this.getTxestimatedFee(signedTx);
     return {
       serialized: serializedTx,
       hash: '0x' + signedTx.hash().toString('hex'),
+      estimatedFee,
     };
   }
 
@@ -218,11 +230,13 @@ export class Provider {
 
     const hash = tx.getMessageToSign(true).toString('hex');
     const reserialized = tx.serialize().toString('hex');
+    const estimatedFee = this.getTxestimatedFee(tx);
 
     const signature = { hash };
     return {
       serialized: reserialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -237,7 +251,7 @@ export class Provider {
     const web3 = this.getWeb3Provider(provider!);
     const txOptions = { common };
     let tx = TransactionFactory.fromSerializedData(serializedBuf, txOptions);
-    const type = this.getTxType(serializedBuf);
+    const type = tx.type;
     const { r, s, v, ...jsonTx } = tx.toJSON();
 
     let pubKey = '';
@@ -272,7 +286,7 @@ export class Provider {
       txData.gasLimit = await this.getReqGasLimit(web3, txInput);
     }
 
-    if (isBip1559Transaction(txData?.type) && !(params?.maxFeePerGas && params?.maxPriorityFeePerGas)) {
+    if (tx.supports(Capability.EIP1559FeeMarket) && !(params?.maxFeePerGas && params?.maxPriorityFeePerGas)) {
       txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
       txData.maxFeePerGas && delete txData.maxFeePerGas;
       delete txData.gasPrice;
@@ -280,13 +294,16 @@ export class Provider {
     }
 
     tx = TransactionFactory.fromTxData(txData, txOptions);
+
     const hash = tx.getMessageToSign(true).toString('hex');
     const reserialized = tx.serialize().toString('hex');
 
     const signature = { hash, pubKey };
+    const estimatedFee = this.getTxestimatedFee(tx);
     return {
       serialized: reserialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -391,10 +408,14 @@ export class Provider {
     const txData = await this.getTxData(txInput, common, params!, web3, sender);
     const tx = TransactionFactory.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
+
     const signature = { hash };
+    const estimatedFee = this.getTxestimatedFee(tx);
+
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -460,9 +481,11 @@ export class Provider {
     const signature = {
       hash,
     };
+    const estimatedFee = this.getTxestimatedFee(tx);
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -610,10 +633,6 @@ export class Provider {
     return new Web3(provider!);
   }
 
-  getTxType(tx: Buffer) {
-    return tx[0] <= 0x7f ? tx[0] : undefined;
-  }
-
   async getTxData(tx: FactoryTxData, common: Common, params: TransactionParams, web3: Web3, from: string): Promise<FactoryTxData> {
     tx.data = tx.data || '0x';
     tx.value = tx.value || '0x00';
@@ -661,6 +680,11 @@ export class Provider {
       ],
     });
     return web3.eth['maxPriorityFeePerGas']();
+  }
+
+  getTxestimatedFee(tx: TypedTransaction): string {
+    const cost = tx.getUpfrontCost();
+    return cost.sub(tx.value).toString();
   }
 }
 

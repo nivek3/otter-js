@@ -39,6 +39,7 @@ message BuildAccountTransactionReply {
     string address                = 1;
     string serialized             = 2;
     repeated Signature signatures = 3;
+    string estimated_fee          = 4;
 }
 
 message BuildTransferTransactionRequest {

@@ -1,11 +1,11 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { provider } from '../../providers/chain-state/polkadot';
-import { ImplContext, ProxyImp } from '../../utils/context';
+import { provider } from '@src/providers/chain-state/polkadot';
+import { ImplContext, ProxyImp } from '@src/utils/context';
 
-import { ProtoGrpcType } from '../../__proto__/polkadot';
-import { TransactionReply } from '../../__proto__/common/types';
+import { ProtoGrpcType } from '@src/__proto__/polkadot';
+import { TransactionReply } from '@src/__proto__/common/types';
 import {
   TransactionParams,
   PolkadotHandlers,
@@ -20,7 +20,7 @@ import {
   BuildBatchTransactionRequest,
   RebuildTransactionRequest,
   DecodeTransactionRequest,
-} from '../../__proto__/polkadot/types';
+} from '@src/__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
 const options = {

@@ -1,7 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 import compose, { Middleware } from 'koa-compose';
-import { ImplContext } from '../../utils/context';
-import { AppError, errors } from '../../error';
+import { ImplContext } from '@src/utils/context';
+import { AppError, errors } from '@src/error';
 export class GrpcInterceptorProxy {
   interceptors: Middleware<ImplContext<unknown, unknown>>[] = [];
 

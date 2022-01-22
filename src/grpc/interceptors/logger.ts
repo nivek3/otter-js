@@ -1,7 +1,7 @@
 import { Middleware } from 'koa-compose';
 import { v4 as uuidV4 } from 'uuid';
-import logger from '../../logger';
-import { ImplContext } from '../../utils/context';
+import logger from '@src/logger';
+import { ImplContext } from '@src/utils/context';
 
 export const loggerInterceptor: Middleware<ImplContext<unknown, unknown>> = async function <T, K>(ctx: ImplContext<T, K>, next: Function) {
   const startAt = Date.now();

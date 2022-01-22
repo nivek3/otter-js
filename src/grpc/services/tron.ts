@@ -1,11 +1,11 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { provider } from '../../providers/chain-state/tron/tron';
-import { ImplContext, ProxyImp } from '../../utils/context';
+import { provider } from '@src/providers/chain-state/tron/tron';
+import { ImplContext, ProxyImp } from '@src/utils/context';
 
-import { ProtoGrpcType } from '../../__proto__/tron';
-import { TransactionReply } from './../../__proto__/polkadot/TransactionReply';
+import { ProtoGrpcType } from '@src/__proto__/tron';
+import { TransactionReply } from '@src/__proto__/polkadot/TransactionReply';
 import {
   BuildTransferTransactionRequest,
   DeployAccountRequest,
@@ -18,7 +18,7 @@ import {
   RebuildTransactionRequest,
   DecodeTransactionRequest,
   TransactionParams,
-} from '../../__proto__/tron/types';
+} from '@src/__proto__/tron/types';
 
 const filename = path.join(__dirname, '../../../proto/tron.proto');
 const options = {

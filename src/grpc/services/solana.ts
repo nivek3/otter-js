@@ -1,11 +1,11 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { provider } from '../../providers/chain-state/solana/solana';
-import { ImplContext, ProxyImp } from '../../utils/context';
+import { provider } from '@src/providers/chain-state/solana/solana';
+import { ImplContext, ProxyImp } from '@src/utils/context';
 
-import { ProtoGrpcType } from '../../__proto__/solana';
-import { TransactionReply } from '../../__proto__/common/types';
+import { ProtoGrpcType } from '@src/__proto__/solana';
+import { TransactionReply } from '@src/__proto__/common/types';
 import {
   SolanaHandlers,
   TransactionParams,
@@ -16,8 +16,8 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   DecodeTransactionRequest,
-  RebuildTransactionRequest
-} from '../../__proto__/solana/types';
+  RebuildTransactionRequest,
+} from '@src/__proto__/solana/types';
 
 const filename = path.join(__dirname, '../../../proto/solana.proto');
 const options = {
@@ -61,7 +61,7 @@ export const SolanaImp: ProxyImp<SolanaHandlers> = {
     const req = ctx.call.request;
     ctx.body = provider.decodeTransaction(req);
   },
-  
+
   RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.rebuildTransaction(req);

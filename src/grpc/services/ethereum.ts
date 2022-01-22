@@ -1,11 +1,11 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { provider } from '../../providers/chain-state/ethereum/ethereum';
-import { ImplContext, ProxyImp } from '../../utils/context';
+import { provider } from '@src/providers/chain-state/ethereum/ethereum';
+import { ImplContext, ProxyImp } from '@src/utils/context';
 
-import { ProtoGrpcType } from '../../__proto__/ethereum';
-import { TransactionReply } from '../../__proto__/common/types';
+import { ProtoGrpcType } from '@src/__proto__/ethereum';
+import { TransactionReply } from '@src/__proto__/common/types';
 import {
   BuildTransactionRequest,
   TransactionParams,
@@ -28,7 +28,7 @@ import {
   SignMultisigERC20TransferInputRequest,
   HashForSignatureRequest,
   DecodeTransactionRequest,
-} from '../../__proto__/ethereum/types';
+} from '@src/__proto__/ethereum/types';
 
 const filename = path.join(__dirname, '../../../proto/ethereum.proto');
 const options = {

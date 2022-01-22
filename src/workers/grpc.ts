@@ -1,4 +1,4 @@
-import { grpcServer } from '../services/grpc';
+import { grpcServer } from '@src/services/grpc';
 import 'heapdump';
 
 const services: Array<any> = [];

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { getCallHexAndHash, pubKeyToBlack2Address } from '../../../../src/providers/chain-state/polkadot/utils';
+import { getCallHexAndHash, pubKeyToBlack2Address } from '@src/providers/chain-state/polkadot/utils';
 import { setupConnection } from './setup';
 
 describe('ChainStateProvider Polkadot', () => {

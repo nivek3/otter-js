@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { provider } from '../../../../src/providers/chain-state/polkadot';
+import { provider } from '@src/providers/chain-state/polkadot';
 
 describe('ChainStateProvider Polkadot', () => {
   describe('Polkadot provider', () => {

@@ -14,6 +14,7 @@ message TransactionReply {
     repeated Signature signatures = 2;
     string hash                   = 3;
     string method                 = 4;
+    string estimated_fee          = 5;
 }
 
 message DeployAccountRequest {

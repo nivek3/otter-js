@@ -18,6 +18,7 @@ export const transfer = async function ({ api, recipients, sender, nonce, period
     const { value, address } = recipient;
     return api.tx.balances.transfer(address!, value!);
   });
+  const originTx = api.tx.utility.batch(txs.map((tx) => tx.method.toHex()));
   const tx = api.tx.utility.batch(txs.map((tx) => tx.method.toHex()));
 
   const method = tx.method.toHex();
@@ -29,10 +30,8 @@ export const transfer = async function ({ api, recipients, sender, nonce, period
   const serialized = tx.toHex();
 
   const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
-
-  return trimObjectPrefix({
-    method,
-    serialized,
-    hash,
-  });
+  return {
+    originTx,
+    ...trimObjectPrefix({ method, serialized, hash }),
+  };
 };

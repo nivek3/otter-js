@@ -44,6 +44,15 @@ export const multisigApproveAsMulti = async function ({
   }
 
   // approveAsMulti
+  const originTx = api.tx.multisig.approveAsMulti(
+    threshold,
+    otherSignatories, //
+    null,
+    callMethodHash,
+    maxWeight,
+  );
+
+  // approveAsMulti
   const tx = api.tx.multisig.approveAsMulti(
     threshold,
     otherSignatories, //
@@ -62,9 +71,12 @@ export const multisigApproveAsMulti = async function ({
   const serialized = tx.toHex();
   const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
-  return trimObjectPrefix({
-    method,
-    serialized,
-    hash,
-  });
+  return {
+    ...trimObjectPrefix({
+      method,
+      serialized,
+      hash,
+    }),
+    originTx,
+  };
 };

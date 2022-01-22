@@ -9,7 +9,7 @@ import { JsonObject } from 'ripple-binary-codec/dist/types/serialized-type';
 import { deriveAddress } from 'ripple-keypairs';
 import { hexToBytes } from 'ripple-keypairs/dist/utils';
 import rippleBinaryCodec from 'ripple-binary-codec';
-import { parseSignature } from './../../../utils/signature';
+import { canonicalSignature } from './../../../utils/signature';
 import { compareSigners } from './util';
 import { ApiCache } from './cache';
 
@@ -331,14 +331,10 @@ export class Provider {
   }
 
   canonicalAndToDER(signature: string) {
-    const parsed = parseSignature(signature);
-    let r = new BN(parsed.r!, 'hex');
-    let s = new BN(parsed.s!, 'hex');
-    let recoveryParam = parsed.v!;
-    if (s.cmp(ec.nh) > 0) {
-      s = ec.n!.sub(s);
-      recoveryParam ^= 1;
-    }
+    const parsed = canonicalSignature(signature);
+    const r = new BN(parsed.r!, 'hex');
+    const s = new BN(parsed.s!, 'hex');
+    const recoveryParam = parsed.v!;
     const sig = new ECSignature({
       r,
       s,

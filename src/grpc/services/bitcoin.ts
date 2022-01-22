@@ -2,12 +2,12 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
-import { provider } from '../../providers/chain-state/bitcoin/bitcoin';
-import { ImplContext, ProxyImp } from '../../utils/context';
-import { AppError, errors } from '../../error';
+import { provider } from '@src/providers/chain-state/bitcoin/bitcoin';
+import { ImplContext, ProxyImp } from '@src/utils/context';
+import { AppError, errors } from '@src/error';
 
-import { ProtoGrpcType } from '../../__proto__/bitcoin';
-import { TransactionReply } from '../../__proto__/common/types';
+import { ProtoGrpcType } from '@src/__proto__/bitcoin';
+import { TransactionReply } from '@src/__proto__/common/types';
 import {
   BitcoinHandlers,
   DeployAccountRequest,
@@ -18,7 +18,7 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   HashForSignatureRequest,
-} from '../../__proto__/bitcoin/types';
+} from '@src/__proto__/bitcoin/types';
 
 const filename = path.join(__dirname, '../../../proto/bitcoin.proto');
 const options = {

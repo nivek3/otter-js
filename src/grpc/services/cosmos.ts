@@ -1,22 +1,25 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { provider } from '../../providers/chain-state/cosmos';
-import { ImplContext, ProxyImp } from '../../utils/context';
+import { provider } from '@src/providers/chain-state/cosmos';
+import { ImplContext, ProxyImp } from '@src/utils/context';
 
-import { ProtoGrpcType } from '../../__proto__/cosmos';
+import { ProtoGrpcType } from '@src/__proto__/cosmos';
 import {
   DeployAccountRequest,
+  DeployMultisigAccountRequest,
   DeployAccountReply,
   CosmosHandlers,
   BuildTransferTransactionRequest,
+  BuildMultisigTransferTransactionRequest,
   SignTransactionRequest,
   SendTransactionRequest,
   DecodeTransactionRequest,
   TransactionParams,
   RebuildTransactionRequest,
-} from '../../__proto__/cosmos/types';
-import { TransactionReply } from '../../__proto__/common/TransactionReply';
+  SignMultisigTransactionRequest,
+} from '@src/__proto__/cosmos/types';
+import { TransactionReply } from '@src/__proto__/common/TransactionReply';
 
 const filename = path.join(__dirname, '../../../proto/cosmos.proto');
 const options = {
@@ -58,5 +61,20 @@ export const CosmosImp: ProxyImp<CosmosHandlers> = {
   RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.rebuildTransaction(req);
+  },
+
+  DeployMultisigAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployAccountReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.deployMultisigAccount(req);
+  },
+
+  BuildMultisigTransferTransaction: async function (ctx: ImplContext<BuildMultisigTransferTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigTransferTransaction(req);
+  },
+
+  SignMultisigTransaction: async function (ctx: ImplContext<SignMultisigTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.signMultisigTransaction(req);
   },
 };

@@ -1,5 +1,5 @@
 import util from 'util';
-import logger from '../logger';
+import logger from '@src/logger';
 export const PerformanceTracker = {};
 
 const DEBUG = process.env.DEBUG;

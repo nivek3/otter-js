@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { provider } from '../../../../src/providers/chain-state/ripple/ripple';
+import { provider } from '@src/providers/chain-state/ripple/ripple';
 
 describe('ChainStateProvider Ripple', () => {
   describe('canonicalAndToDER', () => {

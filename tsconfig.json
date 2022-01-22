@@ -11,6 +11,7 @@
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
+    "moduleResolution": "node",
     "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
@@ -20,6 +21,10 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@src/*": ["src/*"]
+    }
   },
   "include": ["./src/**/*", "./test/**/*"]
 }

@@ -1,9 +1,12 @@
 import { addHexPrefix } from 'ethereumjs-util';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
+import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
+import { ISubmittableResult } from '@polkadot/types/types';
+import { RuntimeDispatchInfo } from '@polkadot/types/interfaces';
 
-import { AppError, errors } from './../../../error';
-import { Validator } from '../../../utils/ajv';
+import { AppError, errors } from '@src/error';
+import { Validator } from '@src/utils/ajv';
 
 import { multisigApproveAsMulti, multisigAsMulti, multisigCancelAsMulti } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
@@ -26,7 +29,7 @@ import {
   BuildBatchTransactionRequest,
   RebuildTransactionRequest,
   DecodeTransactionRequest,
-} from '../../../__proto__/polkadot/types';
+} from '@src/__proto__/polkadot/types';
 import {
   BuildBatchTransactionRequestSchema,
   BuildBatchTransferTransactionRequestSchema,
@@ -75,7 +78,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
-    const { method, serialized, hash } = await transfer({
+    const { method, serialized, hash, originTx } = await transfer({
       api,
       nonce,
       quantity,
@@ -83,12 +86,13 @@ export class Provider {
       to,
       ...params,
     });
-
+    const estimatedFee = await this.getTxestimatedFee(originTx, from);
     const signature = { hash };
     return {
       method,
       serialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -103,7 +107,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const maxWeight = params?.maxWeight;
-    const { method, serialized, hash } = await multisigApproveAsMulti({
+    const { method, serialized, hash, originTx } = await multisigApproveAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -116,12 +120,13 @@ export class Provider {
       maxWeight,
       ...params,
     });
-
+    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
     const signature = { hash };
     return {
       method,
       serialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -137,7 +142,7 @@ export class Provider {
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
     const maxWeight = params?.maxWeight;
 
-    const { serialized, hash } = await multisigAsMulti({
+    const { serialized, hash, originTx } = await multisigAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -151,9 +156,11 @@ export class Provider {
       ...params,
     });
     const signature = { hash };
+    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
     return {
       serialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -168,7 +175,7 @@ export class Provider {
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
 
-    const { method, serialized, hash } = await multisigCancelAsMulti({
+    const { method, serialized, hash, originTx } = await multisigCancelAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,
@@ -180,11 +187,13 @@ export class Provider {
       to,
       ...params,
     });
+    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
     const signature = { hash };
     return {
       method,
       serialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -217,7 +226,7 @@ export class Provider {
     if (!(Array.isArray(recipients) && recipients.length)) throw new AppError(errors.REQUIRE_RECIPIENTS);
 
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
-    const { serialized, hash, method } = await batchTransfer({
+    const { serialized, hash, method, originTx } = await batchTransfer({
       api,
       recipients,
       sender,
@@ -225,10 +234,12 @@ export class Provider {
       ...params,
     });
     const signature = { hash };
+    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
     return {
       method,
       serialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -242,18 +253,20 @@ export class Provider {
     if (!(Array.isArray(txs) && txs.length)) throw new AppError(errors.REQUIRE_TRANSACTIONS);
 
     const nonce = await this.getAddressNonce(api, sender, params?.nonce);
-    const { serialized, hash, method } = await batchUtility({
+    const { serialized, hash, method, originTx } = await batchUtility({
       api,
       txs: txs.map((tx) => addHexPrefix(tx)),
       sender,
       nonce,
       ...params,
     });
+    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
     const signature = { hash };
     return {
       method,
       serialized,
       signatures: [signature],
+      estimatedFee,
     };
   }
 
@@ -357,6 +370,12 @@ export class Provider {
       nonce = account.nonce.toNumber();
     }
     return nonce;
+  }
+
+  // SubmittableExtrinsic
+  async getTxestimatedFee(tx: SubmittableExtrinsic<ApiTypes, ISubmittableResult>, signer: string): Promise<string> {
+    const { partialFee } = (await tx.paymentInfo(signer)) as RuntimeDispatchInfo;
+    return partialFee.toString();
   }
 }
 

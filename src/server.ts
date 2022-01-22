@@ -1,4 +1,3 @@
-
 import 'heapdump';
-import { FullClusteredWorker } from './workers/all';
+import { FullClusteredWorker } from '@src/workers/all';
 FullClusteredWorker();

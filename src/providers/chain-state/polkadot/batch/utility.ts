@@ -13,6 +13,7 @@ export interface BatchParams {
 }
 
 export const utility = async function ({ api, txs, sender, nonce, period }: BatchParams) {
+  const originTx = api.tx.utility.batch(txs);
   const tx = api.tx.utility.batch(txs);
   const method = tx.method.toHex();
 
@@ -23,9 +24,12 @@ export const utility = async function ({ api, txs, sender, nonce, period }: Batc
   const serialized = tx.toHex();
   const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
-  return trimObjectPrefix({
-    method,
-    serialized,
-    hash,
-  });
+  return {
+    ...trimObjectPrefix({
+      method,
+      serialized,
+      hash,
+    }),
+    originTx,
+  };
 };

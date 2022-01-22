@@ -1,9 +1,9 @@
-import { Api } from '../services/api';
+import { Api } from '@src/services/api';
 import 'heapdump';
 const services: Array<any> = [];
 
 export const ClusteredApiWorker = async () => {
-  process.on('unhandledRejection', error => {
+  process.on('unhandledRejection', (error) => {
     console.error('Unhandled Rejection at:', error);
     stop();
   });

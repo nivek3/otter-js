@@ -1,7 +1,7 @@
 import Ajv, { Options } from 'ajv';
 import AjvErrors from 'ajv-errors';
 import AjvMergePatch from 'ajv-merge-patch';
-import { AppError, errors } from '../error';
+import { AppError, errors } from '@src/error';
 
 export class Validator {
   options: Options;

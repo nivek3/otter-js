@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { provider } from '../../../../src/providers/chain-state/bitcoin/bitcoin';
+import { provider } from '@src/providers/chain-state/bitcoin/bitcoin';
 
 describe('ChainStateProvider BitCoin', () => {
   describe('DeployAccount', () => {

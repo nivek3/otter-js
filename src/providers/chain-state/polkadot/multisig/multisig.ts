@@ -50,6 +50,15 @@ export async function multisigAsMulti({
 
   const timePoint = info.unwrap().when;
 
+  const originTx = api.tx.multisig.asMulti(
+    threshold,
+    otherSignatories, //
+    timePoint,
+    callMethodHex,
+    storeCall,
+    maxWeight,
+  );
+
   const tx = api.tx.multisig.asMulti(
     threshold,
     otherSignatories, //
@@ -68,9 +77,12 @@ export async function multisigAsMulti({
   const serialized = tx.toHex();
   const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
-  return trimObjectPrefix({
-    method,
-    serialized,
-    hash,
-  });
+  return {
+    ...trimObjectPrefix({
+      method,
+      serialized,
+      hash,
+    }),
+    originTx,
+  };
 }

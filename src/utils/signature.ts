@@ -4,7 +4,7 @@ import { ec as EC } from 'elliptic';
 import { stripHexPrefix } from 'ethjs-util';
 const ec = new EC('secp256k1');
 
-export const parseSignature = (signature: string) => {
+export const splitSignature = (signature: string) => {
   const length = signature.length;
   const unitLen = length >> 2;
   const r = signature.slice(0, unitLen << 1);
@@ -14,7 +14,7 @@ export const parseSignature = (signature: string) => {
 };
 
 export const canonicalSignature = (signature: string) => {
-  const parsed = parseSignature(signature);
+  const parsed = splitSignature(signature);
   let r = new BN(Buffer.from(parsed.r!, 'hex'));
   let s = new BN(Buffer.from(parsed.s!, 'hex'));
   let recoveryParam = parsed.v!;

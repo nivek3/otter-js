@@ -13,7 +13,9 @@ export interface TransferParams {
 }
 
 export const transfer = async function ({ api, quantity, nonce, from, to, period }: TransferParams) {
+  const originTx = api.tx.balances.transfer(to, quantity);
   const tx = api.tx.balances.transfer(to, quantity);
+
   const method = tx.method.toHex();
 
   const payload = await getSignerPayload(api, method, nonce, period);
@@ -23,9 +25,12 @@ export const transfer = async function ({ api, quantity, nonce, from, to, period
   const serialized = tx.toHex();
   const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
 
-  return trimObjectPrefix({
-    method,
-    serialized,
-    hash,
-  });
+  return {
+    ...trimObjectPrefix({
+      method,
+      serialized,
+      hash,
+    }),
+    originTx,
+  };
 };
