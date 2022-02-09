@@ -108,7 +108,7 @@ export class Provider {
     const signDoc = makeSignDoc(bodyBytes, authInfoBytes, chainId, accountNumber);
     const signBytes = makeSignBytes(signDoc);
     const message = toHex(sha256(signBytes));
-    const signature = { publicKey: pubKey, hash: message };
+    const signature = { pubKey, hash: message };
 
     const txRaw = TxRaw.fromPartial({
       bodyBytes,
