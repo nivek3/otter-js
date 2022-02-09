@@ -168,7 +168,7 @@ export class Provider {
       }
     }
 
-    const estimatedFee = this.getTxestimatedFee(txb.tx, utxos);
+    const estimatedFee = this.getTxEstimatedFee(txb.tx, utxos);
     return {
       serialized,
       signatures,
@@ -224,7 +224,7 @@ export class Provider {
       }
     }
     const utxoTx = txb.build();
-    const estimatedFee = this.getTxestimatedFee(txb.tx, utxos);
+    const estimatedFee = this.getTxEstimatedFee(txb.tx, utxos);
 
     return {
       hash: utxoTx.getId(),
@@ -358,7 +358,7 @@ export class Provider {
     return new BigNumber(feeRate).toNumber();
   }
 
-  getTxestimatedFee(tx: Transaction, utxos: UnspentTransactionOutput[]): string {
+  getTxEstimatedFee(tx: Transaction, utxos: UnspentTransactionOutput[]): string {
     const inputs = BigNumber.sum.apply(
       null,
       utxos.map((utxo) => utxo.amount!),

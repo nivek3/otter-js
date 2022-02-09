@@ -86,7 +86,7 @@ export class Provider {
       to,
       ...params,
     });
-    const estimatedFee = await this.getTxestimatedFee(originTx, from);
+    const estimatedFee = await this.getTxEstimatedFee(originTx, from);
     const signature = { hash };
     return {
       method,
@@ -120,7 +120,7 @@ export class Provider {
       maxWeight,
       ...params,
     });
-    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
+    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
     const signature = { hash };
     return {
       method,
@@ -156,7 +156,7 @@ export class Provider {
       ...params,
     });
     const signature = { hash };
-    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
+    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
     return {
       serialized,
       signatures: [signature],
@@ -187,7 +187,7 @@ export class Provider {
       to,
       ...params,
     });
-    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
+    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
     const signature = { hash };
     return {
       method,
@@ -234,7 +234,7 @@ export class Provider {
       ...params,
     });
     const signature = { hash };
-    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
+    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
     return {
       method,
       serialized,
@@ -260,7 +260,7 @@ export class Provider {
       nonce,
       ...params,
     });
-    const estimatedFee = await this.getTxestimatedFee(originTx, sender);
+    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
     const signature = { hash };
     return {
       method,
@@ -373,7 +373,7 @@ export class Provider {
   }
 
   // SubmittableExtrinsic
-  async getTxestimatedFee(tx: SubmittableExtrinsic<ApiTypes, ISubmittableResult>, signer: string): Promise<string> {
+  async getTxEstimatedFee(tx: SubmittableExtrinsic<ApiTypes, ISubmittableResult>, signer: string): Promise<string> {
     const { partialFee } = (await tx.paymentInfo(signer)) as RuntimeDispatchInfo;
     return partialFee.toString();
   }

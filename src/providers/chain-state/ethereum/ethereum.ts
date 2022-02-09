@@ -109,7 +109,7 @@ export class Provider {
     const hash = tx.getMessageToSign(true).toString('hex');
 
     const signature = { hash };
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
 
     return {
       serialized: tx.serialize().toString('hex'),
@@ -136,7 +136,7 @@ export class Provider {
     const hash = tx.getMessageToSign(true).toString('hex');
 
     const signature = { hash };
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
 
     return {
       serialized: tx.serialize().toString('hex'),
@@ -171,7 +171,7 @@ export class Provider {
     const hash = tx.getMessageToSign(true).toString('hex');
 
     const signature = { hash };
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
@@ -202,7 +202,7 @@ export class Provider {
 
     const signedTx = TransactionFactory.fromTxData(signedData, txOptions);
     const serializedTx = signedTx.serialize().toString('hex');
-    const estimatedFee = this.getTxestimatedFee(signedTx);
+    const estimatedFee = this.getTxEstimatedFee(signedTx);
     return {
       serialized: serializedTx,
       hash: '0x' + signedTx.hash().toString('hex'),
@@ -230,7 +230,7 @@ export class Provider {
 
     const hash = tx.getMessageToSign(true).toString('hex');
     const reserialized = tx.serialize().toString('hex');
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
 
     const signature = { hash };
     return {
@@ -299,7 +299,7 @@ export class Provider {
     const reserialized = tx.serialize().toString('hex');
 
     const signature = { hash, pubKey };
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
     return {
       serialized: reserialized,
       signatures: [signature],
@@ -410,7 +410,7 @@ export class Provider {
     const hash = tx.getMessageToSign(true).toString('hex');
 
     const signature = { hash };
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
 
     return {
       serialized: tx.serialize().toString('hex'),
@@ -481,7 +481,7 @@ export class Provider {
     const signature = {
       hash,
     };
-    const estimatedFee = this.getTxestimatedFee(tx);
+    const estimatedFee = this.getTxEstimatedFee(tx);
     return {
       serialized: tx.serialize().toString('hex'),
       signatures: [signature],
@@ -682,7 +682,7 @@ export class Provider {
     return web3.eth['maxPriorityFeePerGas']();
   }
 
-  getTxestimatedFee(tx: TypedTransaction): string {
+  getTxEstimatedFee(tx: TypedTransaction): string {
     const cost = tx.getUpfrontCost();
     return cost.sub(tx.value).toString();
   }

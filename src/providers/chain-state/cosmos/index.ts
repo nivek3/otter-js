@@ -114,7 +114,7 @@ export class Provider {
       bodyBytes,
       authInfoBytes,
     });
-    const estimatedFee = this.getTxestimatedFee(fee.amount, fee.gas);
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
     const serialized = toHex(TxRaw.encode(txRaw).finish());
     return {
       serialized,
@@ -159,7 +159,7 @@ export class Provider {
         hash: toHex(message),
       };
     });
-    const estimatedFee = this.getTxestimatedFee(fee.amount, fee.gas);
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
     return {
       serialized: toHex(tx),
       signatures,
@@ -186,7 +186,7 @@ export class Provider {
       signatures: [signatureBytes],
     });
     const txRawBytes = TxRaw.encode(txRaw).finish();
-    const estimatedFee = this.getTxestimatedFee(fee.amount, fee.gas);
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
     return {
       hash: toHex(sha256(txRawBytes)).toUpperCase(),
       serialized: toHex(txRawBytes),
@@ -226,7 +226,7 @@ export class Provider {
 
     const signedTx = makeMultisignedTx(multisigPubkey, sequence, fee, bodyBytes, new Map(signatures));
     const txRawBytes = TxRaw.encode(signedTx).finish();
-    const estimatedFee = this.getTxestimatedFee(fee.amount, fee.gas);
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
     return {
       hash: toHex(sha256(txRawBytes)).toUpperCase(),
       serialized: toHex(txRawBytes),
@@ -296,7 +296,7 @@ export class Provider {
     const signBytes = makeSignBytes(signDoc);
     const message = toHex(sha256(signBytes));
 
-    const estimatedFee = this.getTxestimatedFee(fee.amount, gasLimit);
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, gasLimit);
     const signature = { pubKey, hash: message };
     return {
       serialized: newSerialized,
@@ -340,7 +340,7 @@ export class Provider {
     return { accountNumber, sequence, chainId };
   }
 
-  getTxestimatedFee(coins: Coin[], gasLimit: BigNumber.Value): string {
+  getTxEstimatedFee(coins: Coin[], gasLimit: BigNumber.Value): string {
     const amounts = BigNumber.sum.apply(
       null,
       coins.map((coin) => coin.amount),
