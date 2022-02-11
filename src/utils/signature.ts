@@ -1,7 +1,7 @@
 import BN from 'bn.js';
 import { toHex } from 'web3-utils';
 import { ec as EC } from 'elliptic';
-import { stripHexPrefix } from 'ethjs-util';
+import { stripHexPrefix, padToEven } from 'ethjs-util';
 const ec = new EC('secp256k1');
 
 export const splitSignature = (signature: string) => {
@@ -23,8 +23,8 @@ export const canonicalSignature = (signature: string) => {
     recoveryParam ^= 1;
   }
   return {
-    r: stripHexPrefix(toHex(r)),
-    s: stripHexPrefix(toHex(s)),
+    r: padToEven(stripHexPrefix(toHex(r))),
+    s: padToEven(stripHexPrefix(toHex(s))),
     v: recoveryParam,
   };
 };
