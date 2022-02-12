@@ -25,5 +25,11 @@ npx proto-loader-gen-types \
 
 for dir in $(ls -l $GEN_OUT_DIR | awk '/^d/ {print $NF}')
 do
-  npx barrelsby -d ${GEN_OUT_DIR}/${dir} -n types
+  found=`ls -l ${GEN_OUT_DIR}/${dir} | grep -c ^d`
+  if [ $found == 0 ]
+  then
+    npx barrelsby -d ${GEN_OUT_DIR}/${dir} -n types
+  else
+    npx barrelsby -d ${GEN_OUT_DIR}/${dir} -n types -l below
+  fi
 done

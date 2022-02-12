@@ -4,7 +4,7 @@ import * as protoLoader from '@grpc/proto-loader';
 import { ImplContext, ProxyImp } from '@src/utils/context';
 
 import { ProtoGrpcType } from '@src/__proto__/health';
-import { HealthCheckRequest, HealthCheckResponse, HealthHandlers, ServingStatus } from '@src/__proto__/grpc/types';
+import { HealthCheckRequest, HealthCheckResponse, HealthHandlers, ServingStatus } from '@src/__proto__/grpc/health/types';
 
 const filename = path.join(__dirname, '../../../proto/health.proto');
 const options = {

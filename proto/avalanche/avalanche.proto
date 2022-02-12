@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package avalanche.avax;
+option go_package = "./avalanche";
+import "../common.proto";
+
+message Network {
+    string provider  = 1;
+    int32 network_id = 2;
+}
+
+message DeployAccountRequest {
+    Network network = 1;
+    string key      = 2;
+}
+
+message DeployAccountReply {
+    string address = 1;
+}
+
+message TransactionParams {
+    string fee  = 1;
+    string memo = 2;
+}
+
+message UnspentTransactionOutput {
+    int32 vout                = 1;
+    string txid               = 2;
+    string amount             = 3;
+    repeated string addresses = 4;
+    string utxo               = 5;
+}
+
+message Recipient {
+    repeated string addresses = 1;
+    string amount             = 2;
+    string locktime           = 3;
+    uint32 threshold          = 4;
+}
+
+message BuildAVAXTransferTransactionRequest {
+    Network network                         = 1;
+    repeated UnspentTransactionOutput utxos = 2;
+    repeated Recipient recipients           = 3;
+    TransactionParams params                = 4;
+    Recipient change                        = 5;
+}
+
+message SignTransactionRequest {
+    Network network                         = 1;
+    string serialized                       = 2;
+    repeated Signature signatures           = 3;
+    repeated UnspentTransactionOutput utxos = 4;
+}
+
+message SendTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message HashForSignatureRequest {
+    Network network   = 1;
+    string pub_key    = 2;
+    string serialized = 3;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+service Avalanche {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc BuildAVAXTransferTransaction(BuildAVAXTransferTransactionRequest) returns (TransactionReply) {}
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
+    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+}

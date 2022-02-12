@@ -1,3 +1,4 @@
+export * from './avalanche';
 export * from './bitcoin';
 export * from './cosmos';
 export * from './ethereum';

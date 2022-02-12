@@ -6,6 +6,8 @@ import { ImplContext, ProxyImp } from '@src/utils/context';
 import { loggerInterceptor } from '@src/grpc/interceptors/logger';
 import { GrpcInterceptorProxy } from '@src/grpc/internals/grpcInterceptor';
 import {
+  AvalancheAVAXService,
+  AvalancheAVAXImp,
   EthereumService,
   EthereumImp,
   HealthService,
@@ -92,6 +94,7 @@ const GRPC_PORT = process.env.GRPC_PORT || '50051';
 export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 
 // services
+grpcServer.addService(AvalancheAVAXService, AvalancheAVAXImp);
 grpcServer.addService(BitcoinService, BitcoinImp);
 grpcServer.addService(CosmosService, CosmosImp);
 grpcServer.addService(EthereumService, EthereumImp);
