@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package ethereum.core;
+
+option go_package = "./ethereum/core";
+
+import "./ethereum.common.proto";
+import "../common.proto";
+
+message DeployAccountRequest {
+    Network network = 1;
+    string key      = 2;
+}
+
+message DeployAccountReply {
+    string address = 1;
+}
+
+message BuildTransferTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    TransactionParams params = 5;
+}
+
+message BuildERC20TransferTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string token_address     = 5;
+    TransactionParams params = 6;
+}
+
+message SignTransactionRequest {
+    Network network               = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SendTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message BuildTransactionRequest {
+    Network network          = 1;
+    string from              = 2;
+    string to                = 3;
+    string quantity          = 4;
+    string data              = 5;
+    TransactionParams params = 6;
+}
+
+message RebuildTransactionRequest {
+    Network network          = 1;
+    string serialized        = 2;
+    TransactionParams params = 3;
+    string from              = 4;  // sender
+}
+
+message HashForSignatureRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+service Ethereum {
+    rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+
+    rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildERC20TransferTransaction(BuildERC20TransferTransactionRequest) returns (TransactionReply) {}
+
+    rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
+    rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+    rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
+
+    rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+}

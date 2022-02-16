@@ -29,34 +29,14 @@ export const EthereumRefSchema = {
   },
 };
 
-export const DeployAccountRequestSchema = {
-  type: 'object',
-  required: ['key'],
-  properties: {
-    key: { type: 'string' },
-    network: { $ref: 'base#/definitions/network' },
-  },
-};
-
 export const BuildAccountTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'keys', 'sender'],
+  required: ['network', 'threshold', 'keys', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     keys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    saltNonce: { type: ['integer', 'string'], minimum: 0 },
     sender: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
-  },
-};
-
-export const BuildTransferTransactionRequestSchema = {
-  type: 'object',
-  required: ['network', 'from', 'to', 'quantity'],
-  properties: {
-    network: { $ref: 'base#/definitions/network' },
-    from: { type: 'string' },
-    to: { type: 'string' },
-    quantity: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
   },
 };
@@ -117,13 +97,14 @@ export const RebuildTransactionRequestSchema = {
 
 export const BuildMultisigTransferInputRequestSchema = {
   type: 'object',
-  required: ['toAddress', 'quantity'],
+  required: ['toAddress', 'quantity', 'contract', 'participants', 'sender'],
   properties: {
     toAddress: { type: 'string' },
     quantity: { type: 'string' },
-    data: { type: 'string' },
-    expireTime: { type: 'integer' },
-    sequenceId: { type: 'integer' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    sender: { type: 'string' },
   },
 };
 
@@ -132,7 +113,7 @@ export const SignMultisigTransferInputRequestSchema = {
   required: ['serialized', 'signatures'],
   properties: {
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
+    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['pubKey', 'signature'] } },
   },
 };
 
@@ -150,13 +131,15 @@ export const BuildMultisigTransferTransactionRequestSchema = {
 
 export const BuildMultisigERC20TransferInputRequestSchema = {
   type: 'object',
-  required: ['tokenAddress', 'toAddress', 'quantity'],
+  required: ['network', 'contract', 'tokenAddress', 'toAddress', 'quantity', 'sender'],
   properties: {
+    network: { $ref: 'base#/definitions/network' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
     tokenAddress: { type: 'string' },
     toAddress: { type: 'string' },
     quantity: { type: 'string' },
-    expireTime: { type: 'integer' },
-    sequenceId: { type: 'integer' },
+    sender: { type: 'string' },
   },
 };
 
@@ -165,7 +148,7 @@ export const SignMultisigERC20TransferInputRequestSchema = {
   required: ['serialized', 'signatures'],
   properties: {
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
+    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['pubKey', 'signature'] } },
   },
 };
 

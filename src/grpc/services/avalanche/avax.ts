@@ -5,7 +5,7 @@ import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '@src/providers/chain-state/avalanche/avax';
 import { ImplContext, ProxyImp } from '@src/utils/context';
 
-import { ProtoGrpcType } from '@src/__proto__/avalanche';
+import { ProtoGrpcType } from '@src/__proto__/avax';
 import { TransactionReply } from '@src/__proto__/common/types';
 import {
   AvalancheHandlers,
@@ -18,7 +18,7 @@ import {
   TransactionParams,
 } from '../../../__proto__/avalanche/avax/types';
 
-const filename = path.join(__dirname, '../../../../proto/avalanche/avalanche.proto');
+const filename = path.join(__dirname, '../../../../proto/avalanche/avax.proto');
 const options = {
   longs: String,
   defaults: false,

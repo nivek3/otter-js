@@ -1,14 +1,12 @@
-import { BNLike, bufferToHex, pubToAddress, toChecksumAddress } from 'ethereumjs-util';
+import { addHexPrefix, BNLike, bufferToHex, importPublic, pubToAddress, toBuffer, toChecksumAddress } from 'ethereumjs-util';
 import { ec as EC } from 'elliptic';
 const ec = new EC('secp256k1');
 import { toBN } from 'web3-utils';
 
 export const pubToBIP55Address = (key: string) => {
-  const pair = ec.keyFromPublic(key, 'hex');
-  const decompose = pair.getPublic(false, 'hex');
-  const address = bufferToHex(pubToAddress(Buffer.from(decompose, 'hex'), true));
-  const bip55 = toChecksumAddress(address);
-  return bip55;
+  const pubKey = importPublic(toBuffer(addHexPrefix(key)));
+  const address = bufferToHex(pubToAddress(pubKey));
+  return toChecksumAddress(address);
 };
 
 export const compactPublicKey = (key: string) => {

@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package ethereum.bitgo;
+
+option go_package = "./ethereum/bitgo";
+
+import "./ethereum.common.proto";
+import "../common.proto";
+
+message BuildAccountTransactionRequest {
+    Network network          = 1;
+    repeated string keys     = 2;
+    string sender            = 3;
+    TransactionParams params = 4;
+}
+message BuildAccountTransactionReply {
+    string address                = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+    string estimated_fee          = 4;
+}
+
+message BuildMultisigTransferInputRequest {
+    Network network   = 1;
+    string to_address = 2;
+    string quantity   = 3;
+    string data       = 4;
+    int32 expire_time = 5;
+    int32 sequence_id = 6;
+    string contract   = 7;
+}
+
+message BuildMultisigTransferInputReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputRequest {
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputReply {
+    string serialized = 1;
+}
+
+message BuildMultisigTransferTransactionRequest {
+    Network network               = 1;
+    string contract               = 2;
+    string data                   = 3;
+    string sender                 = 4;
+    TransactionParams params      = 5;
+    string serialized             = 6;
+    repeated Signature signatures = 7;
+}
+
+message BuildMultisigERC20TransferInputRequest {
+    Network network      = 1;
+    string token_address = 2;
+    string to_address    = 3;
+    string quantity      = 4;
+    int32 expire_time    = 5;
+    int32 sequence_id    = 6;
+    string contract      = 7;
+}
+
+message SignMultisigERC20TransferInputRequest {
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+service Ethereum {
+    rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
+
+    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (TransactionReply) {}
+
+    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigERC20TransferInput(SignMultisigERC20TransferInputRequest) returns (TransactionReply) {}
+
+    rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (TransactionReply) {}
+}

@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package ethereum.gnosis;
+option go_package = "./ethereum/gnosis";
+
+import "../common.proto";
+
+message Network {
+    string provider  = 1;
+    int32 chain_id   = 2;
+    string hard_fork = 3;
+}
+
+message TransactionParams {
+    string gas_limit                = 1;
+    string gas_price                = 2;
+    int32 nonce                     = 3;
+    string type                     = 4;
+    string max_fee_per_gas          = 5;
+    string max_priority_fee_per_gas = 6;
+}
+
+message BuildAccountTransactionRequest {
+    Network network          = 1;
+    repeated string keys     = 2;
+    int32 threshold          = 3;
+    string sender            = 4;
+    int64 salt_nonce         = 5;
+    TransactionParams params = 6;
+}
+
+message BuildAccountTransactionReply {
+    string address                = 1;
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+    string estimated_fee          = 4;
+}
+
+message BuildMultisigTransferInputRequest {
+    Network network              = 1;
+    string to_address            = 2;
+    string quantity              = 3;
+    string contract              = 4;
+    int32 contract_nonce         = 5;
+    string sender                = 6;
+    repeated string participants = 7;
+}
+
+message BuildMultisigTransferInputReply {
+    string serialized             = 1;
+    string hash                   = 2;
+    repeated Signature signatures = 3;
+}
+
+message SignMultisigTransferInputRequest {
+    string serialized             = 1;
+    repeated Signature signatures = 2;
+}
+
+message SignMultisigTransferInputReply {
+    string serialized = 1;
+}
+
+message BuildMultisigTransferTransactionRequest {
+    Network network               = 1;
+    string contract               = 2;
+    string data                   = 3;
+    string sender                 = 4;
+    TransactionParams params      = 5;
+    string serialized             = 6;
+    repeated Signature signatures = 7;
+}
+
+message BuildMultisigERC20TransferInputRequest {
+    Network network              = 1;
+    string token_address         = 2;
+    string to_address            = 3;
+    string quantity              = 4;
+    string contract              = 5;
+    int32 contract_nonce         = 6;
+    string sender                = 7;
+    repeated string participants = 8;
+}
+
+message SignMultisigERC20TransferInputRequest {
+    string serialized             = 2;
+    repeated Signature signatures = 3;
+}
+
+message DecodeTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+service Ethereum {
+    rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
+
+    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (TransactionReply) {}
+    rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigERC20TransferInput(SignMultisigERC20TransferInputRequest) returns (TransactionReply) {}
+
+    rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+}
