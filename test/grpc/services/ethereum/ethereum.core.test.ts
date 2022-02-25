@@ -283,6 +283,54 @@ describe('Ethereum Core service', () => {
           });
         });
 
+        describe('BuildContractTransaction', () => {
+          test('BAT', async () => {
+            const uri = 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
+            const web3 = provider.getWeb3Provider(uri);
+            jest.spyOn(provider, 'getWeb3Provider').mockReturnValueOnce(web3);
+            jest.spyOn(web3.eth, 'getGasPrice').mockResolvedValueOnce('1300002921');
+            jest.spyOn(web3.eth, 'estimateGas').mockResolvedValueOnce(35280);
+            jest.spyOn(web3.eth, 'getBlock').mockResolvedValueOnce({ baseFeePerGas: '0x9b5' } as any);
+            jest.spyOn(provider, 'maxPriorityFeePerGas').mockResolvedValueOnce('0x9502F900');
+            const serialized =
+              '02f86f033f849502f9008495030c6a8289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c0808080';
+            const Method = promisify(client.BuildContractTransaction.bind(client));
+            const response = await Method({
+              from: '0xd73d9AA55ABBd6CFbeD3e9Ad7f8Be2f6D83C70dC',
+              contractAddress: '0x5abe286f5ea6132b157cfd728834d493cbd43314',
+              network: {
+                provider: uri,
+                chainId: 3,
+                hardFork: 'london',
+              },
+              params: {
+                type: '0x02',
+                nonce: '0x3f',
+                // gasPrice: '1500000448',
+                // maxPriorityFeePerGas: '0x702a0263',
+                // maxFeePerGas: '0x702a0263',
+                // gasLimit: '0x89d0',
+              },
+              abis: [
+                'function name() view returns (string)',
+                'function symbol() view returns (string)',
+                'function balanceOf(address) view returns (uint)',
+                'function transfer(address to, uint amount)',
+              ],
+              method: 'transfer',
+              args: ['0x370BA1dc25C07d0C77Ba9b83fcc75Fcc2a0aC243', '1000000000000000000'],
+            });
+            expect(response).toHaveProperty('serialized', serialized);
+            expect(response.signatures).toEqual(
+              expect.arrayContaining([
+                expect.objectContaining({
+                  hash: '7fc416096a3a557bf8014a3fe4e968e56557248ecbc913d996357e5b13512111',
+                }),
+              ]),
+            );
+          });
+        });
+
         describe('BuildERC20TransferTransaction', () => {
           test('BAT', async () => {
             const uri = 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';

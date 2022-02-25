@@ -19,6 +19,7 @@ import {
   SendTransactionRequest,
   HashForSignatureRequest,
   DecodeTransactionRequest,
+  BuildContractTransactionRequest,
 } from '@src/__proto__/ethereum/core/types';
 
 const filename = path.join(__dirname, '../../../../../proto/ethereum/ethereum.core.proto');
@@ -47,6 +48,11 @@ export const EthereumCoreImp: ProxyImp<EthereumHandlers> = {
   BuildERC20TransferTransaction: async function (ctx: ImplContext<BuildERC20TransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildERC20TransferTransaction(req);
+  },
+
+  BuildContractTransaction: async function (ctx: ImplContext<BuildContractTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildContractTransaction(req);
   },
 
   SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {

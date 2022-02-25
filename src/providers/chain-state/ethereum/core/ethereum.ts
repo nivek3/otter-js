@@ -1,8 +1,10 @@
 import { isNil, pick } from 'lodash';
 import Web3 from 'web3';
 import { toBN, toHex } from 'web3-utils';
+import { utils } from 'ethers';
 import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, Capability } from '@ethereumjs/tx';
 import { BN, stripHexPrefix, addHexPrefix, padToEven } from 'ethereumjs-util';
+
 import { canonicalSignature } from '@src/utils/signature';
 import { Validator } from '@src/utils/ajv';
 import { errors, AppError } from '@src/error';
@@ -19,6 +21,7 @@ import {
   RebuildTransactionRequest,
   HashForSignatureRequest,
   DecodeTransactionRequest,
+  BuildContractTransactionRequest,
 } from '@src/__proto__/ethereum/core/types';
 import { pubToBIP55Address, compactPublicKey } from '../common/utils';
 import { BaseProvider } from '../common/base';
@@ -33,6 +36,7 @@ import {
   SendTransactionRequestSchema,
   HashForSignatureRequestSchema,
   DecodeTransactionRequestSchema,
+  BuildContractTransactionRequestSchema,
 } from './ethereum.schema';
 
 type FactoryTxData = TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData;
@@ -145,6 +149,37 @@ export class Provider extends BaseProvider {
       to,
       data,
       value: toBN(quantity),
+    };
+
+    const txData = await this.getTxData(txInput, common, params!, web3, from);
+    const tx = TransactionFactory.fromTxData(txData, txOptions);
+
+    const hash = tx.getMessageToSign(true).toString('hex');
+    const reserialized = tx.serialize().toString('hex');
+    const estimatedFee = this.getTxEstimatedFee(tx);
+
+    const signature = { hash };
+    return {
+      serialized: reserialized,
+      signatures: [signature],
+      estimatedFee,
+    };
+  }
+
+  async buildContractTransaction(req: BuildContractTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildContractTransactionRequestSchema, req);
+
+    const { params = {}, network, from, abis, args, contractAddress, method } = req as Required<BuildContractTransactionRequest>;
+    const { provider } = network!;
+    const web3 = this.getWeb3Provider(provider!);
+
+    const common = this.getTxCommon(network!);
+    const iface = new utils.Interface(abis);
+    const input = iface.encodeFunctionData(method, args);
+    const txOptions = { common };
+    const txInput = {
+      to: contractAddress,
+      data: input,
     };
 
     const txData = await this.getTxData(txInput, common, params!, web3, from);

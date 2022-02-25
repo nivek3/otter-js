@@ -70,6 +70,16 @@ message DecodeTransactionRequest {
     string serialized = 2;
 }
 
+message BuildContractTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string from              = 3;
+    string contract_address  = 4;
+    repeated string abis     = 5;
+    string method            = 6;
+    repeated string args     = 7;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
 
@@ -83,4 +93,6 @@ service Ethereum {
 
     rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+
+    rpc BuildContractTransaction(BuildContractTransactionRequest) returns (TransactionReply) {}
 }
