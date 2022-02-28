@@ -53,48 +53,6 @@ export const BuildERC20TransferTransactionRequestSchema = {
   },
 };
 
-export const SignTransactionRequestSchema = {
-  type: 'object',
-  required: ['network', 'serialized', 'signatures'],
-  properties: {
-    network: { $ref: 'base#/definitions/network' },
-    serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
-  },
-};
-
-export const SendTransactionRequestSchema = {
-  type: 'object',
-  required: ['network', 'serialized'],
-  properties: {
-    network: { $ref: 'base#/definitions/network' },
-    serialized: { type: 'string' },
-  },
-};
-
-export const BuildTransactionRequestSchema = {
-  type: 'object',
-  required: ['network', 'from', 'to', 'quantity', 'data'],
-  properties: {
-    network: { $ref: 'base#/definitions/network' },
-    from: { type: 'string' },
-    to: { type: 'string' },
-    quantity: { type: 'string' },
-    data: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
-  },
-};
-
-export const RebuildTransactionRequestSchema = {
-  type: 'object',
-  required: ['network', 'serialized'],
-  properties: {
-    network: { $ref: 'base#/definitions/network' },
-    serialized: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
-  },
-};
-
 export const BuildMultisigTransferInputRequestSchema = {
   type: 'object',
   required: ['toAddress', 'quantity', 'contract', 'participants', 'sender'],
@@ -161,23 +119,5 @@ export const BuildMultisigTokenTransferTransactionRequestSchema = {
     input: { type: 'string' },
     sender: { type: 'string' },
     params: { type: 'array', items: { $ref: 'base#/definitions/params' } },
-  },
-};
-
-export const HashForSignatureRequestSchema = {
-  type: 'object',
-  required: ['network', 'serialized'],
-  properties: {
-    network: { $ref: 'base#/definitions/network' },
-    serialized: { type: 'string' },
-    pubKey: { type: 'string' },
-  },
-};
-
-export const DecodeTransactionRequestSchema = {
-  type: 'object',
-  required: ['serialized'],
-  properties: {
-    serialized: { type: 'string' },
   },
 };

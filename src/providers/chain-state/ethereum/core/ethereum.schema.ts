@@ -83,12 +83,12 @@ export const SendTransactionRequestSchema = {
 
 export const BuildTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'to', 'quantity', 'data'],
+  required: ['network', 'from', 'to', 'value', 'data'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     from: { type: 'string' },
     to: { type: 'string' },
-    quantity: { type: 'string' },
+    value: { type: 'string' },
     data: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
   },

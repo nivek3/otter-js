@@ -139,7 +139,7 @@ export class Provider extends BaseProvider {
   async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildTransactionRequestSchema, req);
 
-    const { params = {}, network, from, to, quantity, data } = req as Required<BuildTransactionRequest>;
+    const { params = {}, network, from, to, value, data } = req as Required<BuildTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
     const web3 = this.getWeb3Provider(provider!);
@@ -148,7 +148,7 @@ export class Provider extends BaseProvider {
       from,
       to,
       data,
-      value: toBN(quantity),
+      value: value ? toBN(value) : undefined,
     };
 
     const txData = await this.getTxData(txInput, common, params!, web3, from);
