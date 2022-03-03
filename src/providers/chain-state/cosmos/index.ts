@@ -1,18 +1,21 @@
+import BigNumber from 'bignumber.js';
 import { isNil } from 'lodash';
-import { Int53 } from '@cosmjs/math';
+import { Int53, Uint53 } from '@cosmjs/math';
 import { sha256 } from '@cosmjs/crypto';
 import { fromHex, toHex } from '@cosmjs/encoding';
-import { createMultisigThresholdPubkey, pubkeyToAddress, encodeSecp256k1Pubkey, Coin } from '@cosmjs/amino';
-import { Registry, makeAuthInfoBytes, encodePubkey, decodePubkey, makeSignDoc, makeSignBytes } from '@cosmjs/proto-signing';
-import { defaultRegistryTypes, StargateClient, SignerData, makeMultisignedTx } from '@cosmjs/stargate';
-import BigNumber from 'bignumber.js';
+import { createMultisigThresholdPubkey, pubkeyToAddress, encodeSecp256k1Pubkey, Coin, StdFee, coins } from '@cosmjs/amino';
+import { Registry, makeAuthInfoBytes, encodePubkey, decodePubkey, makeSignDoc, makeSignBytes, EncodeObject } from '@cosmjs/proto-signing';
+import { defaultRegistryTypes, StargateClient, SignerData, makeMultisignedTx, GasPrice, calculateFee } from '@cosmjs/stargate';
 
 import { TxRaw, AuthInfo, Fee } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import { MsgDelegate, MsgUndelegate, MsgBeginRedelegate } from 'cosmjs-types/cosmos/staking/v1beta1/tx';
+import { MsgWithdrawDelegatorReward } from 'cosmjs-types/cosmos/distribution/v1beta1/tx';
 
 import { canonicalSignature } from '../../../utils/signature';
 import { Validator } from '../../../utils/ajv';
 import { AppError, errors } from '../../../error';
 import { TransactionReply } from '../../../__proto__/common/types';
+
 import {
   TransactionParams,
   BuildTransferTransactionRequest,
@@ -26,6 +29,17 @@ import {
   DecodeTransactionRequest,
   RebuildTransactionRequest,
   Network,
+  Fee as CosmosFee,
+  BuildDelegateTransactionRequest,
+  BuildUndelegateTransactionRequest,
+  BuildRedelegateTransactionRequest,
+  BuildWithdrawDelegationRewardTransactionRequest,
+
+  // multisig staking
+  BuildMultisigDelegateTransactionRequest,
+  BuildMultisigUndelegateTransactionRequest,
+  BuildMultisigRedelegateTransactionRequest,
+  BuildMultisigWithdrawDelegationRewardTransactionRequest,
 } from '../../../__proto__/cosmos/types';
 
 import {
@@ -39,11 +53,25 @@ import {
   RebuildTransactionRequestSchema,
   SignMultisigTransactionRequestSchema,
   BuildMultisigTransferTransactionRequestSchema,
+  BuildDelegateTransactionRequestSchema,
+  BuildUndelegateTransactionRequestSchema,
+  BuildRedelegateTransactionRequestSchema,
+
+  // multisig staking
+  BuildWithdrawDelegationRewardTransactionSchema,
+  BuildMultisigDelegateTransactionRequestSchema,
+  BuildMultisigUndelegateTransactionRequestSchema,
+  BuildMultisigRedelegateTransactionRequestSchema,
+  BuildMultisigWithdrawDelegationRewardTransactionSchema,
 } from './cosmos.schema';
 import { signAminoInstruction } from './utils';
 
 const validator = new Validator({ schemas: [CosmosRefSchema] });
 const registry = new Registry(defaultRegistryTypes);
+
+interface ReqSignerData extends SignerData {
+  client?: StargateClient;
+}
 export class Provider {
   deployAccount(req: DeployAccountRequest): DeployAccountReply {
     validator.assert(DeployAccountRequestSchema, req);
@@ -64,21 +92,12 @@ export class Provider {
     const keys = pubKeys.map((key) => encodeSecp256k1Pubkey(fromHex(key)));
     const multisigPubkey = createMultisigThresholdPubkey(keys, threshold, true);
     const address = pubkeyToAddress(multisigPubkey, prefix);
-
     return { address };
   }
 
   async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildTransferTransactionRequestSchema, req);
     const { from, to, amount, pubKey, network = {}, params = {} } = req as Required<BuildTransferTransactionRequest>;
-    const { memo = '' } = params!;
-
-    const { accountNumber, sequence, chainId } = await this.getReqFromData({
-      ...network,
-      ...params,
-      from,
-    });
-
     const msg = {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
       value: {
@@ -87,35 +106,8 @@ export class Provider {
         amount: [amount],
       },
     };
+    const { serialized, signature, estimatedFee } = await this.signDirect(network!, params!, from, pubKey, [msg]);
 
-    const txBodyEncodeObject = {
-      typeUrl: '/cosmos.tx.v1beta1.TxBody',
-      value: {
-        messages: [msg],
-        memo,
-      },
-    };
-
-    const gasLimit = Number(params!.fee!.gas!);
-    const feeAmount = params?.fee!.amount! as Coin;
-
-    const fee = { amount: [feeAmount], gas: gasLimit };
-    const bodyBytes = registry.encode(txBodyEncodeObject);
-
-    const pubkey = encodePubkey(encodeSecp256k1Pubkey(fromHex(pubKey!)));
-    const authInfoBytes = makeAuthInfoBytes([{ pubkey, sequence }], fee.amount, fee.gas);
-
-    const signDoc = makeSignDoc(bodyBytes, authInfoBytes, chainId, accountNumber);
-    const signBytes = makeSignBytes(signDoc);
-    const message = toHex(sha256(signBytes));
-    const signature = { pubKey, hash: message };
-
-    const txRaw = TxRaw.fromPartial({
-      bodyBytes,
-      authInfoBytes,
-    });
-    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
-    const serialized = toHex(TxRaw.encode(txRaw).finish());
     return {
       serialized,
       signatures: [signature],
@@ -126,12 +118,7 @@ export class Provider {
   async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigTransferTransactionRequestSchema, req);
     const { from, to, pubKeys, amount, network = {}, params = {} } = req as Required<BuildMultisigTransferTransactionRequest>;
-    const { memo } = params!;
-    const { accountNumber, sequence, chainId } = await this.getReqFromData({
-      ...network,
-      ...params,
-      from,
-    });
+
     const msg = {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
       value: {
@@ -140,28 +127,10 @@ export class Provider {
         amount: [amount],
       },
     };
+    const { estimatedFee, serialized, signatures } = await this.signMultisigAmino(network!, params!, from, pubKeys, [msg]);
 
-    const gasLimit = params!.fee!.gas!.toString();
-    const feeAmount = params?.fee!.amount! as Coin;
-    const fee = { amount: [feeAmount], gas: gasLimit };
-
-    const signingInstruction = {
-      accountNumber: accountNumber,
-      sequence: sequence,
-      chainId: chainId,
-    };
-    const msgs = [msg];
-
-    const { tx, message } = await signAminoInstruction(pubKeys, msgs, fee, memo, signingInstruction);
-    const signatures = pubKeys.map((pubKey) => {
-      return {
-        pubKey,
-        hash: toHex(message),
-      };
-    });
-    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
     return {
-      serialized: toHex(tx),
+      serialized,
       signatures,
       estimatedFee,
     };
@@ -270,6 +239,7 @@ export class Provider {
 
   async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
     validator.assert(RebuildTransactionRequestSchema, req);
+
     const { network, serialized, from, pubKey, params = {} } = req as Required<RebuildTransactionRequest>;
     const tx = TxRaw.decode(fromHex(serialized));
     const bodyBytes = tx.bodyBytes;
@@ -305,8 +275,349 @@ export class Provider {
     };
   }
 
-  async getReqProvider(provider: string): Promise<StargateClient> {
-    return StargateClient.connect(provider);
+  async buildDelegateTransaction(req: BuildDelegateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildDelegateTransactionRequestSchema, req);
+
+    const {
+      network,
+      delegator,
+      pubKey,
+      validator: validatorAddress,
+      amount,
+      params = {},
+    } = req as Required<BuildDelegateTransactionRequest>;
+
+    const msg = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+      value: MsgDelegate.fromPartial({
+        delegatorAddress: delegator,
+        validatorAddress,
+        amount: amount!,
+      }),
+    };
+    const { serialized, signature, estimatedFee } = await this.signDirect(network!, params!, delegator, pubKey, [msg]);
+
+    return {
+      serialized,
+      signatures: [signature],
+      estimatedFee,
+    };
+  }
+
+  async buildUndelegateTransaction(req: BuildUndelegateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildUndelegateTransactionRequestSchema, req);
+
+    const {
+      network,
+      validator: validatorAddress,
+      delegator: delegatorAddress,
+      pubKey,
+      amount,
+      params = {},
+    } = req as Required<BuildUndelegateTransactionRequest>;
+
+    const msg = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+      value: MsgUndelegate.fromPartial({
+        delegatorAddress,
+        validatorAddress,
+        amount: amount!,
+      }),
+    };
+    const { serialized, signature, estimatedFee } = await this.signDirect(network!, params!, delegatorAddress, pubKey, [msg]);
+
+    return {
+      serialized,
+      signatures: [signature],
+      estimatedFee,
+    };
+  }
+
+  async buildRedelegateTransaction(req: BuildRedelegateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildRedelegateTransactionRequestSchema, req);
+
+    const {
+      network,
+      pubKey,
+      validatorSrcAddress,
+      validatorDstAddress,
+      delegator,
+      amount,
+      params = {},
+    } = req as Required<BuildRedelegateTransactionRequest>;
+
+    const msg = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+      value: MsgBeginRedelegate.fromPartial({
+        validatorSrcAddress,
+        validatorDstAddress,
+        delegatorAddress: delegator,
+        amount: amount!,
+      }),
+    };
+    const { serialized, signature, estimatedFee } = await this.signDirect(network!, params!, delegator, pubKey, [msg]);
+
+    return {
+      serialized,
+      signatures: [signature],
+      estimatedFee,
+    };
+  }
+
+  async buildWithdrawDelegationRewardTransaction(req: BuildWithdrawDelegationRewardTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildWithdrawDelegationRewardTransactionSchema, req);
+
+    const { network, params = {}, validators, delegator, pubKey } = req as Required<BuildWithdrawDelegationRewardTransactionRequest>;
+    const msgs = validators.map((validator: string) => {
+      return {
+        typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+        value: MsgWithdrawDelegatorReward.fromPartial({
+          validatorAddress: validator,
+          delegatorAddress: delegator,
+        }),
+      };
+    });
+    const { serialized, signature, estimatedFee } = await this.signDirect(network!, params!, delegator, pubKey, msgs);
+    return {
+      serialized,
+      signatures: [signature],
+      estimatedFee,
+    };
+  }
+
+  // multisig staking
+  async buildMultisigDelegateTransaction(req: BuildMultisigDelegateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigDelegateTransactionRequestSchema, req);
+
+    const {
+      network,
+      delegator,
+      pubKeys,
+      validator: validatorAddress,
+      amount,
+      params = {},
+    } = req as Required<BuildMultisigDelegateTransactionRequest>;
+
+    const msg = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+      value: MsgDelegate.fromPartial({
+        delegatorAddress: delegator,
+        validatorAddress,
+        amount: amount!,
+      }),
+    };
+    const { serialized, signatures, estimatedFee } = await this.signMultisigAmino(network!, params!, delegator, pubKeys, [msg]);
+
+    return {
+      serialized,
+      signatures,
+      estimatedFee,
+    };
+  }
+
+  async buildMultisigUndelegateTransaction(req: BuildMultisigUndelegateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigUndelegateTransactionRequestSchema, req);
+
+    const {
+      network,
+      validator: validatorAddress,
+      delegator: delegatorAddress,
+      pubKeys,
+      amount,
+      params = {},
+    } = req as Required<BuildMultisigUndelegateTransactionRequest>;
+
+    const msg = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+      value: MsgUndelegate.fromPartial({
+        delegatorAddress,
+        validatorAddress,
+        amount: amount!,
+      }),
+    };
+    const { serialized, signatures, estimatedFee } = await this.signMultisigAmino(network!, params!, delegatorAddress, pubKeys, [msg]);
+
+    return {
+      serialized,
+      signatures,
+      estimatedFee,
+    };
+  }
+
+  async buildMultisigRedelegateTransaction(req: BuildMultisigRedelegateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigRedelegateTransactionRequestSchema, req);
+
+    const {
+      network,
+      pubKeys,
+      validatorSrcAddress,
+      validatorDstAddress,
+      delegator,
+      amount,
+      params = {},
+    } = req as Required<BuildMultisigRedelegateTransactionRequest>;
+
+    const msg = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+      value: MsgBeginRedelegate.fromPartial({
+        validatorSrcAddress,
+        validatorDstAddress,
+        delegatorAddress: delegator,
+        amount: amount!,
+      }),
+    };
+    const { serialized, signatures, estimatedFee } = await this.signMultisigAmino(network!, params!, delegator, pubKeys, [msg]);
+    return {
+      serialized,
+      signatures,
+      estimatedFee,
+    };
+  }
+
+  async buildMultisigWithdrawDelegationRewardTransaction(
+    req: BuildMultisigWithdrawDelegationRewardTransactionRequest,
+  ): Promise<TransactionReply> {
+    validator.assert(BuildMultisigWithdrawDelegationRewardTransactionSchema, req);
+
+    const {
+      network,
+      params = {},
+      validators,
+      delegator,
+      pubKeys,
+    } = req as Required<BuildMultisigWithdrawDelegationRewardTransactionRequest>;
+    const msgs = validators.map((validator: string) => {
+      return {
+        typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+        value: MsgWithdrawDelegatorReward.fromPartial({
+          validatorAddress: validator,
+          delegatorAddress: delegator,
+        }),
+      };
+    });
+    const { serialized, signatures, estimatedFee } = await this.signMultisigAmino(network!, params!, delegator, pubKeys, msgs);
+    return {
+      serialized,
+      signatures,
+      estimatedFee,
+    };
+  }
+
+  getReqGasPrice(fee: CosmosFee): GasPrice {
+    return GasPrice.fromString(fee.gasPrice!);
+  }
+
+  getReqGasFee(fee: CosmosFee) {
+    return fee.amount?.amount && fee.amount.denom && coins(fee.amount.amount.toString(), fee.amount.denom.toString());
+  }
+
+  async estimateGasFee(
+    client: StargateClient,
+    signerPubKey: string,
+    messages: readonly EncodeObject[],
+    gasPrice: GasPrice,
+    sequence: number,
+    memo: string = '',
+    multiplier: number = 1.3,
+  ): Promise<StdFee> {
+    const queryClient = client['forceGetQueryClient']();
+    const signer = encodeSecp256k1Pubkey(fromHex(signerPubKey));
+    const anyMsgs = messages.map((m) => registry.encodeAsAny(m));
+
+    const { gasInfo } = await queryClient.tx.simulate(anyMsgs, memo, signer, sequence);
+    if (!gasInfo) throw new AppError(errors.INVALID_NETWORK, { details: 'Failed to simulate gas' });
+
+    const gasEstimation = Uint53.fromString(gasInfo.gasUsed.toString()).toNumber();
+    return calculateFee(Math.round(gasEstimation * multiplier), gasPrice);
+  }
+
+  async getReqTxFee(
+    fee: CosmosFee,
+    client: StargateClient,
+    signerPubKey: string,
+    messages: readonly EncodeObject[],
+    sequence: number,
+    memo: string = '',
+    multiplier: number = 1.3,
+  ) {
+    const { gas, amount } = fee;
+    if (gas && amount) {
+      return {
+        amount: coins(amount.amount!.toString(), amount.denom!.toString()),
+        gas: gas.toString(),
+      };
+    }
+    const gasPrice = this.getReqGasPrice(fee);
+    return this.estimateGasFee(client, signerPubKey, messages, gasPrice, sequence, memo, multiplier);
+  }
+
+  async signDirect(network: Network, params: TransactionParams, from: string, signerPubKey: string, messages: readonly EncodeObject[]) {
+    const { accountNumber, sequence, chainId, client } = await this.getReqFromData({
+      ...network,
+      ...params,
+      from,
+    });
+    const memo = params.memo || '';
+    const txBodyEncodeObject = {
+      typeUrl: '/cosmos.tx.v1beta1.TxBody',
+      value: {
+        messages: messages,
+        memo,
+      },
+    };
+    const provider = await this.getReqProvider(network?.provider!, client);
+    const fee = await this.getReqTxFee(params?.fee!, provider, signerPubKey!, messages, sequence);
+    const gasLimit = Int53.fromString(fee.gas).toNumber();
+    const bodyBytes = registry.encode(txBodyEncodeObject);
+
+    const pubkey = encodePubkey(encodeSecp256k1Pubkey(fromHex(signerPubKey!)));
+    const authInfoBytes = makeAuthInfoBytes([{ pubkey, sequence }], fee.amount, gasLimit);
+
+    const signDoc = makeSignDoc(bodyBytes, authInfoBytes, chainId, accountNumber);
+    const signBytes = makeSignBytes(signDoc);
+    const message = toHex(sha256(signBytes));
+    const signature = { pubKey: signerPubKey, hash: message };
+
+    const txRaw = TxRaw.fromPartial({
+      bodyBytes,
+      authInfoBytes,
+    });
+    const serialized = toHex(TxRaw.encode(txRaw).finish());
+
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
+    return { serialized, signature, estimatedFee };
+  }
+
+  async signMultisigAmino(network: Network, params: TransactionParams, from: string, pubKeys: string[], messages: readonly EncodeObject[]) {
+    const memo = params.memo || '';
+    const [signerPubKey] = pubKeys;
+    const { accountNumber, sequence, chainId, client } = await this.getReqFromData({
+      ...network,
+      ...params,
+      from,
+    });
+    const signingInstruction = {
+      accountNumber: accountNumber,
+      sequence: sequence,
+      chainId: chainId,
+    };
+    const provider = await this.getReqProvider(network?.provider!, client);
+    const fee = await this.getReqTxFee(params?.fee!, provider, signerPubKey!, messages, sequence);
+
+    const { tx, message } = await signAminoInstruction(pubKeys, messages, fee, memo, signingInstruction);
+    const signatures = pubKeys.map((pubKey) => {
+      return {
+        pubKey,
+        hash: toHex(message),
+      };
+    });
+
+    const estimatedFee = this.getTxEstimatedFee(fee.amount, fee.gas);
+    return { serialized: toHex(tx), signatures, estimatedFee };
+  }
+
+  async getReqProvider(provider: string, client?: StargateClient): Promise<StargateClient> {
+    return client || StargateClient.connect(provider);
   }
 
   async getReqAccount(client: StargateClient, address: string) {
@@ -323,24 +634,29 @@ export class Provider {
     sequence,
     chainId,
     provider,
-  }: Partial<Network & TransactionParams & { from: string }>): Promise<SignerData> {
+  }: Partial<Network & TransactionParams & { from: string }>): Promise<ReqSignerData> {
+    let client: undefined | StargateClient;
+
     if (isNil(accountNumber) || isNil(sequence) || isNil(chainId)) {
       if (!provider) throw new AppError(errors.INVALID_ARGUMENT, { details: 'provider is required' });
-      const client = await this.getReqProvider(provider);
+      client = await this.getReqProvider(provider);
       if (isNil(accountNumber) || isNil(sequence)) {
         if (!from) throw new AppError(errors.INVALID_ARGUMENT, { details: 'from is required' });
 
         const account = await this.getReqAccount(client, from);
         if (!account) throw new AppError(errors.INVALID_ARGUMENT, { details: 'cannot query account info' });
+
         accountNumber = accountNumber ?? account.accountNumber;
         sequence = sequence ?? account.sequence;
       }
-      chainId = chainId ?? (await this.getReqChainId(client, chainId));
+      if (isNil(chainId)) {
+        chainId = await this.getReqChainId(client);
+      }
     }
-    return { accountNumber, sequence, chainId };
+    return { accountNumber, sequence, chainId, client };
   }
 
-  getTxEstimatedFee(coins: Coin[], gasLimit: BigNumber.Value): string {
+  getTxEstimatedFee(coins: readonly Coin[], gasLimit: BigNumber.Value): string {
     const amounts = BigNumber.sum.apply(
       null,
       coins.map((coin) => coin.amount),

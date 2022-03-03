@@ -12,14 +12,22 @@ import {
   DeployAccountRequest,
   DeployAccountReply,
   BuildTransferRequest,
-  BuildMultisigApproveAsMultiRequest,
-  BuildMultisigAsMultiRequest,
-  BuildMultisigCancelAsMultiRequest,
   SendTransactionRequest,
   BuildBatchTransferTransactionRequest,
   BuildBatchTransactionRequest,
   RebuildTransactionRequest,
   DecodeTransactionRequest,
+  // multisig
+  BuildMultisigApproveAsMultiRequest,
+  BuildMultisigAsMultiRequest,
+  BuildMultisigCancelAsMultiRequest,
+
+  // staking
+  BuildStakingBondAndNominateTransactionRequest,
+  BuildStakingNominateTransactionRequest,
+  BuildStakingBondExtraTransactionRequest,
+  BuildStakingUnbondTransactionRequest,
+  BuildStakingWithdrawUnbondedTransactionRequest,
 } from '@src/__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -98,5 +106,39 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
   DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.decodeTransaction(req);
+  },
+
+  // staking
+  BuildStakingBondAndNominateTransaction: async function (
+    ctx: ImplContext<BuildStakingBondAndNominateTransactionRequest, TransactionReply>,
+  ): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildStakingBondAndNominateTransaction(req);
+  },
+
+  BuildStakingNominateTransaction: async function (
+    ctx: ImplContext<BuildStakingNominateTransactionRequest, TransactionReply>,
+  ): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildStakingNominateTransaction(req);
+  },
+
+  BuildStakingBondExtraTransaction: async function (
+    ctx: ImplContext<BuildStakingBondExtraTransactionRequest, TransactionReply>,
+  ): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildStakingBondExtraTransaction(req);
+  },
+
+  BuildStakingUnbondTransaction: async function (ctx: ImplContext<BuildStakingUnbondTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildStakingUnbondTransaction(req);
+  },
+
+  BuildStakingWithdrawUnbondedTransaction: async function (
+    ctx: ImplContext<BuildStakingWithdrawUnbondedTransactionRequest, TransactionReply>,
+  ): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildStakingWithdrawUnbondedTransaction(req);
   },
 };

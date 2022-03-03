@@ -1,16 +1,13 @@
 import { addHexPrefix } from 'ethereumjs-util';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
-import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
-import { ISubmittableResult } from '@polkadot/types/types';
-import { RuntimeDispatchInfo } from '@polkadot/types/interfaces';
 
 import { AppError, errors } from '@src/error';
 import { Validator } from '@src/utils/ajv';
 
-import { multisigApproveAsMulti, multisigAsMulti, multisigCancelAsMulti } from './multisig';
+import { approveAsMulti, multisigAsMulti, multisigCancelAsMulti } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
-import { transfer, rebuild, sign, decode } from './methods';
+import { transfer, rebuild, sign, decode, boundAndNominate, boundExtra, unbond, nominate, withdrawUnbonded } from './methods';
 import { pubKeyToBlack2Address } from './utils';
 import { ApiCache } from './cache';
 
@@ -29,6 +26,12 @@ import {
   BuildBatchTransactionRequest,
   RebuildTransactionRequest,
   DecodeTransactionRequest,
+  // staking
+  BuildStakingBondAndNominateTransactionRequest,
+  BuildStakingNominateTransactionRequest,
+  BuildStakingBondExtraTransactionRequest,
+  BuildStakingUnbondTransactionRequest,
+  BuildStakingWithdrawUnbondedTransactionRequest,
 } from '@src/__proto__/polkadot/types';
 import {
   BuildBatchTransactionRequestSchema,
@@ -43,6 +46,12 @@ import {
   PolkadotRefSchema,
   SendTransactionRequestSchema,
   SignTransactionRequestSchema,
+  // staking
+  BuildStakingBondAndNominateTransactionSchema,
+  BuildStakingNominateTransactionSchema,
+  BuildStakingBondExtraTransactionSchema,
+  BuildStakingUnbondTransactionSchema,
+  BuildStakingWithdrawUnbondedTransactionSchema,
 } from './polkadot.schema';
 
 const validator = new Validator({ schemas: [PolkadotRefSchema] });
@@ -72,129 +81,202 @@ export class Provider {
 
   async buildTransferTransaction(req: BuildTransferRequest): Promise<TransactionReply> {
     validator.assert(BuildTransferRequestSchema, req);
-
     const { from, to, quantity, network, params } = req as Required<BuildTransferRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
-    const { method, serialized, hash, originTx } = await transfer({
+    const result = await transfer({
+      ...params,
       api,
-      nonce,
-      quantity,
       from,
       to,
-      ...params,
+      quantity,
+      signer: from,
+      nonce,
     });
-    const estimatedFee = await this.getTxEstimatedFee(originTx, from);
-    const signature = { hash };
-    return {
-      method,
-      serialized,
-      signatures: [signature],
-      estimatedFee,
-    };
+    return this.getTxReply(result);
   }
 
   async buildMultisigApproveAsMultiTransaction(req: BuildMultisigApproveAsMultiRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigApproveAsMultiRequestSchema, req);
 
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigApproveAsMultiRequest>;
+    const { network, signer, pubKeys, threshold, params } = req as Required<BuildMultisigApproveAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
-    const from = encodeMultiAddress(addresses, threshold, ss58Format);
+    const multiAddress = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
-    const maxWeight = params?.maxWeight;
-    const { method, serialized, hash, originTx } = await multisigApproveAsMulti({
+    const nonce = await this.getAddressNonce(api, signer, params?.nonce);
+    const result = await approveAsMulti({
       api,
       ss58Format: ss58Format!,
       addresses,
       threshold,
-      quantity,
-      sender,
+      signer,
       nonce,
-      from,
-      to,
-      maxWeight,
+      multiAddress,
+      callHash: req.callHash!,
+      callHex: req.callHex!,
       ...params,
     });
-    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
-    const signature = { hash };
-    return {
-      method,
-      serialized,
-      signatures: [signature],
-      estimatedFee,
-    };
+    return this.getTxReply(result);
   }
 
   async buildMultisigAsMultiTransaction(req: BuildMultisigAsMultiRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigAsMultiRequestSchema, req);
 
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigAsMultiRequest>;
+    const { network, signer, pubKeys, threshold, callHash, callHex, params } = req as Required<BuildMultisigAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
-    const from = encodeMultiAddress(addresses, threshold, ss58Format);
+    const multiAddress = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
+    const nonce = await this.getAddressNonce(api, signer, params?.nonce);
     const maxWeight = params?.maxWeight;
 
-    const { serialized, hash, originTx } = await multisigAsMulti({
+    const result = await multisigAsMulti({
       api,
-      ss58Format: ss58Format!,
+      ss58Format,
       addresses,
       threshold,
-      quantity,
-      sender,
+      signer,
       nonce,
-      from,
-      to,
+      multiAddress,
+      callHash,
+      callHex,
       maxWeight,
       ...params,
     });
-    const signature = { hash };
-    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
-    return {
-      serialized,
-      signatures: [signature],
-      estimatedFee,
-    };
+    return this.getTxReply(result);
   }
 
   async buildMultisigCancelAsMultiTransaction(req: BuildMultisigCancelAsMultiRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigCancelRequestSchema, req);
 
-    const { to, quantity, network, sender, pubKeys, threshold, params } = req as Required<BuildMultisigCancelAsMultiRequest>;
+    const { network, params, pubKeys, threshold, signer, callHash, callHex } = req as Required<BuildMultisigCancelAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
-    const from = encodeMultiAddress(addresses, threshold, ss58Format);
+    const multiAddress = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
+    const nonce = await this.getAddressNonce(api, signer, params?.nonce);
 
-    const { method, serialized, hash, originTx } = await multisigCancelAsMulti({
+    const result = await multisigCancelAsMulti({
       api,
-      ss58Format: ss58Format!,
+      ss58Format,
       addresses,
       threshold,
-      quantity,
-      sender,
-      nonce: nonce,
-      from,
-      to,
+      signer,
+      nonce,
+      multiAddress,
+      callHash,
+      callHex,
       ...params,
     });
-    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
-    const signature = { hash };
-    return {
-      method,
-      serialized,
-      signatures: [signature],
-      estimatedFee,
-    };
+    return this.getTxReply(result);
+  }
+
+  async buildStakingBondAndNominateTransaction(req: BuildStakingBondAndNominateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildStakingBondAndNominateTransactionSchema, req);
+
+    const { network, params, from, targets, controller, quantity } = req as Required<BuildStakingBondAndNominateTransactionRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+
+    const result = await boundAndNominate({
+      api,
+      targets,
+      controller,
+      quantity,
+      signer: from,
+      nonce,
+      ...params,
+    });
+    return this.getTxReply(result);
+  }
+
+  async buildStakingNominateTransaction(req: BuildStakingNominateTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildStakingNominateTransactionSchema, req);
+
+    const { network, params, from, targets } = req as Required<BuildStakingNominateTransactionRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+
+    const result = await nominate({
+      api,
+      targets,
+      signer: from,
+      nonce,
+      ...params,
+    });
+    return this.getTxReply(result);
+  }
+
+  async buildStakingBondExtraTransaction(req: BuildStakingBondExtraTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildStakingBondExtraTransactionSchema, req);
+
+    const { network, params, from, maxAdditional } = req as Required<BuildStakingBondExtraTransactionRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+
+    const result = await boundExtra({
+      api,
+      signer: from,
+      maxAdditional,
+      nonce,
+      ...params,
+    });
+
+    return this.getTxReply(result);
+  }
+
+  async buildStakingUnbondTransaction(req: BuildStakingUnbondTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildStakingUnbondTransactionSchema, req);
+
+    const { network, params, from, quantity } = req as Required<BuildStakingUnbondTransactionRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const result = await unbond({
+      api,
+      signer: from,
+      quantity,
+      nonce,
+      ...params,
+    });
+    return this.getTxReply(result);
+  }
+
+  async buildStakingWithdrawUnbondedTransaction(req: BuildStakingWithdrawUnbondedTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildStakingWithdrawUnbondedTransactionSchema, req);
+
+    const { network, params, from, numSlashingSpans } = req as Required<BuildStakingWithdrawUnbondedTransactionRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const result = await withdrawUnbonded({
+      api,
+      from,
+      numSlashingSpans,
+      signer: from, //
+      nonce,
+      ...params,
+    });
+    return this.getTxReply(result);
   }
 
   async signTransaction(req: SignTransactionRequest): Promise<TransactionReply> {
@@ -219,55 +301,41 @@ export class Provider {
   async buildBatchTransferTransaction(req: BuildBatchTransferTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildBatchTransferTransactionRequestSchema, req);
 
-    const { recipients, sender, params, network } = req as Required<BuildBatchTransferTransactionRequest>;
+    const { recipients, signer, params, network } = req as Required<BuildBatchTransferTransactionRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     if (!(Array.isArray(recipients) && recipients.length)) throw new AppError(errors.REQUIRE_RECIPIENTS);
 
-    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
-    const { serialized, hash, method, originTx } = await batchTransfer({
+    const nonce = await this.getAddressNonce(api, signer, params?.nonce);
+    const result = await batchTransfer({
       api,
       recipients,
-      sender,
+      signer,
       nonce,
       ...params,
     });
-    const signature = { hash };
-    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
-    return {
-      method,
-      serialized,
-      signatures: [signature],
-      estimatedFee,
-    };
+    return this.getTxReply(result);
   }
 
   async buildBatchTransaction(req: BuildBatchTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildBatchTransactionRequestSchema, req);
 
-    const { txs, sender, params, network } = req as Required<BuildBatchTransactionRequest>;
+    const { txs, signer, params, network } = req as Required<BuildBatchTransactionRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
     if (!(Array.isArray(txs) && txs.length)) throw new AppError(errors.REQUIRE_TRANSACTIONS);
 
-    const nonce = await this.getAddressNonce(api, sender, params?.nonce);
-    const { serialized, hash, method, originTx } = await batchUtility({
+    const nonce = await this.getAddressNonce(api, signer, params?.nonce);
+    const result = await batchUtility({
       api,
       txs: txs.map((tx) => addHexPrefix(tx)),
-      sender,
+      signer,
       nonce,
       ...params,
     });
-    const estimatedFee = await this.getTxEstimatedFee(originTx, sender);
-    const signature = { hash };
-    return {
-      method,
-      serialized,
-      signatures: [signature],
-      estimatedFee,
-    };
+    return this.getTxReply(result);
   }
 
   async sendTransaction(req: SendTransactionRequest): Promise<TransactionReply> {
@@ -284,23 +352,12 @@ export class Provider {
   }
 
   async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
-    const { serialized: originTx, network, params = {} } = req as Required<RebuildTransactionRequest>;
+    const { serialized, network, params = {} } = req as Required<RebuildTransactionRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
 
-    const { method, serialized, hash, txHash } = await rebuild({
-      api,
-      serialized: originTx!,
-      nonce: params?.nonce!,
-      ...params,
-    });
-    const signature = { hash };
-    return {
-      hash: txHash,
-      method,
-      serialized,
-      signatures: [signature],
-    };
+    const result = await rebuild(api, serialized, params?.nonce!, params?.period);
+    return this.getTxReply(result);
   }
 
   async decodeTransaction(req: DecodeTransactionRequest): Promise<TransactionParams> {
@@ -332,6 +389,18 @@ export class Provider {
       types = edgewareTypes.spec;
     }
     return types;
+  }
+
+  getTxReply({ serialized, hash, callHash, callHex, estimatedFee }: Record<string, string>): TransactionReply {
+    return {
+      callHash,
+      callHex,
+      estimatedFee,
+      serialized,
+      ...(hash && {
+        signatures: [{ hash }],
+      }),
+    };
   }
 
   async getApi(wss: string, ss58Format: number, autoConnectMs = 1000 * 10, timeout = 1000 * 60) {
@@ -370,12 +439,6 @@ export class Provider {
       nonce = account.nonce.toNumber();
     }
     return nonce;
-  }
-
-  // SubmittableExtrinsic
-  async getTxEstimatedFee(tx: SubmittableExtrinsic<ApiTypes, ISubmittableResult>, signer: string): Promise<string> {
-    const { partialFee } = (await tx.paymentInfo(signer)) as RuntimeDispatchInfo;
-    return partialFee.toString();
   }
 }
 

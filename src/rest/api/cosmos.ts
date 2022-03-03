@@ -93,6 +93,86 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
   }
 });
 
+router.post('/buildDelegateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildDelegateTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('DelegateTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildUndelegateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildUndelegateTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildUndelegateTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildRedelegateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildRedelegateTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildRedelegateTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildWithdrawDelegationRewardTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildWithdrawDelegationRewardTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildWithdrawDelegationRewardsTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildMultisigDelegateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildMultisigDelegateTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildMultisigDelegateTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildMultisigUndelegateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildMultisigUndelegateTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildMultisigUndelegateTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildMultisigRedelegateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildMultisigRedelegateTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildMultisigRedelegateTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildMultisigWithdrawDelegationRewardTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildMultisigWithdrawDelegationRewardTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.info('BuildMultisigWithdrawDelegationRewardTransaction =>', err);
+    return next(err);
+  }
+});
+
 module.exports = {
   router: router,
   path: '/cosmos',

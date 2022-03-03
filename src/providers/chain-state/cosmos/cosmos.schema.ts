@@ -20,11 +20,19 @@ export const CosmosRefSchema = {
     },
     fee: {
       type: 'object',
-      required: ['amount', 'gas'],
       properties: {
         amount: { $ref: '#/definitions/amount' },
         gas: { type: 'string' },
+        gasPrice: { type: 'string' },
       },
+      oneOf: [
+        {
+          required: ['amount', 'gas'],
+        },
+        {
+          required: ['gas', 'gasPrice'],
+        },
+      ],
     },
     params: {
       type: 'object',
@@ -68,9 +76,10 @@ export const DeployMultisigAccountRequestSchema = {
 
 export const BuildTransferTransactionRequestSchema = {
   type: 'object',
-  required: ['from', 'to', 'amount', 'params'],
+  required: ['from', 'to', 'amount', 'params', 'pubKey'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
+    pubKey: { type: 'string' },
     from: { type: 'string' },
     to: { type: 'string' },
     amount: { $ref: 'base#/definitions/amount' },
@@ -147,5 +156,109 @@ export const SignMultisigTransactionRequestSchema = {
       type: 'array',
       items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature', 'pubKey', 'hash'] },
     },
+  },
+};
+
+export const BuildDelegateTransactionRequestSchema = {
+  type: 'object',
+  required: ['validator', 'delegator', 'amount', 'params', 'pubKey'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    pubKey: { type: 'string' },
+    validator: { type: 'string' },
+    delegator: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const BuildUndelegateTransactionRequestSchema = {
+  type: 'object',
+  required: ['validator', 'delegator', 'amount', 'params', 'pubKey'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    pubKey: { type: 'string' },
+    validator: { type: 'string' },
+    delegator: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const BuildRedelegateTransactionRequestSchema = {
+  type: 'object',
+  required: ['validatorSrcAddress', 'validatorDstAddress', 'delegator', 'amount', 'params', 'pubKey'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    pubKey: { type: 'string' },
+    validatorSrcAddress: { type: 'string' },
+    validatorDstAddress: { type: 'string' },
+    delegator: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const BuildWithdrawDelegationRewardTransactionSchema = {
+  type: 'object',
+  required: ['validators', 'delegator', 'params', 'pubKey'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+    pubKey: { type: 'string' },
+    validators: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    delegator: { type: 'string' },
+  },
+};
+
+export const BuildMultisigDelegateTransactionRequestSchema = {
+  type: 'object',
+  required: ['validator', 'delegator', 'amount', 'params', 'pubKeys'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    validator: { type: 'string' },
+    delegator: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const BuildMultisigUndelegateTransactionRequestSchema = {
+  type: 'object',
+  required: ['validator', 'delegator', 'amount', 'params', 'pubKeys'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    validator: { type: 'string' },
+    delegator: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const BuildMultisigRedelegateTransactionRequestSchema = {
+  type: 'object',
+  required: ['validatorSrcAddress', 'validatorDstAddress', 'delegator', 'amount', 'params', 'pubKeys'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    validatorSrcAddress: { type: 'string' },
+    validatorDstAddress: { type: 'string' },
+    delegator: { type: 'string' },
+    amount: { $ref: 'base#/definitions/amount' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+  },
+};
+
+export const BuildMultisigWithdrawDelegationRewardTransactionSchema = {
+  type: 'object',
+  required: ['validators', 'delegator', 'params', 'pubKeys'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params', type: 'object', required: ['fee'] },
+    pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    validators: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    delegator: { type: 'string' },
   },
 };

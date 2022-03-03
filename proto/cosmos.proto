@@ -18,8 +18,9 @@ message Amount {
 }
 
 message Fee {
-    Amount amount = 1;
-    string gas    = 2;
+    Amount amount    = 1;
+    string gas       = 2;
+    string gas_price = 3;
 }
 
 message TransactionParams {
@@ -46,11 +47,11 @@ message DeployAccountReply {
 
 message BuildTransferTransactionRequest {
     Network network          = 1;
-    string to                = 2;
-    Amount amount            = 3;
-    string from              = 4;
-    string pub_key           = 5;
-    TransactionParams params = 6;
+    TransactionParams params = 2;
+    string to                = 3;
+    Amount amount            = 4;
+    string from              = 5;
+    string pub_key           = 6;
 }
 
 message SignTransactionRequest {
@@ -71,8 +72,8 @@ message DecodeTransactionRequest {
 
 message RebuildTransactionRequest {
     Network network          = 1;
-    string serialized        = 2;
-    TransactionParams params = 3;
+    TransactionParams params = 2;
+    string serialized        = 3;
     string from              = 4;
     string pub_key           = 5;
 }
@@ -94,14 +95,103 @@ message SignMultisigTransactionRequest {
     int32 threshold               = 4;
 }
 
+// staking
+message BuildDelegateTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string validator         = 3;
+    string delegator         = 4;
+    string pub_key           = 5;
+    Amount amount            = 6;
+}
+
+message BuildUndelegateTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string validator         = 3;
+    string delegator         = 4;
+    string pub_key           = 5;
+    Amount amount            = 6;
+}
+
+message BuildRedelegateTransactionRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    string validator_src_address = 3;
+    string validator_dst_address = 4;
+    string delegator             = 5;
+    string pub_key               = 6;
+    Amount amount                = 7;
+}
+
+message BuildWithdrawDelegationRewardTransactionRequest {
+    Network network            = 1;
+    TransactionParams params   = 2;
+    repeated string validators = 3;
+    string delegator           = 4;
+    string pub_key             = 5;
+}
+
+// mutlsig staking
+message BuildMultisigDelegateTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string validator         = 3;
+    string delegator         = 4;
+    repeated string pub_keys = 5;
+    Amount amount            = 6;
+}
+
+message BuildMultisigUndelegateTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string validator         = 3;
+    string delegator         = 4;
+    repeated string pub_keys = 5;
+    Amount amount            = 6;
+}
+
+message BuildMultisigRedelegateTransactionRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    string validator_src_address = 3;
+    string validator_dst_address = 4;
+    string delegator             = 5;
+    repeated string pub_keys     = 6;
+    Amount amount                = 7;
+}
+
+message BuildMultisigWithdrawDelegationRewardTransactionRequest {
+    Network network            = 1;
+    TransactionParams params   = 2;
+    repeated string validators = 3;
+    string delegator           = 4;
+    repeated string pub_keys   = 5;
+}
+
 service Cosmos {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployAccountReply) {}
     rpc BuildTransferTransaction(BuildTransferTransactionRequest) returns (TransactionReply) {}
+
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+
+    // mltisig transfer transaction
     rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (TransactionReply) {}
     rpc SignMultisigTransaction(SignMultisigTransactionRequest) returns (TransactionReply) {}
+
+    // staking transaction
+    rpc BuildDelegateTransaction(BuildDelegateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildUndelegateTransaction(BuildUndelegateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildRedelegateTransaction(BuildRedelegateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildWithdrawDelegationRewardTransaction(BuildWithdrawDelegationRewardTransactionRequest) returns (TransactionReply) {}
+
+    // multisig staking transaction
+    rpc BuildMultisigDelegateTransaction(BuildMultisigDelegateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildMultisigUndelegateTransaction(BuildMultisigUndelegateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildMultisigRedelegateTransaction(BuildMultisigRedelegateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildMultisigWithdrawDelegationRewardTransaction(BuildMultisigWithdrawDelegationRewardTransactionRequest) returns (TransactionReply) {}
 }

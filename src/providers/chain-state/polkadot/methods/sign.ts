@@ -3,7 +3,7 @@ import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
 import { SIGN_PLACEHOLDER } from '../const';
-import { trimObjectPrefix } from '../utils';
+import { stripObjectHexPrefix } from '../utils';
 
 export interface SignParams {
   api: ApiPromise;
@@ -19,7 +19,8 @@ export function sign({ api, serialized, signature }: SignParams) {
   const extrinsic = api.createType('Extrinsic', hex);
   const extrinsicHex = extrinsic.toHex();
   const txHash = u8aToHex(extrinsic.hash);
-  return trimObjectPrefix({
+
+  return stripObjectHexPrefix({
     serialized: extrinsicHex,
     txHash,
   });

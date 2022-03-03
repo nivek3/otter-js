@@ -68,42 +68,42 @@ export const BuildTransferRequestSchema = {
 
 export const BuildMultisigApproveAsMultiRequestSchema = {
   type: 'object',
-  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
+  required: ['network', 'callHash', 'callHex', 'pubKeys', 'threshold', 'signer'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
-    to: { type: 'string' },
-    quantity: { type: 'string' },
+    params: { $ref: 'base#/definitions/params' },
     pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     threshold: { type: 'integer' },
-    sender: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
+    callHash: { type: 'string' },
+    callHex: { type: 'string' },
+    signer: { type: 'string' },
   },
 };
 export const BuildMultisigAsMultiRequestSchema = {
   type: 'object',
-  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
+  required: ['network', 'callHash', 'callHex', 'pubKeys', 'threshold', 'signer'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
-    to: { type: 'string' },
-    quantity: { type: 'string' },
+    params: { $ref: 'base#/definitions/params' },
     pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     threshold: { type: 'integer' },
-    sender: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
+    callHash: { type: 'string' },
+    callHex: { type: 'string' },
+    signer: { type: 'string' },
   },
 };
 
 export const BuildMultisigCancelRequestSchema = {
   type: 'object',
-  required: ['network', 'to', 'quantity', 'pubKeys', 'threshold', 'sender'],
+  required: ['network', 'callHash', 'callHex', 'pubKeys', 'threshold', 'signer'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
-    to: { type: 'string' },
-    quantity: { type: 'string' },
+    params: { $ref: 'base#/definitions/params' },
     pubKeys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     threshold: { type: 'integer' },
-    sender: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
+    callHash: { type: 'string' },
+    callHex: { type: 'string' },
+    signer: { type: 'string' },
   },
 };
 
@@ -128,22 +128,22 @@ export const SendTransactionRequestSchema = {
 
 export const BuildBatchTransferTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'recipients', 'sender'],
+  required: ['network', 'recipients', 'signer'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     recipients: { type: 'array', items: { $ref: 'base#/definitions/recipient' } },
-    sender: { type: 'string' },
+    signer: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
   },
 };
 
 export const BuildBatchTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'txs', 'sender'],
+  required: ['network', 'txs', 'signer'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     txs: { type: 'array', uniqueItems: true, items: { type: 'string' } },
-    sender: { type: 'string' },
+    signer: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
   },
 };
@@ -153,8 +153,8 @@ export const RebuildTransactionRequestSchema = {
   required: ['network', 'serialized'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
-    serialized: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
+    serialized: { type: 'string' },
   },
 };
 
@@ -173,5 +173,62 @@ export const DecodeTransactionRequestSchema = {
   required: ['serialized'],
   properties: {
     serialized: { type: 'string' },
+  },
+};
+
+export const BuildStakingBondAndNominateTransactionSchema = {
+  type: 'object',
+  required: ['network', 'from', 'controller', 'quantity', 'targets'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params' },
+    from: { type: 'string' },
+    controller: { type: 'string' },
+    quantity: { type: 'string' },
+    targets: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+  },
+};
+
+export const BuildStakingNominateTransactionSchema = {
+  type: 'object',
+  required: ['network', 'from', 'targets'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params' },
+    from: { type: 'string' },
+    targets: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+  },
+};
+
+export const BuildStakingBondExtraTransactionSchema = {
+  type: 'object',
+  required: ['network', 'from', 'maxAdditional'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params' },
+    from: { type: 'string' },
+    maxAdditional: { type: 'string' },
+  },
+};
+
+export const BuildStakingUnbondTransactionSchema = {
+  type: 'object',
+  required: ['network', 'from', 'quantity'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params' },
+    from: { type: 'string' },
+    quantity: { type: 'string' },
+  },
+};
+
+export const BuildStakingWithdrawUnbondedTransactionSchema = {
+  type: 'object',
+  required: ['network', 'from', 'numSlashingSpans'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params' },
+    from: { type: 'string' },
+    numSlashingSpans: { type: 'string' },
   },
 };

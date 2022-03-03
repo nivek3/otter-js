@@ -21,7 +21,12 @@ export function sortObject(obj: object) {
   return result;
 }
 
-export function makeAminoSignDoc(messages: EncodeObject[], fee: StdFee, memo: string | undefined, signerData: SignerData): StdSignDoc {
+export function makeAminoSignDoc(
+  messages: readonly EncodeObject[],
+  fee: StdFee,
+  memo: string | undefined,
+  signerData: SignerData,
+): StdSignDoc {
   const aminoTypes = new AminoTypes();
   const { accountNumber, sequence, chainId } = signerData;
   const msgs = messages.map((msg) => aminoTypes.toAmino(msg));
@@ -30,7 +35,7 @@ export function makeAminoSignDoc(messages: EncodeObject[], fee: StdFee, memo: st
 
 export async function signAminoInstruction(
   keys: string[],
-  messages: EncodeObject[],
+  messages: readonly EncodeObject[],
   fee: StdFee,
   memo: string | undefined,
   signerData: SignerData,
@@ -38,7 +43,6 @@ export async function signAminoInstruction(
   const aminoTypes = new AminoTypes();
   const registry = new Registry(defaultRegistryTypes);
   const { sequence } = signerData;
-
   const signMode = SignMode.SIGN_MODE_LEGACY_AMINO_JSON;
 
   const signDoc = makeAminoSignDoc(messages, fee, memo, signerData);

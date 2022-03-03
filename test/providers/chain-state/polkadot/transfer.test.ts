@@ -1,5 +1,5 @@
 import { ApiPromise, Keyring } from '@polkadot/api';
-const { u8aToHex, hexToU8a } = require('@polkadot/util');
+import { u8aToHex, hexToU8a } from '@polkadot/util';
 import { transfer } from '@src/providers/chain-state/polkadot/methods/transfer';
 import { sign } from '@src/providers/chain-state/polkadot/methods/sign';
 import { disconnect, setupConnection } from './setup';
@@ -20,16 +20,16 @@ describe('ChainStateProvider Polkadot', () => {
         api,
         ss58Format: 42,
         quantity: '1000',
-        sender: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
+        signer: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
         nonce: 4,
         from: '5HhZWYeLNRbpofy4F34vVENgwxQVE8HGWhprVE6MPPCqUdRn',
         to: '5F1GPrYp5Q32Hr3hczZXoJCTxNhuQxsBbABtSjDnVK9Fn9dZ',
       };
-      const { serialized, hash } = await transfer(req);
-      expect(serialized).toEqual(
+      const result: any = await transfer(req);
+      expect(result?.serialized).toEqual(
         '31028400f94926205a255a902430e9310edae0455ed368437210c8a481bd93a43fca4612020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001001000070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaaa10',
       );
-      expect(hash).toEqual(
+      expect(result?.hash).toEqual(
         '070000821540197c5fac46ab60c747b3d54f90ed99b216cfc886c789b988ea68ee0aaaa10f0010001100000001000000dd97e5ad3f0015f2dc45c9467b0fd36a2b7f4b9a7bc65e8111d49d6cf19c8927dd97e5ad3f0015f2dc45c9467b0fd36a2b7f4b9a7bc65e8111d49d6cf19c8927',
       );
     });

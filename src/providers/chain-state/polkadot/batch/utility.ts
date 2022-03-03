@@ -1,35 +1,24 @@
 import type { ApiPromise } from '@polkadot/api';
-import { u8aToHex } from '@polkadot/util';
-import { blake2AsU8a } from '@polkadot/util-crypto';
-import { trimObjectPrefix, getSignerPayload, getSignerSignatureHash } from '../utils';
-import { SIGN_PLACEHOLDER } from '../const';
-
-export interface BatchParams {
+import { stripObjectHexPrefix, getCallHexAndHash, getMethodHexAndSignatureHash } from '../utils';
+interface Input {
   api: ApiPromise;
   txs: string[];
-  sender: string;
+  signer: string;
   nonce: number;
   period?: number;
+  methodOnly?: boolean;
 }
 
-export const utility = async function ({ api, txs, sender, nonce, period }: BatchParams) {
-  const originTx = api.tx.utility.batch(txs);
+export const utility = async function ({ api, txs, signer, nonce, period, methodOnly = false }: Input) {
   const tx = api.tx.utility.batch(txs);
-  const method = tx.method.toHex();
 
-  const payload = await getSignerPayload(api, method, nonce, period, sender);
+  if (methodOnly) return getCallHexAndHash(tx);
 
-  tx.addSignature(sender, SIGN_PLACEHOLDER, payload.toPayload());
-
-  const serialized = tx.toHex();
-  const hash = u8aToHex(blake2AsU8a(getSignerSignatureHash(api, payload)));
+  const result = await getMethodHexAndSignatureHash(api, tx, signer, nonce, period);
+  const { partialFee } = await api.tx.utility.batch(txs).paymentInfo(signer);
 
   return {
-    ...trimObjectPrefix({
-      method,
-      serialized,
-      hash,
-    }),
-    originTx,
+    ...stripObjectHexPrefix(result),
+    estimatedFee: partialFee.toString(),
   };
 };

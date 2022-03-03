@@ -18,6 +18,18 @@ import {
   TransactionParams,
   RebuildTransactionRequest,
   SignMultisigTransactionRequest,
+
+  // staking
+  BuildDelegateTransactionRequest,
+  BuildUndelegateTransactionRequest,
+  BuildRedelegateTransactionRequest,
+  BuildWithdrawDelegationRewardTransactionRequest,
+
+  // multisig staking
+  BuildMultisigDelegateTransactionRequest,
+  BuildMultisigUndelegateTransactionRequest,
+  BuildMultisigRedelegateTransactionRequest,
+  BuildMultisigWithdrawDelegationRewardTransactionRequest,
 } from '@src/__proto__/cosmos/types';
 import { TransactionReply } from '@src/__proto__/common/TransactionReply';
 
@@ -76,5 +88,51 @@ export const CosmosImp: ProxyImp<CosmosHandlers> = {
   SignMultisigTransaction: async function (ctx: ImplContext<SignMultisigTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.signMultisigTransaction(req);
+  },
+
+  // staking
+  BuildDelegateTransaction: async function (ctx: ImplContext<BuildDelegateTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildDelegateTransaction(req);
+  },
+
+  BuildUndelegateTransaction: async function (ctx: ImplContext<BuildUndelegateTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildUndelegateTransaction(req);
+  },
+
+  BuildRedelegateTransaction: async function (ctx: ImplContext<BuildRedelegateTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildRedelegateTransaction(req);
+  },
+
+  BuildWithdrawDelegationRewardTransaction: async function (
+    ctx: ImplContext<BuildWithdrawDelegationRewardTransactionRequest, TransactionReply>,
+  ) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildWithdrawDelegationRewardTransaction(req);
+  },
+
+  // multisig staking
+  BuildMultisigDelegateTransaction: async function (ctx: ImplContext<BuildMultisigDelegateTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigDelegateTransaction(req);
+  },
+
+  BuildMultisigUndelegateTransaction: async function (ctx: ImplContext<BuildMultisigUndelegateTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigUndelegateTransaction(req);
+  },
+
+  BuildMultisigRedelegateTransaction: async function (ctx: ImplContext<BuildMultisigRedelegateTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigRedelegateTransaction(req);
+  },
+
+  BuildMultisigWithdrawDelegationRewardTransaction: async function (
+    ctx: ImplContext<BuildMultisigWithdrawDelegationRewardTransactionRequest, TransactionReply>,
+  ) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigWithdrawDelegationRewardTransaction(req);
   },
 };

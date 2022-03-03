@@ -13,8 +13,9 @@ message TransactionReply {
     string serialized             = 1;
     repeated Signature signatures = 2;
     string hash                   = 3;
-    string method                 = 4;
-    string estimated_fee          = 5;
+    string estimated_fee          = 4;
+    string call_hash              = 5;
+    string call_hex               = 6;
 }
 
 message DeployAccountRequest {
@@ -40,6 +41,7 @@ message TransactionParams {
     int32 nonce      = 1;
     int32 max_weight = 2;
     int32 period     = 3;
+    bool method_only = 4;
 }
 
 message BuildTransferRequest {
@@ -52,32 +54,32 @@ message BuildTransferRequest {
 
 message BuildMultisigApproveAsMultiRequest {
     Network network          = 1;
-    string to                = 2;
-    string quantity          = 3;
-    repeated string pub_keys = 4;
-    int32 threshold          = 5;
-    string sender            = 6;
-    TransactionParams params = 7;
+    TransactionParams params = 2;
+    repeated string pub_keys = 3;
+    int32 threshold          = 4;
+    string signer            = 5;
+    string call_hash         = 6;
+    string call_hex          = 7;
 }
 
 message BuildMultisigAsMultiRequest {
     Network network          = 1;
-    string to                = 2;
-    string quantity          = 3;
-    repeated string pub_keys = 4;
-    int32 threshold          = 5;
-    string sender            = 6;
-    TransactionParams params = 7;
+    TransactionParams params = 2;
+    repeated string pub_keys = 3;
+    int32 threshold          = 4;
+    string signer            = 5;
+    string call_hash         = 6;
+    string call_hex          = 7;
 }
 
 message BuildMultisigCancelAsMultiRequest {
     Network network          = 1;
-    string to                = 2;
-    string quantity          = 3;
-    repeated string pub_keys = 4;
-    int32 threshold          = 5;
-    string sender            = 6;
-    TransactionParams params = 7;
+    TransactionParams params = 2;
+    repeated string pub_keys = 3;
+    int32 threshold          = 4;
+    string signer            = 5;
+    string call_hash         = 6;
+    string call_hex          = 7;
 }
 
 message SignTransactionRequest {
@@ -99,14 +101,14 @@ message Recipient {
 message BuildBatchTransferTransactionRequest {
     Network network               = 1;
     repeated Recipient recipients = 2;
-    string sender                 = 3;
+    string signer                 = 3;
     TransactionParams params      = 4;
 }
 
 message BuildBatchTransactionRequest {
     Network network          = 1;
     repeated string txs      = 2;
-    string sender            = 3;
+    string signer            = 3;
     TransactionParams params = 4;
 }
 
@@ -119,6 +121,43 @@ message RebuildTransactionRequest {
 message DecodeTransactionRequest {
     Network network   = 1;
     string serialized = 2;
+}
+
+message BuildStakingBondAndNominateTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string quantity          = 3;
+    repeated string targets  = 4;
+    string controller        = 5;
+    string from              = 6;
+}
+
+message BuildStakingBondExtraTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string max_additional    = 3;
+    string from              = 4;
+}
+
+message BuildStakingNominateTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    repeated string targets  = 3;
+    string from              = 4;
+}
+
+message BuildStakingUnbondTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string from              = 3;
+    string quantity          = 4;
+}
+
+message BuildStakingWithdrawUnbondedTransactionRequest {
+    Network network           = 1;
+    TransactionParams params  = 2;
+    string from               = 3;
+    string num_slashing_spans = 4;
 }
 
 service Polkadot {
@@ -134,4 +173,11 @@ service Polkadot {
     rpc BuildBatchTransaction(BuildBatchTransactionRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
+
+    // staking
+    rpc BuildStakingBondAndNominateTransaction(BuildStakingBondAndNominateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildStakingNominateTransaction(BuildStakingNominateTransactionRequest) returns (TransactionReply) {}
+    rpc BuildStakingBondExtraTransaction(BuildStakingBondExtraTransactionRequest) returns (TransactionReply) {}
+    rpc BuildStakingUnbondTransaction(BuildStakingUnbondTransactionRequest) returns (TransactionReply) {}
+    rpc BuildStakingWithdrawUnbondedTransaction(BuildStakingWithdrawUnbondedTransactionRequest) returns (TransactionReply) {}
 }

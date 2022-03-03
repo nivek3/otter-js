@@ -57,7 +57,7 @@ router.post('/buildMultisigAsMultiTransaction', async function (req: Request, re
   }
 });
 
-router.post('/BuildMultisigCancelAsMultiTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigCancelAsMultiTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildMultisigCancelAsMultiTransaction(req.body);
     return res.json(data);
@@ -123,6 +123,56 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     return res.json(data);
   } catch (err) {
     logger.info('DecodeTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildStakingBondAndNominateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildStakingBondAndNominateTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BuildStakingBondAndNominateTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildStakingNominateTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildStakingNominateTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BuildStakingNominateTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildStakingBondExtraTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildStakingBondExtraTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BuildStakingBondExtraTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildStakingUnbondTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildStakingUnbondTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BuildStakingBondExtraTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildStakingWithdrawUnbondedTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildStakingWithdrawUnbondedTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.info('BuildStakingWithdrawUnbondedTransaction Tx =>', err);
     return next(err);
   }
 });
