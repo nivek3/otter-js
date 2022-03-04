@@ -4,8 +4,10 @@ import * as http from 'http';
 import app from '@src/rest';
 import logger from '@src/logger';
 import { LoggifyClass } from '@src/decorators/Loggify';
+import { GracefulService } from '@src/internal/exit';
 @LoggifyClass
-export class ApiService {
+export class ApiService implements GracefulService {
+  name = 'API Service';
   port: number;
   timeout: number;
   httpServer: http.Server;
@@ -28,15 +30,15 @@ export class ApiService {
     return this.httpServer;
   }
 
-  stop() {
+  async stop() {
     this.stopped = true;
-    return new Promise((resolve) => {
+    await new Promise((resolve) => {
       this.httpServer.close(resolve);
     });
   }
 }
 
 // TODO: choose a place in the config for the API timeout and include it here
-export const Api = new ApiService({
+export const api = new ApiService({
   port: process.env.PORT ? Number.parseInt(process.env.PORT, 10) : undefined,
 });

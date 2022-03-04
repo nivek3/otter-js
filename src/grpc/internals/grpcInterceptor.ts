@@ -39,7 +39,7 @@ export class GrpcInterceptorProxy {
                 if (!(err instanceof AppError)) {
                   err = new AppError(errors.INTERNAL, { details: err.message || err });
                 }
-                fail(err.toJSON(ctx), callback, ctx);
+                fail(err?.display(ctx) || err?.toJSON(ctx) || err, callback, ctx);
               }
             };
           }

@@ -28,7 +28,7 @@ export class AppError extends Error {
     this.details = options.details;
   }
 
-  toJSON(ctx?: ImplContext<unknown, unknown>): Omit<ErrorObject, 'ctx'> {
+  display(ctx?: ImplContext<unknown, unknown>): Omit<ErrorObject, 'ctx'> {
     const metadata = ctx?.call.metadata;
     return {
       code: this.code,

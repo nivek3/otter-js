@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import { json, raw } from 'body-parser';
 import { CacheMiddleware, CacheTimes } from './middleware';
 import { router as Health } from './health';
+import { AppError } from '@src/error';
 
 const app = express();
 app.use(morgan('combined'));
@@ -49,19 +50,20 @@ app.use(function (_, res) {
 });
 
 // error handler
-app.use(function (err, req, res, _) {
+app.use(function (err: any, req, res, _) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  const result = err.toJSON
-    ? err.toJSON()
-    : {
-        code: err.code || err.statusCode || 500,
-        message: err.message || err,
-      };
-  res.status(result.statusCode || result.status || 500);
+  const result =
+    err instanceof AppError
+      ? err.display()
+      : err?.toJSON() || {
+          code: err.code || err.statusCode || 500,
+          message: err.message || err,
+        };
+  res.status(result?.statusCode || result?.status || 500);
   res.send(result);
 });
 

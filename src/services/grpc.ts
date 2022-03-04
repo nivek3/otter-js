@@ -4,6 +4,7 @@ import { LoggifyClass } from '@src/decorators/Loggify';
 import { Middleware } from 'koa-compose';
 import { ImplContext, ProxyImp } from '@src/utils/context';
 import { loggerInterceptor } from '@src/grpc/interceptors/logger';
+import { GracefulService } from '@src/internal/exit';
 import { GrpcInterceptorProxy } from '@src/grpc/internals/grpcInterceptor';
 import {
   AvalancheAVAXService,
@@ -33,8 +34,8 @@ import {
 import logger from '@src/logger';
 
 @LoggifyClass
-export class GRPCServer extends GrpcInterceptorProxy {
-  name: string;
+export class GRPCServer extends GrpcInterceptorProxy implements GracefulService {
+  name = 'GRPC Server';
   port: string;
   private server: grpc.Server;
   private serviceName: string;
@@ -42,7 +43,6 @@ export class GRPCServer extends GrpcInterceptorProxy {
   constructor(serviceName: string, GRPC_PORT: string) {
     super();
     this.interceptors = [];
-    this.name = 'gRPC Server';
     this.port = GRPC_PORT;
     this.serviceName = serviceName;
     const server = new grpc.Server({
@@ -82,7 +82,7 @@ export class GRPCServer extends GrpcInterceptorProxy {
   }
 
   async stop() {
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       try {
         this.server.tryShutdown(resolve);
       } catch (error) {
