@@ -30,7 +30,7 @@ export const CosmosRefSchema = {
           required: ['amount', 'gas'],
         },
         {
-          required: ['gas', 'gasPrice'],
+          required: ['gasPrice'],
         },
       ],
     },

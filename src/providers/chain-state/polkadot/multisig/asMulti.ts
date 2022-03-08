@@ -63,7 +63,7 @@ export async function multisigAsMulti({
 
   const result = await getMethodHexAndSignatureHash(api, tx, signer, nonce, period);
 
-  const { partialFee } = await api.tx.multisig
+  const { partialFee, weight } = await api.tx.multisig
     .asMulti(
       threshold,
       otherSignatories, //
@@ -77,5 +77,6 @@ export async function multisigAsMulti({
   return {
     ...stripObjectHexPrefix(result),
     estimatedFee: partialFee.toString(),
+    weight: weight.toNumber(),
   };
 }

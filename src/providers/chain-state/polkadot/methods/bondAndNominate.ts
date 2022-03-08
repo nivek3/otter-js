@@ -22,10 +22,11 @@ export const boundAndNominate = async function ({ api, targets, controller, quan
   if (methodOnly) return getCallHexAndHash(tx);
 
   const result = await getMethodHexAndSignatureHash(api, tx, signer, nonce, period);
-  const { partialFee } = await api.tx.utility.batch(txs).paymentInfo(signer);
+  const { partialFee, weight } = await api.tx.utility.batch(txs).paymentInfo(signer);
 
   return {
     ...stripObjectHexPrefix(result),
     estimatedFee: partialFee.toString(),
+    weight: weight.toNumber(),
   };
 };

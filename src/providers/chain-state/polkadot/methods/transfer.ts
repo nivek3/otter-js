@@ -15,11 +15,11 @@ interface Input {
 export const transfer = async function ({ api, from, to, quantity, signer, nonce, period, methodOnly = false }: Input) {
   const tx = api.tx.balances.transfer(to, quantity);
   if (methodOnly) return getCallHexAndHash(tx);
-
   const result = await getMethodHexAndSignatureHash(api, tx, from, nonce, period);
-  const { partialFee } = await api.tx.balances.transfer(to, quantity).paymentInfo(signer);
+  const { partialFee, weight } = await api.tx.balances.transfer(to, quantity).paymentInfo(signer);
   return {
     ...stripObjectHexPrefix(result),
     estimatedFee: partialFee.toString(),
+    weight: weight.toNumber(),
   };
 };

@@ -16,6 +16,7 @@ message TransactionReply {
     string estimated_fee          = 4;
     string call_hash              = 5;
     string call_hex               = 6;
+    int32 weight                  = 7;
 }
 
 message DeployAccountRequest {

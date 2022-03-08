@@ -391,12 +391,13 @@ export class Provider {
     return types;
   }
 
-  getTxReply({ serialized, hash, callHash, callHex, estimatedFee }: Record<string, string>): TransactionReply {
+  getTxReply({ serialized, hash, callHash, callHex, estimatedFee, weight }: Record<string, any>): TransactionReply {
     return {
       callHash,
       callHex,
       estimatedFee,
       serialized,
+      weight,
       ...(hash && {
         signatures: [{ hash }],
       }),

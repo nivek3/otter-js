@@ -18,10 +18,11 @@ export const withdrawUnbonded = async function ({ api, from, numSlashingSpans, s
   if (methodOnly) return getCallHexAndHash(tx);
 
   const result = await getMethodHexAndSignatureHash(api, tx, from, nonce, period);
-  const { partialFee } = await api.tx.staking.withdrawUnbonded(numSlashingSpans).paymentInfo(signer);
+  const { partialFee, weight } = await api.tx.staking.withdrawUnbonded(numSlashingSpans).paymentInfo(signer);
 
   return {
     ...stripObjectHexPrefix(result),
     estimatedFee: partialFee.toString(),
+    weight: weight.toNumber(),
   };
 };

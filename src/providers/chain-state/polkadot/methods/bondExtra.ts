@@ -16,10 +16,11 @@ export const boundExtra = async function ({ api, maxAdditional, signer, nonce, p
   if (methodOnly) return getCallHexAndHash(tx);
 
   const result = await getMethodHexAndSignatureHash(api, tx, signer, nonce, period);
-  const { partialFee } = await api.tx.staking.bondExtra(maxAdditional).paymentInfo(signer);
+  const { partialFee, weight } = await api.tx.staking.bondExtra(maxAdditional).paymentInfo(signer);
 
   return {
     ...stripObjectHexPrefix(result),
     estimatedFee: partialFee.toString(),
+    weight: weight.toNumber(),
   };
 };

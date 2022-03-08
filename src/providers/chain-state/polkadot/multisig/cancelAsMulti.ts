@@ -53,7 +53,7 @@ export async function multisigCancelAsMulti({
   if (methodOnly) return getCallHexAndHash(tx);
 
   const result = await getMethodHexAndSignatureHash(api, tx, signer, nonce, period);
-  const { partialFee } = await api.tx.multisig
+  const { partialFee, weight } = await api.tx.multisig
     .cancelAsMulti(
       threshold,
       otherSignatories, //
@@ -65,5 +65,6 @@ export async function multisigCancelAsMulti({
   return {
     ...stripObjectHexPrefix(result),
     estimatedFee: partialFee.toString(),
+    weight: weight.toNumber(),
   };
 }
