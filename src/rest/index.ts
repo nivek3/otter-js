@@ -59,7 +59,7 @@ app.use(function (err: any, req, res, _) {
   const result =
     err instanceof AppError
       ? err.display()
-      : err?.toJSON() || {
+      : err.toJSON?.() || {
           code: err.code || err.statusCode || 500,
           message: err.message || err,
         };

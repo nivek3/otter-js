@@ -526,7 +526,6 @@ export class Provider {
 
     const { gasInfo } = await queryClient.tx.simulate(anyMsgs, memo, signer, sequence);
     if (!gasInfo) throw new AppError(errors.INVALID_NETWORK, { details: 'Failed to simulate gas' });
-
     const gasEstimation = Uint53.fromString(gasInfo.gasUsed.toString()).toNumber();
     return calculateFee(Math.round(gasEstimation * multiplier), gasPrice);
   }
