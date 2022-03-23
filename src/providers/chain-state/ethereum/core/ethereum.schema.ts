@@ -131,6 +131,6 @@ export const BuildContractTransactionRequestSchema = {
     contractAddress: { type: 'string' },
     abis: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
-    args: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    args: { type: 'array', items: { type: 'string' } },
   },
 };
