@@ -172,10 +172,10 @@ export class Provider extends BaseProvider {
     const { params = {}, network, from, abis, args, contractAddress, method } = req as Required<BuildContractTransactionRequest>;
     const { provider } = network!;
     const web3 = this.getWeb3Provider(provider!);
-
+    const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
     const common = this.getTxCommon(network!);
     const iface = new utils.Interface(abis);
-    const input = iface.encodeFunctionData(method, args);
+    const input = iface.encodeFunctionData(method, values);
     const txOptions = { common };
     const txInput = {
       to: contractAddress,
