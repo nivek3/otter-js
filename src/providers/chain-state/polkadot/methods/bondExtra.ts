@@ -11,7 +11,7 @@ interface Input {
   methodOnly?: boolean;
 }
 
-export const boundExtra = async function ({ api, maxAdditional, signer, nonce, period, methodOnly = false }: Input) {
+export const bondExtra = async function ({ api, maxAdditional, signer, nonce, period, methodOnly = false }: Input) {
   const tx = api.tx.staking.bondExtra(maxAdditional);
   if (methodOnly) return getCallHexAndHash(tx);
 

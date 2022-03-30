@@ -7,7 +7,7 @@ import { Validator } from '@src/utils/ajv';
 
 import { approveAsMulti, multisigAsMulti, multisigCancelAsMulti } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
-import { transfer, rebuild, sign, decode, boundAndNominate, boundExtra, unbond, nominate, withdrawUnbonded } from './methods';
+import { transfer, rebuild, sign, decode, boundAndNominate, bondExtra, unbond, nominate, withdrawUnbonded } from './methods';
 import { pubKeyToBlack2Address } from './utils';
 import { ApiCache } from './cache';
 
@@ -229,7 +229,7 @@ export class Provider {
 
     const nonce = await this.getAddressNonce(api, from, params?.nonce);
 
-    const result = await boundExtra({
+    const result = await bondExtra({
       api,
       signer: from,
       maxAdditional,
