@@ -15,14 +15,38 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
   }
 });
 
-router.post('/deployMultisigAccount', async function (req: Request, res: Response, next: NextFunction) {
+router.post('/deploySegwitAccount', async function (req: Request, res: Response, next) {
   try {
-    const account = provider.deployMultisigAccount(req.body);
+    const account = provider.deploySegwitAccount(req.body);
     return res.json({
       address: account,
     });
   } catch (err) {
-    logger.info('deployMultisigAccount =>', err);
+    logger.info('DeploySegwitAccount =>', err);
+    return next(err);
+  }
+});
+
+router.post('/deployMultisigLegacyAccount', async function (req: Request, res: Response, next: NextFunction) {
+  try {
+    const account = provider.deployMultisigLegacyAccount(req.body);
+    return res.json({
+      address: account,
+    });
+  } catch (err) {
+    logger.info('DeployMultisigLegacyAccount =>', err);
+    return next(err);
+  }
+});
+
+router.post('/deployMultisigSegwitAccount', async function (req: Request, res: Response, next: NextFunction) {
+  try {
+    const account = provider.deployMultisigSegwitAccount(req.body);
+    return res.json({
+      address: account,
+    });
+  } catch (err) {
+    logger.info('DeployMultisigSegwitAccount =>', err);
     return next(err);
   }
 });

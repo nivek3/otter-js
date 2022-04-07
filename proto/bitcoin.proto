@@ -11,6 +11,7 @@ message Network {
     string provider     = 4;
     int32 dust_limit    = 5;
     string fork_chain   = 6;
+    string bech32       = 7;
 }
 
 message DeployAccountRequest {
@@ -36,7 +37,7 @@ message DeployMultisigAccountReply {
 message UnspentTransactionOutput {
     int32 vout              = 1;
     string txid             = 2;
-    string script_pub_key   = 3;
+    string prev_out_script  = 3;
     string redeem_script    = 4;
     string witness_script   = 5;
     string amount           = 6;
@@ -82,7 +83,9 @@ message SendTransactionRequest {
 
 service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
-    rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
+    rpc DeploySegwitAccount(DeployAccountRequest) returns (DeployAccountReply) {}
+    rpc DeployMultisigLegacyAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
+    rpc DeployMultisigSegwitAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
     rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}

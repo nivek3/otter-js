@@ -7,6 +7,7 @@ export const BitCoinRefSchema = {
       properties: {
         pubKeyHash: { type: 'string' },
         scriptHash: { type: 'string' },
+        bech32: { type: 'string' },
         coin: { type: 'string' },
         provider: { type: 'string' },
         dustLimit: { type: 'number' },

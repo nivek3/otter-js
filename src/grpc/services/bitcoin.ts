@@ -38,12 +38,27 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     ctx.body = { address };
   },
 
-  DeployMultisigAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
+  DeploySegwitAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+    const req = ctx.call.request;
+    const address = provider.deploySegwitAccount(req);
+    ctx.body = { address };
+  },
+
+  DeployMultisigLegacyAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
     const req = ctx.call.request;
     if (!req.threshold || req.threshold < 1) {
       throw new AppError(errors.INVALID_ARGUMENT);
     }
-    const address = provider.deployMultisigAccount(req);
+    const address = provider.deployMultisigLegacyAccount(req);
+    ctx.body = { address };
+  },
+
+  DeployMultisigSegwitAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
+    const req = ctx.call.request;
+    if (!req.threshold || req.threshold < 1) {
+      throw new AppError(errors.INVALID_ARGUMENT);
+    }
+    const address = provider.deployMultisigSegwitAccount(req);
     ctx.body = { address };
   },
 
