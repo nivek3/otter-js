@@ -355,8 +355,12 @@ export class Provider {
     const { serialized, network, params = {} } = req as Required<RebuildTransactionRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
-
-    const result = await rebuild(api, serialized, params?.nonce!, params?.period);
+    let nonce: number = params?.nonce!;
+    if (!params?.nonce) {
+      const { signer } = decode({ api, serialized });
+      nonce = await this.getAddressNonce(api, signer, params?.nonce);
+    }
+    const result = await rebuild(api, serialized, nonce, params?.period);
     return this.getTxReply(result);
   }
 

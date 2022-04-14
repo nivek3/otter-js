@@ -16,5 +16,6 @@ export const decode = function ({ api, serialized }: Input) {
   return {
     nonce,
     period,
+    signer: extrinsic.signer?.toString(),
   };
 };
