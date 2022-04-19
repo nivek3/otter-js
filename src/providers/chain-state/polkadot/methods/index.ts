@@ -8,4 +8,5 @@ export * from './bondAndNominate';
 export * from './bondExtra';
 export * from './unbond';
 export * from './nominate';
+export * from './payoutStakes';
 export * from './withdrawUnbonded';

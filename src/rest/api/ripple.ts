@@ -10,7 +10,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
       address: account,
     });
   } catch (err) {
-    logger.info('DeployAccount =>', err);
+    logger.error('DeployAccount =>', err);
     return next(err);
   }
 });
@@ -20,7 +20,7 @@ router.post('/buildPaymentTransaction', async function (req: Request, res: Respo
     const result = await provider.buildPaymentTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildPaymentTransaction =>', err);
+    logger.error('BuildPaymentTransaction =>', err);
     return next(err);
   }
 });
@@ -30,7 +30,7 @@ router.post('/buildAccountSetTransaction', async function (req: Request, res: Re
     const result = await provider.buildAccountSetTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildAccountSetTransaction =>', err);
+    logger.error('BuildAccountSetTransaction =>', err);
     return next(err);
   }
 });
@@ -40,7 +40,7 @@ router.post('/hashForSignature', async function (req: Request, res: Response, ne
     const result = await provider.hashForSignature(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('HashForSignature =>', err);
+    logger.error('HashForSignature =>', err);
     return next(err);
   }
 });
@@ -50,7 +50,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
     const result = await provider.signTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('SignTransaction =>', err);
+    logger.error('SignTransaction =>', err);
     return next(err);
   }
 });
@@ -60,7 +60,7 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
     const result = await provider.sendTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('SignTransaction =>', err);
+    logger.error('SignTransaction =>', err);
     return next(err);
   }
 });
@@ -70,7 +70,7 @@ router.post('/buildAccountSetTransaction', async function (req: Request, res: Re
     const result = await provider.buildAccountSetTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildAccountSetTransaction =>', err);
+    logger.error('BuildAccountSetTransaction =>', err);
     return next(err);
   }
 });
@@ -80,7 +80,7 @@ router.post('/buildSignerListSetTransaction', async function (req: Request, res:
     const result = await provider.buildSignerListSetTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildSignerListSetTransaction =>', err);
+    logger.error('BuildSignerListSetTransaction =>', err);
     return next(err);
   }
 });
@@ -90,7 +90,7 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     const result = provider.decodeTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('DecodeTransaction =>', err);
+    logger.error('DecodeTransaction =>', err);
     return next(err);
   }
 });
@@ -100,7 +100,7 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
     const result = await provider.rebuildTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('RebuildTransaction =>', err);
+    logger.error('RebuildTransaction =>', err);
     return next(err);
   }
 });

@@ -28,6 +28,11 @@ import {
   BuildStakingBondExtraTransactionRequest,
   BuildStakingUnbondTransactionRequest,
   BuildStakingWithdrawUnbondedTransactionRequest,
+  BuildStakingPayoutStakersTransactionRequest,
+
+  // Query
+  QueryStakingPayoutStakersRequest,
+  QueryStakingPayoutStakersReply,
 } from '@src/__proto__/polkadot/types';
 
 const filename = path.join(__dirname, '../../../proto/polkadot.proto');
@@ -140,5 +145,19 @@ export const PolkadotImp: ProxyImp<PolkadotHandlers> = {
   ): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildStakingWithdrawUnbondedTransaction(req);
+  },
+
+  QueryStakingPayoutStakers: async function (
+    ctx: ImplContext<QueryStakingPayoutStakersRequest, QueryStakingPayoutStakersReply>,
+  ): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.queryStakingPayoutStakers(req);
+  },
+
+  BuildStakingPayoutStakersTransaction: async function (
+    ctx: ImplContext<BuildStakingPayoutStakersTransactionRequest, TransactionReply>,
+  ): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildStakingPayoutStakersTransaction(req);
   },
 };

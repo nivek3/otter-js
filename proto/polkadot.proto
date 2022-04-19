@@ -9,6 +9,11 @@ message Network {
     string provider  = 2;
 }
 
+message SinglePayout {
+    string era          = 1;
+    string validator_id = 2;
+}
+
 message TransactionReply {
     string serialized             = 1;
     repeated Signature signatures = 2;
@@ -161,6 +166,24 @@ message BuildStakingWithdrawUnbondedTransactionRequest {
     string num_slashing_spans = 4;
 }
 
+message BuildStakingPayoutStakersTransactionRequest {
+    Network network          = 1;
+    TransactionParams params = 2;
+    string from              = 3;
+    string validator_stash   = 4;
+    string era               = 5;
+}
+
+message QueryStakingPayoutStakersRequest {
+    Network network = 1;
+    string address  = 2;
+}
+
+message QueryStakingPayoutStakersReply {
+    int32 max_payouts                   = 1;
+    repeated SinglePayout payout_stakes = 2;
+}
+
 service Polkadot {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeployMultisigAccount(DeployMultisigAccountRequest) returns (DeployMultisigAccountReply) {}
@@ -181,4 +204,8 @@ service Polkadot {
     rpc BuildStakingBondExtraTransaction(BuildStakingBondExtraTransactionRequest) returns (TransactionReply) {}
     rpc BuildStakingUnbondTransaction(BuildStakingUnbondTransactionRequest) returns (TransactionReply) {}
     rpc BuildStakingWithdrawUnbondedTransaction(BuildStakingWithdrawUnbondedTransactionRequest) returns (TransactionReply) {}
+    rpc BuildStakingPayoutStakersTransaction(BuildStakingPayoutStakersTransactionRequest) returns (TransactionReply) {}
+
+    // Query
+    rpc QueryStakingPayoutStakers(QueryStakingPayoutStakersRequest) returns (QueryStakingPayoutStakersReply) {}
 }

@@ -8,7 +8,7 @@ router.post('/buildAccountTransaction', async function (req: Request, res: Respo
     const data = await provider.buildAccountTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('buildAccountTransaction =>', err);
+    logger.error('buildAccountTransaction =>', err);
     return next(err);
   }
 });
@@ -18,7 +18,7 @@ router.post('/buildMultisigTransferInput', async function (req: Request, res: Re
     const result = await provider.buildMultisigTransferInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('buildMultisigTransferInput =>', err);
+    logger.error('buildMultisigTransferInput =>', err);
     return next(err);
   }
 });
@@ -28,7 +28,7 @@ router.post('/signMultisigTransferInput', async function (req: Request, res: Res
     const result = provider.signMultisigTransferInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('signMultisigTransferInput =>', err);
+    logger.error('signMultisigTransferInput =>', err);
     return next(err);
   }
 });
@@ -38,7 +38,7 @@ router.post('/buildMultisigTransferTransaction', async function (req: Request, r
     const result = await provider.buildMultisigTransferTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('buildMultisigTransferTransaction =>', err);
+    logger.error('buildMultisigTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -48,7 +48,7 @@ router.post('/buildMultisigERC20TransferInput', async function (req: Request, re
     const result = await provider.buildMultisigERC20TransferInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('buildMultisigERC20TransferInput =>', err);
+    logger.error('buildMultisigERC20TransferInput =>', err);
     return next(err);
   }
 });
@@ -58,7 +58,7 @@ router.post('/signMultisigERC20TransferInput', async function (req: Request, res
     const result = await provider.signMultisigERC20TransferInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('signMultisigERC20TransferInput =>', err);
+    logger.error('signMultisigERC20TransferInput =>', err);
     return next(err);
   }
 });
@@ -68,7 +68,7 @@ router.post('/signMultisigERC20TransferInput', async function (req: Request, res
 //     const result = provider.hashForSignature(req.body);
 //     return res.json(result);
 //   } catch (err) {
-//     logger.info('hashForSignature =>', err);
+//     logger.error('hashForSignature =>', err);
 //     return next(err);
 //   }
 // });
@@ -78,7 +78,7 @@ router.post('/signMultisigERC20TransferInput', async function (req: Request, res
 //     const result = provider.decodeTransaction(req.body);
 //     return res.json(result);
 //   } catch (err) {
-//     logger.info('DecodeTransaction =>', err);
+//     logger.error('DecodeTransaction =>', err);
 //     return next(err);
 //   }
 // });

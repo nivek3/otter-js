@@ -10,7 +10,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
       address: account,
     });
   } catch (err) {
-    logger.info('deployAccount =>', err);
+    logger.error('deployAccount =>', err);
     return next(err);
   }
 });
@@ -22,7 +22,7 @@ router.post('/deploySegwitAccount', async function (req: Request, res: Response,
       address: account,
     });
   } catch (err) {
-    logger.info('DeploySegwitAccount =>', err);
+    logger.error('DeploySegwitAccount =>', err);
     return next(err);
   }
 });
@@ -34,7 +34,7 @@ router.post('/deployMultisigLegacyAccount', async function (req: Request, res: R
       address: account,
     });
   } catch (err) {
-    logger.info('DeployMultisigLegacyAccount =>', err);
+    logger.error('DeployMultisigLegacyAccount =>', err);
     return next(err);
   }
 });
@@ -46,7 +46,7 @@ router.post('/deployMultisigSegwitAccount', async function (req: Request, res: R
       address: account,
     });
   } catch (err) {
-    logger.info('DeployMultisigSegwitAccount =>', err);
+    logger.error('DeployMultisigSegwitAccount =>', err);
     return next(err);
   }
 });
@@ -56,7 +56,7 @@ router.post('/buildTransaction', async function (req: Request, res: Response, ne
     const data = await provider.buildTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildTransaction =>', err);
+    logger.error('BuildTransaction =>', err);
     return next(err);
   }
 });
@@ -66,7 +66,7 @@ router.post('/hashForSignature', async function (req: Request, res: Response, ne
     const data = provider.hashForSignature(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('HashForSignature =>', err);
+    logger.error('HashForSignature =>', err);
     return next(err);
   }
 });
@@ -76,7 +76,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
     const data = provider.signTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('SignTransaction =>', err);
+    logger.error('SignTransaction =>', err);
     return next(err);
   }
 });
@@ -86,7 +86,7 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
     const data = await provider.sendTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('SendTransaction =>', err);
+    logger.error('SendTransaction =>', err);
     return next(err);
   }
 });

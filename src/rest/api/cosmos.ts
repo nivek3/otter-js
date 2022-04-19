@@ -8,7 +8,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
     const result = provider.deployAccount(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('DeployAccount =>', err);
+    logger.error('DeployAccount =>', err);
     return next(err);
   }
 });
@@ -18,7 +18,7 @@ router.post('/buildTransferTransaction', async function (req: Request, res: Resp
     const result = await provider.buildTransferTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildTransferTransaction =>', err);
+    logger.error('BuildTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -28,7 +28,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
     const result = await provider.signTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('SignTransaction =>', err);
+    logger.error('SignTransaction =>', err);
     return next(err);
   }
 });
@@ -38,7 +38,7 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
     const result = provider.deployMultisigAccount(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('DeployMultisigAccount =>', err);
+    logger.error('DeployMultisigAccount =>', err);
     return next(err);
   }
 });
@@ -48,7 +48,7 @@ router.post('/buildMultisigTransferTransaction', async function (req: Request, r
     const result = await provider.buildMultisigTransferTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildMultisigTransferTransaction =>', err);
+    logger.error('BuildMultisigTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -58,7 +58,7 @@ router.post('/signMultisigTransaction', async function (req: Request, res: Respo
     const result = await provider.signMultisigTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('SignMultisigTransaction =>', err);
+    logger.error('SignMultisigTransaction =>', err);
     return next(err);
   }
 });
@@ -68,7 +68,7 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
     const result = await provider.sendTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('SendTransaction =>', err);
+    logger.error('SendTransaction =>', err);
     return next(err);
   }
 });
@@ -78,7 +78,7 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     const result = await provider.decodeTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('DecodeTransaction =>', err);
+    logger.error('DecodeTransaction =>', err);
     return next(err);
   }
 });
@@ -88,7 +88,7 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
     const result = await provider.rebuildTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('RebuildTransaction =>', err);
+    logger.error('RebuildTransaction =>', err);
     return next(err);
   }
 });
@@ -98,7 +98,7 @@ router.post('/buildDelegateTransaction', async function (req: Request, res: Resp
     const result = await provider.buildDelegateTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('DelegateTransaction =>', err);
+    logger.error('DelegateTransaction =>', err);
     return next(err);
   }
 });
@@ -108,7 +108,7 @@ router.post('/buildUndelegateTransaction', async function (req: Request, res: Re
     const result = await provider.buildUndelegateTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildUndelegateTransaction =>', err);
+    logger.error('BuildUndelegateTransaction =>', err);
     return next(err);
   }
 });
@@ -118,7 +118,7 @@ router.post('/buildRedelegateTransaction', async function (req: Request, res: Re
     const result = await provider.buildRedelegateTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildRedelegateTransaction =>', err);
+    logger.error('BuildRedelegateTransaction =>', err);
     return next(err);
   }
 });
@@ -128,7 +128,7 @@ router.post('/buildWithdrawDelegationRewardTransaction', async function (req: Re
     const result = await provider.buildWithdrawDelegationRewardTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildWithdrawDelegationRewardsTransaction =>', err);
+    logger.error('BuildWithdrawDelegationRewardsTransaction =>', err);
     return next(err);
   }
 });
@@ -138,7 +138,7 @@ router.post('/buildMultisigDelegateTransaction', async function (req: Request, r
     const result = await provider.buildMultisigDelegateTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildMultisigDelegateTransaction =>', err);
+    logger.error('BuildMultisigDelegateTransaction =>', err);
     return next(err);
   }
 });
@@ -148,7 +148,7 @@ router.post('/buildMultisigUndelegateTransaction', async function (req: Request,
     const result = await provider.buildMultisigUndelegateTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildMultisigUndelegateTransaction =>', err);
+    logger.error('BuildMultisigUndelegateTransaction =>', err);
     return next(err);
   }
 });
@@ -158,7 +158,7 @@ router.post('/buildMultisigRedelegateTransaction', async function (req: Request,
     const result = await provider.buildMultisigRedelegateTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildMultisigRedelegateTransaction =>', err);
+    logger.error('BuildMultisigRedelegateTransaction =>', err);
     return next(err);
   }
 });
@@ -168,7 +168,7 @@ router.post('/buildMultisigWithdrawDelegationRewardTransaction', async function 
     const result = await provider.buildMultisigWithdrawDelegationRewardTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('BuildMultisigWithdrawDelegationRewardTransaction =>', err);
+    logger.error('BuildMultisigWithdrawDelegationRewardTransaction =>', err);
     return next(err);
   }
 });

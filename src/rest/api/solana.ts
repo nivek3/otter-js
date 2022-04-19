@@ -10,18 +10,18 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
       address: account,
     });
   } catch (err) {
-    logger.info('deployAccount =>', err);
+    logger.error('deployAccount =>', err);
     return next(err);
   }
 });
 
 router.post('/buildTransferTransaction', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.buildTransferTransaction(req.body)
+    const data = await provider.buildTransferTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildTransferTransaction =>', err);
-    return next(err)
+    logger.error('BuildTransferTransaction =>', err);
+    return next(err);
   }
 });
 
@@ -30,7 +30,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
     const data = provider.signTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('SignTransaction =>', err);
+    logger.error('SignTransaction =>', err);
     return next(err);
   }
 });
@@ -40,7 +40,7 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
     const tx = await provider.sendTransaction(req.body);
     return res.json(tx);
   } catch (err) {
-    logger.info('SendTransaction =>', err);
+    logger.error('SendTransaction =>', err);
     return next(err);
   }
 });
@@ -50,7 +50,7 @@ router.post('/buildTokenTransferTransaction', async function (req: Request, res:
     const tx = await provider.buildTokenTransferTransaction(req.body);
     return res.json(tx);
   } catch (err) {
-    logger.info('BuildTokenTransferTransaction =>', err);
+    logger.error('BuildTokenTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -60,7 +60,7 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     const result = provider.decodeTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('DecodeTransaction =>', err);
+    logger.error('DecodeTransaction =>', err);
     return next(err);
   }
 });
@@ -70,11 +70,10 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
     const tx = await provider.rebuildTransaction(req.body);
     return res.json(tx);
   } catch (err) {
-    logger.info('rebuildTransaction =>', err);
+    logger.error('rebuildTransaction =>', err);
     return next(err);
   }
 });
-
 
 module.exports = {
   router: router,

@@ -10,7 +10,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
       address: account,
     });
   } catch (err) {
-    logger.info('deployAccount =>', err);
+    logger.error('deployAccount =>', err);
     return next(err);
   }
 });
@@ -20,7 +20,7 @@ router.post('/buildAVAXTransferTransaction', async function (req: Request, res: 
     const result = await provider.buildAVAXTransferTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('buildAVAXTransferTransaction =>', err);
+    logger.error('buildAVAXTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -30,7 +30,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
     const result = await provider.signTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('signTransaction =>', err);
+    logger.error('signTransaction =>', err);
     return next(err);
   }
 });
@@ -40,7 +40,7 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
     const result = await provider.sendTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('sendTransaction =>', err);
+    logger.error('sendTransaction =>', err);
     return next(err);
   }
 });
@@ -50,7 +50,7 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     const result = await provider.decodeTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.info('decodeTransaction =>', err);
+    logger.error('decodeTransaction =>', err);
     return next(err);
   }
 });

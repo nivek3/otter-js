@@ -232,3 +232,24 @@ export const BuildStakingWithdrawUnbondedTransactionSchema = {
     numSlashingSpans: { type: 'string' },
   },
 };
+
+export const BuildStakingPayoutStakersTransactionSchema = {
+  type: 'object',
+  required: ['network', 'from', 'validatorStash', 'era'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    params: { $ref: 'base#/definitions/params' },
+    from: { type: 'string' },
+    validatorStash: { type: 'string' },
+    era: { type: 'string' },
+  },
+};
+
+export const QueryStakingPayoutStakersSchema = {
+  type: 'object',
+  required: ['network', 'address'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    address: { type: 'string' },
+  },
+};

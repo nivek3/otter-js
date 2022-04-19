@@ -7,7 +7,8 @@ import { Validator } from '@src/utils/ajv';
 
 import { approveAsMulti, multisigAsMulti, multisigCancelAsMulti } from './multisig';
 import { transfer as batchTransfer, utility as batchUtility } from './batch';
-import { transfer, rebuild, sign, decode, boundAndNominate, bondExtra, unbond, nominate, withdrawUnbonded } from './methods';
+import { getPayOutStakes } from './query';
+import { transfer, rebuild, sign, decode, boundAndNominate, bondExtra, unbond, nominate, withdrawUnbonded, payoutStakers } from './methods';
 import { pubKeyToBlack2Address } from './utils';
 import { ApiCache } from './cache';
 
@@ -31,7 +32,11 @@ import {
   BuildStakingNominateTransactionRequest,
   BuildStakingBondExtraTransactionRequest,
   BuildStakingUnbondTransactionRequest,
+  BuildStakingPayoutStakersTransactionRequest,
   BuildStakingWithdrawUnbondedTransactionRequest,
+  // Query
+  QueryStakingPayoutStakersRequest,
+  QueryStakingPayoutStakersReply,
 } from '@src/__proto__/polkadot/types';
 import {
   BuildBatchTransactionRequestSchema,
@@ -52,6 +57,9 @@ import {
   BuildStakingBondExtraTransactionSchema,
   BuildStakingUnbondTransactionSchema,
   BuildStakingWithdrawUnbondedTransactionSchema,
+  BuildStakingPayoutStakersTransactionSchema,
+  // Query
+  QueryStakingPayoutStakersSchema,
 } from './polkadot.schema';
 
 const validator = new Validator({ schemas: [PolkadotRefSchema] });
@@ -272,6 +280,46 @@ export class Provider {
       api,
       from,
       numSlashingSpans,
+      signer: from, //
+      nonce,
+      ...params,
+    });
+    return this.getTxReply(result);
+  }
+
+  async queryStakingPayoutStakers(req: QueryStakingPayoutStakersRequest): Promise<QueryStakingPayoutStakersReply> {
+    validator.assert(QueryStakingPayoutStakersSchema, req);
+
+    const { address, network } = req as Required<QueryStakingPayoutStakersRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const query = await getPayOutStakes(api, address);
+    const stakes = query.payoutStakes.map((payout) => ({
+      era: payout.era.toHex(),
+      validatorId: payout.validatorId.toString(),
+    }));
+
+    return {
+      maxPayouts: query.maxPayouts,
+      payoutStakes: stakes,
+    };
+  }
+
+  async buildStakingPayoutStakersTransaction(req: BuildStakingPayoutStakersTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildStakingPayoutStakersTransactionSchema, req);
+
+    const { network, params, from, validatorStash, era } = req as Required<BuildStakingPayoutStakersTransactionRequest>;
+    const { provider: wss, ss58Format = 0 } = network!;
+
+    const api: ApiPromise = await this.getApi(wss!, ss58Format!);
+
+    const nonce = await this.getAddressNonce(api, from, params?.nonce);
+    const result = await payoutStakers({
+      api,
+      from,
+      validatorStash,
+      era,
       signer: from, //
       nonce,
       ...params,

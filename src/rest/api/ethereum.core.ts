@@ -10,7 +10,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
       address: account,
     });
   } catch (err) {
-    logger.info('deployAccount =>', err);
+    logger.error('deployAccount =>', err);
     return next(err);
   }
 });
@@ -20,7 +20,7 @@ router.post('/buildTransaction', async function (req: Request, res: Response, ne
     const data = await provider.buildTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildTransaction =>', err);
+    logger.error('BuildTransaction =>', err);
     return next(err);
   }
 });
@@ -40,7 +40,7 @@ router.post('/buildERC20TransferTransaction', async function (req: Request, res:
     const data = await provider.buildERC20TransferTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('buildERC20TransferTransaction =>', err);
+    logger.error('buildERC20TransferTransaction =>', err);
     return next(err);
   }
 });

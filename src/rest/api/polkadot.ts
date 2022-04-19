@@ -10,7 +10,7 @@ router.post('/deployAccount', async function (req: Request, res: Response, next)
       address: account,
     });
   } catch (err) {
-    logger.info('deployAccount =>', err);
+    logger.error('deployAccount =>', err);
     return next(err);
   }
 });
@@ -22,7 +22,7 @@ router.post('/deployMultisigAccount', async function (req: Request, res: Respons
       address: account,
     });
   } catch (err) {
-    logger.info('deployMultisigAccount =>', err);
+    logger.error('deployMultisigAccount =>', err);
     return next(err);
   }
 });
@@ -32,7 +32,7 @@ router.post('/buildTransferTransaction', async function (req: Request, res: Resp
     const data = await provider.buildTransferTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildTransferTransaction =>', err);
+    logger.error('BuildTransferTransaction =>', err);
     return next(err);
   }
 });
@@ -42,7 +42,7 @@ router.post('/buildMultisigApproveAsMultiTransaction', async function (req: Requ
     const data = await provider.buildMultisigApproveAsMultiTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildMultisigApproveAsMultiTransaction =>', err);
+    logger.error('BuildMultisigApproveAsMultiTransaction =>', err);
     return next(err);
   }
 });
@@ -52,7 +52,7 @@ router.post('/buildMultisigAsMultiTransaction', async function (req: Request, re
     const data = await provider.buildMultisigAsMultiTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildMultisigAsMultiTransaction =>', err);
+    logger.error('BuildMultisigAsMultiTransaction =>', err);
     return next(err);
   }
 });
@@ -62,7 +62,7 @@ router.post('/buildMultisigCancelAsMultiTransaction', async function (req: Reque
     const data = await provider.buildMultisigCancelAsMultiTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildMultisigCancelAsMultiTransaction =>', err);
+    logger.error('BuildMultisigCancelAsMultiTransaction =>', err);
     return next(err);
   }
 });
@@ -72,7 +72,7 @@ router.post('/signTransaction', async function (req: Request, res: Response, nex
     const data = await provider.signTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('signTransaction =>', err);
+    logger.error('signTransaction =>', err);
     return next(err);
   }
 });
@@ -82,7 +82,7 @@ router.post('/sendTransaction', async function (req: Request, res: Response, nex
     const data = await provider.sendTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('SendTransaction Tx =>', err);
+    logger.error('SendTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -92,7 +92,7 @@ router.post('/buildBatchTransferTransaction', async function (req: Request, res:
     const data = await provider.buildBatchTransferTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildBatchTransferTransaction Tx =>', err);
+    logger.error('BuildBatchTransferTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -102,7 +102,7 @@ router.post('/buildBatchTransaction', async function (req: Request, res: Respons
     const data = await provider.buildBatchTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildBatchTransaction Tx =>', err);
+    logger.error('BuildBatchTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -112,7 +112,7 @@ router.post('/rebuildTransaction', async function (req: Request, res: Response, 
     const data = await provider.rebuildTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('RebuildTransaction Tx =>', err);
+    logger.error('RebuildTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -122,7 +122,7 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     const data = await provider.decodeTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('DecodeTransaction Tx =>', err);
+    logger.error('DecodeTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -132,7 +132,7 @@ router.post('/buildStakingBondAndNominateTransaction', async function (req: Requ
     const data = await provider.buildStakingBondAndNominateTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildStakingBondAndNominateTransaction Tx =>', err);
+    logger.error('BuildStakingBondAndNominateTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -142,7 +142,7 @@ router.post('/buildStakingNominateTransaction', async function (req: Request, re
     const data = await provider.buildStakingNominateTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildStakingNominateTransaction Tx =>', err);
+    logger.error('BuildStakingNominateTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -152,7 +152,7 @@ router.post('/buildStakingBondExtraTransaction', async function (req: Request, r
     const data = await provider.buildStakingBondExtraTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildStakingBondExtraTransaction Tx =>', err);
+    logger.error('BuildStakingBondExtraTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -162,7 +162,7 @@ router.post('/buildStakingUnbondTransaction', async function (req: Request, res:
     const data = await provider.buildStakingUnbondTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildStakingBondExtraTransaction Tx =>', err);
+    logger.error('BuildStakingBondExtraTransaction Tx =>', err);
     return next(err);
   }
 });
@@ -172,7 +172,27 @@ router.post('/buildStakingWithdrawUnbondedTransaction', async function (req: Req
     const data = await provider.buildStakingWithdrawUnbondedTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.info('BuildStakingWithdrawUnbondedTransaction Tx =>', err);
+    logger.error('BuildStakingWithdrawUnbondedTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/buildStakingPayoutStakersTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildStakingPayoutStakersTransaction(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.error('BuildStakingPayoutStakersTransaction Tx =>', err);
+    return next(err);
+  }
+});
+
+router.post('/queryStakingPayoutStakers', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.queryStakingPayoutStakers(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.error('QueryStakingPayoutStakers =>', err);
     return next(err);
   }
 });
