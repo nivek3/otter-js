@@ -109,13 +109,15 @@ export class Provider {
   async buildMultisigApproveAsMultiTransaction(req: BuildMultisigApproveAsMultiRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigApproveAsMultiRequestSchema, req);
 
-    const { network, signer, pubKeys, threshold, params } = req as Required<BuildMultisigApproveAsMultiRequest>;
+    const { network, signer, pubKeys, callHex, threshold, params } = req as Required<BuildMultisigApproveAsMultiRequest>;
     const { provider: wss, ss58Format = 0 } = network!;
     const addresses = pubKeys.map((pubKey) => pubKeyToBlack2Address(pubKey, ss58Format));
     const multiAddress = encodeMultiAddress(addresses, threshold, ss58Format);
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, signer, params?.nonce);
+    const maxWeight = await this.getReqMaxWeight(api, addHexPrefix(callHex), signer, params!);
+
     const result = await approveAsMulti({
       api,
       ss58Format: ss58Format!,
@@ -126,6 +128,7 @@ export class Provider {
       multiAddress,
       callHash: req.callHash!,
       callHex: req.callHex!,
+      maxWeight,
       ...params,
     });
     return this.getTxReply(result);
@@ -141,7 +144,7 @@ export class Provider {
 
     const api: ApiPromise = await this.getApi(wss!, ss58Format!);
     const nonce = await this.getAddressNonce(api, signer, params?.nonce);
-    const maxWeight = params?.maxWeight;
+    const maxWeight = await this.getReqMaxWeight(api, addHexPrefix(callHex), signer, params!);
 
     const result = await multisigAsMulti({
       api,
@@ -492,6 +495,13 @@ export class Provider {
       nonce = account.nonce.toNumber();
     }
     return nonce;
+  }
+
+  async getReqMaxWeight(api: ApiPromise, callHex: string, signer: string, params?: TransactionParams): Promise<number> {
+    if (params?.maxWeight) return params.maxWeight;
+    const callData = api.createType('Call', callHex);
+    const { weight } = await api.tx(callData).paymentInfo(signer);
+    return weight.toNumber();
   }
 }
 
