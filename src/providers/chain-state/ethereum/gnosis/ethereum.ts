@@ -258,7 +258,7 @@ export class Provider extends BaseProvider {
     if (multiSigContractNonce === undefined) {
       const multisigContract = new Contract(safeSingletonABI, multiSigAddress);
       multisigContract.setProvider(web3.currentProvider);
-      multiSigContractNonce = await multisigContract.methods.nonce().call();
+      multiSigContractNonce = await multisigContract.methods.nonce().call('pending');
     }
     return toBN(multiSigContractNonce!).toNumber();
   }
