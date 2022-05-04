@@ -1,15 +1,15 @@
 version: "3.9"
 
 services:
-  crypto-wallet-core:
+  cl-wallet-core:
     build: 
       context: .
       dockerfile: Dockerfile
-
     volumes:
-      - ./logs:/home/node/logs
+      - '${PWD}/logs:/home/node/app/logs:rw'
+      - '${PWD}/.env:/home/node/app/.env'
     ports:
-      - "3000:3000"
+      - "13000:3000"
       - "50051:50051"
     env_file:
       - .env

@@ -1,35 +1,36 @@
-# The build image
-FROM node:14.17.0-alpine AS build
+# The builder image
+FROM node:14.17.0-alpine AS builder
 
 RUN apk add --no-cache python make gcc g++ bash git
+RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
-WORKDIR /usr/src/app
+USER node
+WORKDIR /home/node/app
 
-COPY package.json \
+COPY --chown=node:node package.json \
 	package-lock.json \
 	./
 
 RUN npm install
 
-COPY . .
+COPY --chown=node:node . .
 RUN npm run compile
 
 # The production image
-FROM node:14.17.0-alpine
-
-ENV NODE_ENV production
+FROM node:14.17.0-alpine as production
 
 RUN apk add --no-cache python make gcc g++ bash git
+RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
-# USER node
+ENV NODE_ENV production
+ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
 
-WORKDIR /home/node
+USER node
+WORKDIR /home/node/app
 
-COPY --from=build /usr/src/app/package.json \
-	/usr/src/app/package-lock.json \
-	./
-COPY --from=build /usr/src/app/build ./build
-COPY . .
+COPY --from=builder --chown=node:node /home/node/app/package*.json ./
+COPY --from=builder --chown=node:node /home/node/app/build/ ./build/
+COPY --chown=node:node . .
 
 RUN npm ci --production
 
