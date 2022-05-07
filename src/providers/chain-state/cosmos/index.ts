@@ -655,13 +655,8 @@ export class Provider {
     return { accountNumber, sequence, chainId, client };
   }
 
-  getTxEstimatedFee(coins: readonly Coin[], gasLimit: BigNumber.Value): string {
-    const amounts = BigNumber.sum.apply(
-      null,
-      coins.map((coin) => coin.amount),
-    );
-    const gas = new BigNumber(gasLimit);
-    return new BigNumber(amounts).times(gas).toString();
+  getTxEstimatedFee(coins: readonly Coin[], _gasLimit: BigNumber.Value): string {
+    return coins?.[0].amount.toString();
   }
 }
 
