@@ -50,7 +50,8 @@ message Recipient {
 }
 
 message TransactionParams {
-    string fee_rate = 1;
+    string fee_rate       = 1;
+    string fee_mint_block = 2;
 }
 
 message BuildTransactionRequest {

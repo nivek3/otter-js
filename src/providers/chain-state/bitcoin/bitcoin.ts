@@ -101,7 +101,7 @@ export class Provider {
     const utxoMap = new Map(utxos.map((utxo: any) => [this.getUtxoKey(utxo), utxo]));
 
     const dustLimit = reqNetWork?.dustLimit || DUST_AMOUNT;
-    const feePerKb = await this.getReqFeePerKb(reqNetWork!.provider!, params?.feeRate, 1);
+    const feePerKb = await this.getReqFeePerKb(reqNetWork!.provider!, params?.feeRate, toNumber(params?.feeMintBlock) || 7);
 
     this.calcInputBytes(utxos, network as BitcoinJSNetwork);
 
@@ -385,7 +385,7 @@ export class Provider {
   }
 
   // https://chainquery.com/bitcoin-cli/estimatesmartfee
-  private async getReqFeePerKb(url: string, feeRate = '', blocks = 1) {
+  private async getReqFeePerKb(url: string, feeRate = '', blocks = 7) {
     if (!feeRate) {
       const { result, error } = await this.makeRequest({
         url,
