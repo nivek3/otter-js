@@ -1,3 +1,4 @@
+import { toBuffer, addHexPrefix } from 'ethereumjs-util';
 import { toNumber } from 'lodash';
 import { ec as EC } from 'elliptic';
 import ECSignature from 'elliptic/lib/elliptic/ec/signature';
@@ -203,10 +204,11 @@ export class Provider {
           throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
         }
         const { r, s } = canonicalSignature(signature!);
-        const ecSignature = new ECSignature({ r, s });
-
+        const ecSignature = new ECSignature({ r: Buffer.from(r, 'hex'), s: Buffer.from(s, 'hex') });
         if (!key.verify(signatureHash, ecSignature)) throw new AppError(errors.VERIFY_SIGNATURE_FAILED);
-        txb.signInput(i, pubKeyBuf, Buffer.from(r + s, 'hex'), hashType);
+
+        const sigBuffer = Buffer.from(r + s, 'hex');
+        txb.signInput(i, pubKeyBuf, sigBuffer, hashType);
       }
     }
     const utxoTx = txb.build();

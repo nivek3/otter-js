@@ -23,8 +23,8 @@ export const canonicalSignature = (signature: string) => {
     recoveryParam ^= 1;
   }
   return {
-    r: padToEven(stripHexPrefix(toHex(r))),
-    s: padToEven(stripHexPrefix(toHex(s))),
+    r: padToEven(stripHexPrefix(toHex(r))).padStart(parsed.r.length, '0'),
+    s: padToEven(stripHexPrefix(toHex(s))).padStart(parsed.s.length, '0'),
     v: recoveryParam,
   };
 };
