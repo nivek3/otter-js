@@ -111,7 +111,7 @@ export abstract class BaseProvider {
 
   async getTxData(tx: FactoryTxData, common: Common, params: TransactionParams, web3: Web3, from: string): Promise<FactoryTxData> {
     tx.data = tx.data || '0x';
-    tx.value = tx.value || '0x00';
+    tx.value = bnToHex(toBN(tx.value?.toString() || '0x00'));
     const { to, value, data } = tx;
     const nonce = await this.getReqNonce(from, web3, params?.nonce);
     const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
