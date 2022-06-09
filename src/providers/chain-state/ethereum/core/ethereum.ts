@@ -169,7 +169,7 @@ export class Provider extends BaseProvider {
   async buildContractTransaction(req: BuildContractTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildContractTransactionRequestSchema, req);
 
-    const { params = {}, network, from, abis, args, contractAddress, method } = req as Required<BuildContractTransactionRequest>;
+    const { params = {}, network, from, abis, args, contractAddress, method, value } = req as Required<BuildContractTransactionRequest>;
     const { provider } = network!;
     const web3 = this.getWeb3Provider(provider!);
     const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
@@ -180,6 +180,7 @@ export class Provider extends BaseProvider {
     const txInput = {
       to: contractAddress,
       data: input,
+      value,
     };
 
     const txData = await this.getTxData(txInput, common, params!, web3, from);
