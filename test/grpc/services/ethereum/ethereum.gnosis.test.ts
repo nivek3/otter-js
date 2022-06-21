@@ -41,6 +41,30 @@ describe('Ethereum Gnosis service', () => {
     });
 
     describe('eip1559 transaction', () => {
+      describe('GetAccountAddress', () => {
+        test('generate 2 of 3 multi address', async () => {
+          const Method = promisify(gnosisClient.GetAccountAddress.bind(gnosisClient));
+          const response = await Method({
+            threshold: 2,
+            keys: [
+              '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
+              '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
+              '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
+            ],
+            sender: '0xd73d9aa55abbd6cfbed3e9ad7f8be2f6d83c70dc',
+            network: {
+              chainId: 4,
+              hardFork: 'london',
+              provider: 'https://rinkeby.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+            },
+            saltNonce: 1644659321895,
+          });
+          const { address, saltNonce } = response;
+          expect(saltNonce).toStrictEqual('1644659321895');
+          expect(address).toStrictEqual('0xEcf70be9a60379BBA4344900Ce5C91E31e6AC6fc');
+        });
+      });
+
       describe('BuildAccountTransaction', () => {
         test('generate 2 of 3 multi address', async () => {
           const Method = promisify(gnosisClient.BuildAccountTransaction.bind(gnosisClient));

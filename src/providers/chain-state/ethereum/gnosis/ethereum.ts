@@ -17,6 +17,8 @@ import { errors, AppError } from '@src/error';
 
 import { TransactionReply, Signature } from '@src/__proto__/common/types';
 import {
+  GetAccountAddressRequest,
+  GetAccountAddressReply,
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
   BuildMultisigTransferInputRequest,
@@ -40,6 +42,7 @@ import {
 } from './gnosis';
 import {
   EthereumRefSchema,
+  GetAccountRequestSchema,
   BuildAccountTransactionRequestSchema,
   SignMultisigTransferInputRequestSchema,
   BuildMultisigTransferInputRequestSchema,
@@ -65,42 +68,34 @@ const proxyFactory = getProxyFactoryDeployment(filter);
 const proxyFactoryABI = proxyFactory?.abi;
 
 export class Provider extends BaseProvider {
+  async getAccountAddress(req: GetAccountAddressRequest): Promise<GetAccountAddressReply> {
+    validator.assert(GetAccountRequestSchema, req);
+
+    const { network, threshold, keys, saltNonce } = req as Required<GetAccountAddressRequest>;
+    const { provider, chainId } = network!;
+    if (!chainId) throw new AppError(errors.INVALID_ARGUMENT, { details: 'chainId is required' });
+    const web3 = new Web3(provider!);
+    const { address } = await this.getGnosisTxData(web3, chainId, keys, threshold, toNumber(saltNonce!));
+
+    return {
+      address,
+      saltNonce,
+    };
+  }
+
   async buildAccountTransaction(req: BuildAccountTransactionRequest): Promise<BuildAccountTransactionReply> {
     validator.assert(BuildAccountTransactionRequestSchema, req);
 
     const { threshold, keys, sender, network, params } = req as Required<BuildAccountTransactionRequest>;
     const { provider, chainId } = network!;
     if (!chainId) throw new AppError(errors.INVALID_ARGUMENT, { details: 'chainId is required' });
-
-    const { safeSingletonABI, safeSingletonAddress, compatHandlerAddress, proxyFactoryAddress } = this.getGnosisAddresses(chainId);
     const common = this.getTxCommon(network!);
     const txOptions = { common };
-
     const web3 = new Web3(provider!);
-    const owners = keys.map(pubToBIP55Address);
-
-    const methodParams = [
-      owners,
-      threshold,
-      ZERO_ADDRESS,
-      '0x',
-      compatHandlerAddress, // fallback handler
-      ZERO_ADDRESS,
-      0,
-      ZERO_ADDRESS,
-    ];
-
-    const safeSingletonContract = new Contract(safeSingletonABI);
     const saltNonce = this.getReqSaltNonce(toNumber(req.saltNonce));
 
-    const initializer = safeSingletonContract.methods.setup(...methodParams).encodeABI();
+    const { address, input, proxyFactoryAddress } = await this.getGnosisTxData(web3, chainId, keys, threshold, saltNonce);
 
-    const proxyFactoryContract = new Contract(proxyFactoryABI);
-
-    const deployCode = await this.getDeployCode(web3, proxyFactoryABI, proxyFactoryAddress, safeSingletonAddress);
-    const address = this.getSafeAddress(proxyFactoryAddress, initializer, deployCode, saltNonce);
-
-    const input = proxyFactoryContract.methods.createProxyWithNonce(safeSingletonAddress, initializer, saltNonce).encodeABI();
     const txInput = {
       data: input,
       to: proxyFactoryAddress,
@@ -297,6 +292,34 @@ export class Provider extends BaseProvider {
     const inputs = [to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatureBytes];
     const safeSingletonContract = new Contract(safeSingletonABI);
     return safeSingletonContract.methods.execTransaction(...inputs).encodeABI();
+  }
+
+  async getGnosisTxData(web3: Web3, chainId: number, keys: string[], threshold: number, saltNonce: number) {
+    const { safeSingletonABI, safeSingletonAddress, compatHandlerAddress, proxyFactoryAddress } = this.getGnosisAddresses(chainId);
+
+    const owners = keys.map(pubToBIP55Address);
+    const methodParams = [
+      owners,
+      threshold,
+      ZERO_ADDRESS,
+      '0x',
+      compatHandlerAddress, // fallback handler
+      ZERO_ADDRESS,
+      0,
+      ZERO_ADDRESS,
+    ];
+
+    const safeSingletonContract = new Contract(safeSingletonABI);
+
+    const initializer = safeSingletonContract.methods.setup(...methodParams).encodeABI();
+
+    const proxyFactoryContract = new Contract(proxyFactoryABI);
+
+    const deployCode = await this.getDeployCode(web3, proxyFactoryABI, proxyFactoryAddress, safeSingletonAddress);
+    const address = this.getSafeAddress(proxyFactoryAddress, initializer, deployCode, saltNonce);
+
+    const input = proxyFactoryContract.methods.createProxyWithNonce(safeSingletonAddress, initializer, saltNonce).encodeABI();
+    return { address, proxyFactoryAddress, input };
   }
 
   async getTxSafeHashAndInput(

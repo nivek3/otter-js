@@ -29,12 +29,24 @@ export const EthereumRefSchema = {
   },
 };
 
+export const GetAccountRequestSchema = {
+  type: 'object',
+  required: ['network', 'threshold', 'keys', 'saltNonce'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    threshold: { type: 'integer', minimum: 1 },
+    keys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    saltNonce: { type: ['integer', 'string'], minimum: 0 },
+  },
+};
+
 export const BuildAccountTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'threshold', 'keys', 'sender'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     keys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    threshold: { type: 'integer', minimum: 1 },
     saltNonce: { type: ['integer', 'string'], minimum: 0 },
     sender: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },

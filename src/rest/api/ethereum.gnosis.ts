@@ -3,6 +3,16 @@ const router = require('express').Router({ mergeParams: true });
 import { provider } from '@src/providers/chain-state/ethereum/gnosis/ethereum';
 import logger from '@src/logger';
 
+router.post('/getAccountAddress', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.getAccountAddress(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.error('getAccountAddress =>', err);
+    return next(err);
+  }
+});
+
 router.post('/buildAccountTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildAccountTransaction(req.body);
@@ -62,26 +72,6 @@ router.post('/signMultisigERC20TransferInput', async function (req: Request, res
     return next(err);
   }
 });
-
-// router.post('/hashForSignature', async function (req: Request, res: Response, next) {
-//   try {
-//     const result = provider.hashForSignature(req.body);
-//     return res.json(result);
-//   } catch (err) {
-//     logger.error('hashForSignature =>', err);
-//     return next(err);
-//   }
-// });
-
-// router.post('/decodeTransaction', async function (req: Request, res: Response, next) {
-//   try {
-//     const result = provider.decodeTransaction(req.body);
-//     return res.json(result);
-//   } catch (err) {
-//     logger.error('DecodeTransaction =>', err);
-//     return next(err);
-//   }
-// });
 
 module.exports = {
   router: router,

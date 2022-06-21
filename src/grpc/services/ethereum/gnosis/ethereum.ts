@@ -17,6 +17,8 @@ import {
   BuildMultisigTransferTransactionRequest,
   BuildMultisigERC20TransferInputRequest,
   SignMultisigERC20TransferInputRequest,
+  GetAccountAddressRequest,
+  GetAccountAddressReply,
 } from '@src/__proto__/ethereum/gnosis/types';
 
 const filename = path.join(__dirname, '../../../../../proto/ethereum/ethereum.gnosis.proto');
@@ -31,6 +33,11 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 export const EthereumGnosisService = protoDescriptor.ethereum.gnosis.Ethereum.service;
 
 export const EthereumGnosisImp: ProxyImp<EthereumHandlers> = {
+  GetAccountAddress: async function (ctx: ImplContext<GetAccountAddressRequest, GetAccountAddressReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.getAccountAddress(req);
+  },
+
   BuildAccountTransaction: async function (ctx: ImplContext<BuildAccountTransactionRequest, BuildAccountTransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildAccountTransaction(req);
