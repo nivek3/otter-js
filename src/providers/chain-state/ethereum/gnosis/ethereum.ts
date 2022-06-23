@@ -1,6 +1,5 @@
-import { toNumber } from 'lodash';
 import Web3 from 'web3';
-import { utils } from 'ethers';
+import { utils, BigNumber } from 'ethers';
 import { toBN } from 'web3-utils';
 import { _TypedDataEncoder } from '@ethersproject/hash';
 import { splitSignature, joinSignature } from '@ethersproject/bytes';
@@ -75,7 +74,7 @@ export class Provider extends BaseProvider {
     const { provider, chainId } = network!;
     if (!chainId) throw new AppError(errors.INVALID_ARGUMENT, { details: 'chainId is required' });
     const web3 = new Web3(provider!);
-    const { address } = await this.getGnosisTxData(web3, chainId, keys, threshold, toNumber(saltNonce!));
+    const { address } = await this.getGnosisTxData(web3, chainId, keys, threshold, BigNumber.from(saltNonce!));
 
     return {
       address,
@@ -92,7 +91,7 @@ export class Provider extends BaseProvider {
     const common = this.getTxCommon(network!);
     const txOptions = { common };
     const web3 = new Web3(provider!);
-    const saltNonce = this.getReqSaltNonce(toNumber(req.saltNonce));
+    const saltNonce = this.getReqSaltNonce(req.saltNonce?.toString());
 
     const { address, input, proxyFactoryAddress } = await this.getGnosisTxData(web3, chainId, keys, threshold, saltNonce);
 
@@ -238,8 +237,8 @@ export class Provider extends BaseProvider {
     return { safeSingletonABI, safeSingletonAddress, compatHandlerAddress, proxyFactoryAddress };
   }
 
-  getReqSaltNonce(saltNonce: number) {
-    return saltNonce || Date.now();
+  getReqSaltNonce(saltNonce?: number | string): BigNumber {
+    return BigNumber.from(saltNonce || Date.now());
   }
 
   async getDeployCode(web3: Web3, proxyFactoryABI: any, proxyFactoryAddress: string, safeSingletonAddress: string) {
@@ -258,7 +257,7 @@ export class Provider extends BaseProvider {
     return toBN(multiSigContractNonce!).toNumber();
   }
 
-  getSafeAddress(proxyFactoryAddress: string, initializer: string, deploymentCode: string, saltNonce: number) {
+  getSafeAddress(proxyFactoryAddress: string, initializer: string, deploymentCode: string, saltNonce: BigNumber) {
     const salt = utils.solidityKeccak256(['bytes32', 'uint256'], [utils.solidityKeccak256(['bytes'], [initializer]), saltNonce]);
     return utils.getCreate2Address(proxyFactoryAddress, salt, utils.keccak256(deploymentCode));
   }
@@ -294,7 +293,7 @@ export class Provider extends BaseProvider {
     return safeSingletonContract.methods.execTransaction(...inputs).encodeABI();
   }
 
-  async getGnosisTxData(web3: Web3, chainId: number, keys: string[], threshold: number, saltNonce: number) {
+  async getGnosisTxData(web3: Web3, chainId: number, keys: string[], threshold: number, saltNonce: BigNumber) {
     const { safeSingletonABI, safeSingletonAddress, compatHandlerAddress, proxyFactoryAddress } = this.getGnosisAddresses(chainId);
 
     const owners = keys.map(pubToBIP55Address);
