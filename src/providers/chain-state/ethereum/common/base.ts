@@ -109,7 +109,7 @@ export abstract class BaseProvider {
     return new Web3(provider!);
   }
 
-  async getTxData(tx: FactoryTxData, common: Common, params: TransactionParams, web3: Web3, from: string): Promise<FactoryTxData> {
+  async getTxData(tx: FactoryTxData, _common: Common, params: TransactionParams, web3: Web3, from: string): Promise<FactoryTxData> {
     tx.data = tx.data || '0x';
     tx.value = bnToHex(toBN(tx.value?.toString() || '0x00'));
     const { to, value, data } = tx;
@@ -121,7 +121,6 @@ export abstract class BaseProvider {
         from,
         to,
         nonce,
-        common,
         data,
         value,
       } as any,
