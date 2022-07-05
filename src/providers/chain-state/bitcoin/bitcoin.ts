@@ -93,7 +93,7 @@ export class Provider {
   async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildTransactionRequestSchema, req);
 
-    const { changer, utxos, recipients, network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
+    const { changer, utxos, recipients = [], network: reqNetWork, params } = req as Required<BuildTransactionRequest>;
     const network = this.getNetWork(reqNetWork!);
     const hashType = bitgo.getDefaultSigHash(network);
 
@@ -120,9 +120,13 @@ export class Provider {
       txb.addInput(input.txid, input.vout || 0, input.sequence, prevOutScript);
     });
 
+    // 1. with output address force sent to a change address, even if the change amount less than the dust amount.
+    // 2. without output address, if the change amount is less than the dust amount, don't send it.
     outputs.forEach((output: { address: string; value: number }) => {
       if (!output.address && output.value < dustLimit) return;
-      txb.addOutput(output.address || changer, output.value);
+      const address = output.address || changer;
+      if (!address) return;
+      txb.addOutput(address, output.value);
     });
 
     const serialized = txb.buildIncomplete().toHex();
