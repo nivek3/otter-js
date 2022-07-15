@@ -22,9 +22,10 @@ import {
   BuildAccountTransactionReply,
   BuildMultisigTransferInputRequest,
   SignMultisigTransferInputRequest,
-  BuildMultisigTransferTransactionRequest,
+  BuildMultisigTransactionRequest,
   BuildMultisigERC20TransferInputRequest,
   SignMultisigERC20TransferInputRequest,
+  BuildMultisigInputRequest,
 } from '@src/__proto__/ethereum/gnosis/types';
 import { pubToBIP55Address } from '../common/utils';
 import { BaseProvider } from '../common/base';
@@ -42,6 +43,7 @@ import {
 import {
   EthereumRefSchema,
   GetAccountRequestSchema,
+  BuildMultisigInputRequestSchema,
   BuildAccountTransactionRequestSchema,
   SignMultisigTransferInputRequestSchema,
   BuildMultisigTransferInputRequestSchema,
@@ -116,6 +118,34 @@ export class Provider extends BaseProvider {
     };
   }
 
+  async buildMultisigInput(req: BuildMultisigInputRequest): Promise<TransactionReply> {
+    validator.assert(BuildMultisigInputRequestSchema, req);
+
+    const { network, quantity, to, data, contract, participants, sender } = req as Required<BuildMultisigInputRequest>;
+    const { chainId } = network!;
+    const web3 = new Web3(network?.provider!);
+    const multiSigContractNonce = await this.getMultisigContractNonce(contract, web3, req?.contractNonce);
+    const safeTx = buildSafeTransaction({
+      to,
+      value: quantity,
+      nonce: multiSigContractNonce,
+      data,
+    });
+
+    const { safeHash, input } = await this.getTxSafeHashAndInput(web3, chainId!, to, quantity, data, contract, safeTx, sender);
+    const signatures = participants.map((pubKey) => {
+      return {
+        pubKey,
+        hash: stripHexPrefix(safeHash),
+      };
+    });
+
+    return {
+      serialized: stripHexPrefix(input),
+      signatures,
+    };
+  }
+
   async buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigTransferInputRequestSchema, req);
 
@@ -154,10 +184,10 @@ export class Provider extends BaseProvider {
     };
   }
 
-  async buildMultisigTransferTransaction(req: BuildMultisigTransferTransactionRequest): Promise<TransactionReply> {
+  async buildMultisigTransaction(req: BuildMultisigTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigTransferTransactionRequestSchema, req);
 
-    const { network, contract, sender, params } = req as Required<BuildMultisigTransferTransactionRequest>;
+    const { network, contract, sender, params, value } = req as Required<BuildMultisigTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
@@ -167,6 +197,7 @@ export class Provider extends BaseProvider {
     const txInput: FactoryTxData = {
       to: contract,
       data,
+      value,
     };
 
     const txData = await this.getTxData(txInput, common, params!, web3, sender);
@@ -262,7 +293,7 @@ export class Provider extends BaseProvider {
     return utils.getCreate2Address(proxyFactoryAddress, salt, utils.keccak256(deploymentCode));
   }
 
-  getReqInput(req: Pick<BuildMultisigTransferTransactionRequest, 'serialized' | 'signatures' | 'data'>): string {
+  getReqInput(req: Pick<BuildMultisigTransactionRequest, 'serialized' | 'signatures' | 'data'>): string {
     const { serialized, signatures, data } = req;
     if (data) return data;
 

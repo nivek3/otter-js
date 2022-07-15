@@ -43,12 +43,12 @@ router.post('/signMultisigTransferInput', async function (req: Request, res: Res
   }
 });
 
-router.post('/buildMultisigTransferTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildMultisigTransaction', async function (req: Request, res: Response, next) {
   try {
-    const result = await provider.buildMultisigTransferTransaction(req.body);
+    const result = await provider.buildMultisigTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.error('buildMultisigTransferTransaction =>', err);
+    logger.error('buildMultisigTransaction =>', err);
     return next(err);
   }
 });

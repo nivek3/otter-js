@@ -58,29 +58,31 @@ message BuildMultisigTransferInputRequest {
     repeated string participants = 7;
 }
 
-message BuildMultisigTransferInputReply {
-    string serialized             = 1;
-    string hash                   = 2;
-    repeated Signature signatures = 3;
-}
-
 message SignMultisigTransferInputRequest {
     string serialized             = 1;
     repeated Signature signatures = 2;
 }
 
-message SignMultisigTransferInputReply {
-    string serialized = 1;
+message BuildMultisigInputRequest {
+    Network network              = 1;
+    string to                    = 2;
+    string quantity              = 3;
+    string data                  = 4;
+    string contract              = 5;
+    int32 contract_nonce         = 6;
+    string sender                = 7;
+    repeated string participants = 8;
 }
 
-message BuildMultisigTransferTransactionRequest {
+message BuildMultisigTransactionRequest {
     Network network               = 1;
     string contract               = 2;
     string data                   = 3;
-    string sender                 = 4;
-    TransactionParams params      = 5;
-    string serialized             = 6;
-    repeated Signature signatures = 7;
+    string value                  = 4;
+    string sender                 = 5;
+    TransactionParams params      = 6;
+    string serialized             = 7;
+    repeated Signature signatures = 8;
 }
 
 message BuildMultisigERC20TransferInputRequest {
@@ -110,9 +112,10 @@ service Ethereum {
 
     rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}
     rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (TransactionReply) {}
-    rpc BuildMultisigTransferTransaction(BuildMultisigTransferTransactionRequest) returns (TransactionReply) {}
+    rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (TransactionReply) {}
     rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (TransactionReply) {}
     rpc SignMultisigERC20TransferInput(SignMultisigERC20TransferInputRequest) returns (TransactionReply) {}
-
+    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigInput(SignMultisigTransferInputRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
 }

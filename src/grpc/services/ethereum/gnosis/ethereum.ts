@@ -11,14 +11,13 @@ import {
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
   BuildMultisigTransferInputRequest,
-  BuildMultisigTransferInputReply,
   SignMultisigTransferInputRequest,
-  SignMultisigTransferInputReply,
-  BuildMultisigTransferTransactionRequest,
+  BuildMultisigTransactionRequest,
   BuildMultisigERC20TransferInputRequest,
   SignMultisigERC20TransferInputRequest,
   GetAccountAddressRequest,
   GetAccountAddressReply,
+  BuildMultisigInputRequest,
 } from '@src/__proto__/ethereum/gnosis/types';
 
 const filename = path.join(__dirname, '../../../../../proto/ethereum/ethereum.gnosis.proto');
@@ -43,19 +42,29 @@ export const EthereumGnosisImp: ProxyImp<EthereumHandlers> = {
     ctx.body = await provider.buildAccountTransaction(req);
   },
 
-  BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, BuildMultisigTransferInputReply>) {
+  BuildMultisigInput: async function (ctx: ImplContext<BuildMultisigInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigTransferInput(req);
+    ctx.body = await provider.buildMultisigInput(req);
   },
 
-  SignMultisigTransferInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, SignMultisigTransferInputReply>) {
+  SignMultisigInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.signMultisigTransferInput(req);
   },
 
-  BuildMultisigTransferTransaction: async function (ctx: ImplContext<BuildMultisigTransferTransactionRequest, TransactionReply>) {
+  BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigTransferTransaction(req);
+    ctx.body = await provider.buildMultisigTransferInput(req);
+  },
+
+  SignMultisigTransferInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = provider.signMultisigTransferInput(req);
+  },
+
+  BuildMultisigTransaction: async function (ctx: ImplContext<BuildMultisigTransactionRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildMultisigTransaction(req);
   },
 
   BuildMultisigERC20TransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, TransactionReply>) {

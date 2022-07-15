@@ -78,6 +78,20 @@ export const BuildMultisigTransferInputRequestSchema = {
   },
 };
 
+export const BuildMultisigInputRequestSchema = {
+  type: 'object',
+  required: ['to', 'contract', 'participants', 'sender'],
+  properties: {
+    to: { type: 'string' },
+    data: { type: 'string' },
+    quantity: { type: 'string' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    sender: { type: 'string' },
+  },
+};
+
 export const SignMultisigTransferInputRequestSchema = {
   type: 'object',
   required: ['serialized', 'signatures'],
