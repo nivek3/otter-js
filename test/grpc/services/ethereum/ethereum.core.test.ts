@@ -230,7 +230,7 @@ describe('Ethereum Core service', () => {
           expect(response).toEqual(
             expect.objectContaining({
               nonce: 5,
-              gasPrice: '0x147d35700',
+              gasPrice: '0x0147d35700',
               gasLimit: '0x1710e',
             }),
           );
@@ -280,6 +280,25 @@ describe('Ethereum Core service', () => {
                 }),
               ]),
             );
+          });
+        });
+
+        describe('BuildContractInput', () => {
+          test('ETC20 transfer', async () => {
+            const serialized =
+              'a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000';
+            const Method = promisify(client.BuildContractInput.bind(client));
+            const response = await Method({
+              abis: [
+                'function name() view returns (string)',
+                'function symbol() view returns (string)',
+                'function balanceOf(address) view returns (uint)',
+                'function transfer(address to, uint amount)',
+              ],
+              method: 'transfer',
+              args: ['0x370BA1dc25C07d0C77Ba9b83fcc75Fcc2a0aC243', '1000000000000000000'],
+            });
+            expect(response).toHaveProperty('serialized', serialized);
           });
         });
 

@@ -1,9 +1,14 @@
-import { stripHexPrefix } from 'ethjs-util';
+import {
+  getSafeSingletonDeployment,
+  getProxyFactoryDeployment,
+  getCompatibilityFallbackHandlerDeployment,
+  getMultiSendCallOnlyDeployment,
+} from '@gnosis.pm/safe-deployments';
 import { TypedDataDomain } from '@ethersproject/abstract-signer';
 import { _TypedDataEncoder } from '@ethersproject/hash';
-import { BigNumberish } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 import Web3 from 'web3';
-import { addHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 export interface SafeSignature {
   signer: string;
   data: string;
@@ -38,6 +43,13 @@ export interface Template {
   nonce: number;
 }
 
+export interface MetaTransaction {
+  to: string;
+  value: string | number;
+  data: string;
+  operation: number;
+}
+
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export const EIP712_SAFE_TX_TYPE = {
@@ -55,7 +67,7 @@ export const EIP712_SAFE_TX_TYPE = {
   ],
 };
 
-export function buildSafeTransaction(template: Template) {
+export function buildSafeTransaction(template: Template): SafeTransaction {
   return {
     to: template.to,
     value: template.value || 0,
@@ -68,6 +80,26 @@ export function buildSafeTransaction(template: Template) {
     refundReceiver: template.refundReceiver || ZERO_ADDRESS,
     nonce: template.nonce,
   };
+}
+
+export function overrideSafeTransaction(safeTx: SafeTransaction, overrides: Partial<SafeTransaction>): SafeTransaction {
+  return {
+    ...safeTx,
+    ...overrides,
+  };
+}
+
+export function encodeMetaTransaction(tx: MetaTransaction): string {
+  const data = utils.arrayify(tx.data);
+  const encoded = utils.solidityPack(
+    ['uint8', 'address', 'uint256', 'uint256', 'bytes'],
+    [tx.operation, tx.to, tx.value, data.length, data],
+  );
+  return encoded.slice(2);
+}
+
+export function encodeMultiSend(txs: MetaTransaction[]): string {
+  return '0x' + txs.map((tx) => encodeMetaTransaction(tx)).join('');
 }
 
 export function calculateSafeTransactionHash(chainId: BigNumberish, verifyingContract: string, safeTx: SafeTransaction) {
@@ -105,3 +137,17 @@ export function safeApproveHash(signerAddress: string) {
 export function decodeSafeApproveHashAddress(approve: string) {
   return addHexPrefix(addHexPrefix(approve).substring(26, 66));
 }
+
+export const version = '1.3.0';
+export const released = true;
+export const filter = { version, released };
+export const safeSingleton = getSafeSingletonDeployment(filter);
+export const safeSingletonABI = safeSingleton?.abi!;
+
+export const compatHandler = getCompatibilityFallbackHandlerDeployment(filter);
+
+export const proxyFactory = getProxyFactoryDeployment(filter);
+export const proxyFactoryABI = proxyFactory?.abi!;
+
+export const multiSendCall = getMultiSendCallOnlyDeployment(filter);
+export const multiSendCallABI = multiSendCall?.abi!;

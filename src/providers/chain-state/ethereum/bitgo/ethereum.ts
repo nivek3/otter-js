@@ -16,7 +16,7 @@ import {
   SignMultisigERC20TransferInputRequest,
 } from '@src/__proto__/ethereum/bitgo/types';
 import { pubToBIP55Address } from '../common/utils';
-import { BaseProvider } from '../common/base';
+import { Provider as CoreProvider } from '../core/ethereum';
 import {
   EthereumRefSchema,
   BuildAccountTransactionRequestSchema,
@@ -38,14 +38,13 @@ abiDecoder.addABI(abi);
 
 const validator = new Validator({ schemas: [EthereumRefSchema] });
 
-export class Provider extends BaseProvider {
+export class Provider extends CoreProvider {
   async buildAccountTransaction(req: BuildAccountTransactionRequest): Promise<BuildAccountTransactionReply> {
     validator.assert(BuildAccountTransactionRequestSchema, req);
 
     const { keys, sender, network, params } = req as Required<BuildAccountTransactionRequest>;
     const { provider } = network!;
-    const common = this.getTxCommon(network!);
-    const txOptions = { common };
+    const txOptions = this.getTxOptions(network!);
 
     const web3 = new Web3(provider!);
     const addresses = keys.map(pubToBIP55Address);
@@ -59,28 +58,22 @@ export class Provider extends BaseProvider {
     const txInput = {
       data: input,
     };
-    const txData = await this.getTxData(txInput, common, params!, web3, sender);
-    const tx = TransactionFactory.fromTxData(txData, txOptions);
+    const txData = await this.getTxData(txInput, txOptions.common!, web3, sender, params!);
 
     const from = Address.fromString(sender).toBuffer();
     const address = toChecksumAddress(bufferToHex(generateAddress(from, new BN(txData.nonce!).toBuffer())));
-    const hash = tx.getMessageToSign(true).toString('hex');
 
-    const signature = { hash };
-    const estimatedFee = this.getTxEstimatedFee(tx);
-
+    const reply = await this.getTransactionReply(txData, txOptions, web3, sender, params!);
     return {
-      serialized: tx.serialize().toString('hex'),
-      signatures: [signature],
       address,
-      estimatedFee,
+      ...reply,
     };
   }
 
   async buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): Promise<TransactionReply> {
     validator.assert(BuildMultisigTransferInputRequestSchema, req);
 
-    const { toAddress, quantity, network } = req as Required<BuildMultisigTransferInputRequest>;
+    const { toAddress, value, network } = req as Required<BuildMultisigTransferInputRequest>;
 
     const sequenceId = await this.getReqSequenceId(network?.provider, req?.contract, req?.sequenceId);
     const prefix = 'ETHER';
@@ -89,12 +82,12 @@ export class Provider extends BaseProvider {
     const hash = this.getSha3ForConfirmationTx(
       prefix,
       toAddress,
-      quantity,
+      value,
       data,
       expireTime, //
       sequenceId,
     );
-    const input = contract.methods.sendMultiSig(toAddress, quantity, data || '0x', expireTime, sequenceId, '0x').encodeABI();
+    const input = contract.methods.sendMultiSig(toAddress, value, data || '0x', expireTime, sequenceId, '0x').encodeABI();
     const signature: Signature = {
       hash: hash.toString('hex'),
     };
@@ -153,7 +146,7 @@ export class Provider extends BaseProvider {
       data,
     };
 
-    const txData = await this.getTxData(txInput, common, params!, web3, sender);
+    const txData = await this.getTxData(txInput, common, web3, sender, params!);
     const tx = TransactionFactory.fromTxData(txData, txOptions);
     const hash = tx.getMessageToSign(true).toString('hex');
 
@@ -216,10 +209,10 @@ export class Provider extends BaseProvider {
     };
   }
 
-  getSha3ForConfirmationTx(prefix: string, toAddress: string, quantity: string, data: string, expireTime: number, sequenceId: number) {
+  getSha3ForConfirmationTx(prefix: string, toAddress: string, value: string, data: string, expireTime: number, sequenceId: number) {
     return ABI.soliditySHA3(
       ['string', 'address', 'uint', 'string', 'uint', 'uint'], // argTypes
-      [prefix, new BN(toAddress.replace('0x', ''), 16), quantity, data, expireTime, sequenceId],
+      [prefix, new BN(toAddress.replace('0x', ''), 16), value, data, expireTime, sequenceId],
     );
   }
 

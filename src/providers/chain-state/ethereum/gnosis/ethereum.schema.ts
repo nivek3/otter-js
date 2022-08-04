@@ -1,3 +1,4 @@
+import { Transaction } from '@cryptoless/utxo-lib';
 export const EthereumRefSchema = {
   $id: 'base',
   definitions: {
@@ -24,6 +25,16 @@ export const EthereumRefSchema = {
         pubKey: { type: 'string' },
         hash: { type: 'string' },
         signature: { type: 'string', pattern: '^(0x)?[A-Za-z0-9]{66}$|^(0x)?[A-Za-z0-9]{130}$' },
+      },
+    },
+    transaction: {
+      type: 'object',
+      minProperties: 2,
+      properties: {
+        to: { type: 'string' },
+        data: { type: 'string' },
+        operation: { type: 'integer' },
+        value: { type: 'string' },
       },
     },
   },
@@ -67,10 +78,10 @@ export const BuildERC20TransferTransactionRequestSchema = {
 
 export const BuildMultisigTransferInputRequestSchema = {
   type: 'object',
-  required: ['toAddress', 'quantity', 'contract', 'participants', 'sender'],
+  required: ['toAddress', 'value', 'contract', 'participants'],
   properties: {
     toAddress: { type: 'string' },
-    quantity: { type: 'string' },
+    value: { type: 'string' },
     contract: { type: 'string' },
     contractNonce: { type: 'integer' },
     participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
@@ -80,7 +91,7 @@ export const BuildMultisigTransferInputRequestSchema = {
 
 export const BuildMultisigInputRequestSchema = {
   type: 'object',
-  required: ['to', 'contract', 'participants', 'sender'],
+  required: ['to', 'contract', 'participants'],
   properties: {
     to: { type: 'string' },
     data: { type: 'string' },
@@ -92,7 +103,7 @@ export const BuildMultisigInputRequestSchema = {
   },
 };
 
-export const SignMultisigTransferInputRequestSchema = {
+export const SignMultisigInputRequestSchema = {
   type: 'object',
   required: ['serialized', 'signatures'],
   properties: {
@@ -101,21 +112,20 @@ export const SignMultisigTransferInputRequestSchema = {
   },
 };
 
-export const BuildMultisigTransferTransactionRequestSchema = {
+export const BuildMultisigTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'contract', 'sender'],
+  required: ['network', 'contract', 'data'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     contract: { type: 'string' },
-    input: { type: 'string' },
-    sender: { type: 'string' },
+    data: { type: 'string' },
     params: { $ref: 'base#/definitions/params' },
   },
 };
 
 export const BuildMultisigERC20TransferInputRequestSchema = {
   type: 'object',
-  required: ['network', 'contract', 'tokenAddress', 'toAddress', 'quantity', 'sender'],
+  required: ['network', 'contract', 'tokenAddress', 'toAddress', 'quantity'],
   properties: {
     network: { $ref: 'base#/definitions/network' },
     contract: { type: 'string' },
@@ -127,23 +137,75 @@ export const BuildMultisigERC20TransferInputRequestSchema = {
   },
 };
 
-export const SignMultisigERC20TransferInputRequestSchema = {
+export const BuildMultiSendInputRequestSchema = {
   type: 'object',
-  required: ['serialized', 'signatures'],
+  required: ['network', 'contract', 'txs', 'participants'],
   properties: {
-    serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['pubKey', 'signature'] } },
+    network: { $ref: 'base#/definitions/network' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    value: { type: 'string' },
+    toAddress: { type: 'string' },
+    txs: { type: 'array', items: { $ref: 'base#/definitions/transaction', type: 'object' } },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    sender: { type: 'string' },
   },
 };
 
-export const BuildMultisigTokenTransferTransactionRequestSchema = {
+export const BuildAddOwnerWithThresholdInputRequestSchema = {
   type: 'object',
-  required: ['serialized', 'contract', 'input', 'sender'],
+  required: ['network', 'contract', 'threshold', 'owner'],
   properties: {
-    serialized: { type: 'string' },
+    network: { $ref: 'base#/definitions/network' },
     contract: { type: 'string' },
-    input: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    owner: { type: 'string' },
+    threshold: { type: 'integer' },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     sender: { type: 'string' },
-    params: { type: 'array', items: { $ref: 'base#/definitions/params' } },
+  },
+};
+
+export const BuildChangeThresholdInputRequestSchema = {
+  type: 'object',
+  required: ['network', 'contract', 'threshold'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    threshold: { type: 'integer' },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    sender: { type: 'string' },
+  },
+};
+
+export const BuildRemoveOwnerInputRequestSchema = {
+  type: 'object',
+  required: ['network', 'contract', 'prevOwner', 'owner'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    threshold: { type: 'integer' },
+    prevOwner: { type: 'string' },
+    owner: { type: 'string' },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    sender: { type: 'string' },
+  },
+};
+
+export const BuildSwapOwnerInputRequestSchema = {
+  type: 'object',
+  required: ['network', 'contract', 'prevOwner', 'oldOwner', 'newOwner'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    contract: { type: 'string' },
+    contractNonce: { type: 'integer' },
+    threshold: { type: 'integer' },
+    prevOwner: { type: 'string' },
+    oldOwner: { type: 'string' },
+    newOwner: { type: 'string' },
+    participants: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    sender: { type: 'string' },
   },
 };

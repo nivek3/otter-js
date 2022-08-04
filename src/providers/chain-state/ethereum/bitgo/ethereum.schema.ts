@@ -42,10 +42,10 @@ export const BuildAccountTransactionRequestSchema = {
 
 export const BuildMultisigTransferInputRequestSchema = {
   type: 'object',
-  required: ['toAddress', 'quantity'],
+  required: ['toAddress', 'value'],
   properties: {
     toAddress: { type: 'string' },
-    quantity: { type: 'string' },
+    value: { type: 'string' },
     data: { type: 'string' },
     expireTime: { type: 'integer' },
     sequenceId: { type: 'integer' },
@@ -91,17 +91,5 @@ export const SignMultisigERC20TransferInputRequestSchema = {
   properties: {
     serialized: { type: 'string' },
     signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
-  },
-};
-
-export const BuildMultisigTokenTransferTransactionRequestSchema = {
-  type: 'object',
-  required: ['serialized', 'contract', 'input', 'sender'],
-  properties: {
-    serialized: { type: 'string' },
-    contract: { type: 'string' },
-    input: { type: 'string' },
-    sender: { type: 'string' },
-    params: { type: 'array', items: { $ref: 'base#/definitions/params' } },
   },
 };

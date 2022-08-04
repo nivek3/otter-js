@@ -122,6 +122,18 @@ export const DecodeTransactionRequestSchema = {
   },
 };
 
+export const BuildContractInputRequestSchema = {
+  type: 'object',
+  required: ['abis', 'method', 'args'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    contractAddress: { type: 'string' },
+    abis: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    method: { type: 'string' },
+    args: { type: 'array', items: { type: 'string' } },
+  },
+};
+
 export const BuildContractTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'from', 'contractAddress', 'abis', 'method', 'args'],

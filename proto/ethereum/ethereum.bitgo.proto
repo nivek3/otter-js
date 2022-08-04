@@ -23,7 +23,7 @@ message BuildAccountTransactionReply {
 message BuildMultisigTransferInputRequest {
     Network network   = 1;
     string to_address = 2;
-    string quantity   = 3;
+    string value      = 3;
     string data       = 4;
     int32 expire_time = 5;
     int32 sequence_id = 6;

@@ -72,7 +72,7 @@ describe('Ethereum Bitgo service', () => {
           const response = await BuildMultisigTransferInput({
             prefix: 'ETHER',
             toAddress: '0x370BA1dc25C07d0C77Ba9b83fcc75Fcc2a0aC243',
-            quantity: '100000000000000',
+            value: '100000000000000',
             data: '',
             expireTime: 1625550124,
             sequenceId: 4,

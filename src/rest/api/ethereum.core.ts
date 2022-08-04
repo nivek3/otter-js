@@ -45,12 +45,22 @@ router.post('/buildERC20TransferTransaction', async function (req: Request, res:
   }
 });
 
+router.post('/buildContractInput', async function (req: Request, res: Response, next) {
+  try {
+    const data = await provider.buildContractInput(req.body);
+    return res.json(data);
+  } catch (err) {
+    logger.error('BuildContractInput =>', err);
+    return next(err);
+  }
+});
+
 router.post('/buildContractTransaction', async function (req: Request, res: Response, next) {
   try {
     const data = await provider.buildContractTransaction(req.body);
     return res.json(data);
   } catch (err) {
-    logger.error('buildAccount =>', err);
+    logger.error('BuildContractTransaction =>', err);
     return next(err);
   }
 });

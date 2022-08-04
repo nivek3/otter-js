@@ -51,14 +51,14 @@ message BuildAccountTransactionReply {
 message BuildMultisigTransferInputRequest {
     Network network              = 1;
     string to_address            = 2;
-    string quantity              = 3;
+    string value                 = 3;
     string contract              = 4;
     int32 contract_nonce         = 5;
     string sender                = 6;
     repeated string participants = 7;
 }
 
-message SignMultisigTransferInputRequest {
+message SignMultisigInputRequest {
     string serialized             = 1;
     repeated Signature signatures = 2;
 }
@@ -66,7 +66,7 @@ message SignMultisigTransferInputRequest {
 message BuildMultisigInputRequest {
     Network network              = 1;
     string to                    = 2;
-    string quantity              = 3;
+    string value                 = 3;
     string data                  = 4;
     string contract              = 5;
     int32 contract_nonce         = 6;
@@ -96,11 +96,73 @@ message BuildMultisigERC20TransferInputRequest {
     repeated string participants = 8;
 }
 
-message SignMultisigERC20TransferInputRequest {
-    string serialized             = 2;
-    repeated Signature signatures = 3;
+message SafeCall {
+    string to       = 1;
+    string data     = 2;
+    string value    = 3;
+    int32 operation = 4;
 }
 
+message BuildMultiSendInputRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    repeated SafeCall txs        = 3;
+    string value                 = 4;
+    string contract              = 5;
+    int32 contract_nonce         = 6;
+    string sender                = 7;
+    repeated string participants = 8;
+}
+
+// owner manger
+message BuildAddOwnerWithThresholdInputRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    string contract              = 3;
+    int32 contract_nonce         = 4;
+    string owner                 = 5;
+    int32 threshold              = 6;
+    string value                 = 7;
+    string sender                = 8;
+    repeated string participants = 9;
+}
+
+message BuildChangeThresholdInputRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    string contract              = 3;
+    int32 contract_nonce         = 4;
+    int32 threshold              = 5;
+    string value                 = 6;
+    string sender                = 7;
+    repeated string participants = 8;
+}
+
+message BuildRemoveOwnerInputRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    string contract              = 3;
+    int32 contract_nonce         = 4;
+    string prev_owner            = 5;
+    string owner                 = 6;
+    int32 threshold              = 7;
+    string value                 = 8;
+    string sender                = 9;
+    repeated string participants = 10;
+}
+
+message BuildSwapOwnerInputRequest {
+    Network network              = 1;
+    TransactionParams params     = 2;
+    string contract              = 3;
+    int32 contract_nonce         = 4;
+    string prev_owner            = 5;
+    string old_owner             = 6;
+    string new_owner             = 7;
+    string value                 = 8;
+    string sender                = 9;
+    repeated string participants = 10;
+}
 message DecodeTransactionRequest {
     Network network   = 1;
     string serialized = 2;
@@ -108,14 +170,24 @@ message DecodeTransactionRequest {
 
 service Ethereum {
     rpc GetAccountAddress(GetAccountAddressRequest) returns (GetAccountAddressReply) {}
+    // transcation
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
-
-    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}
-    rpc SignMultisigTransferInput(SignMultisigTransferInputRequest) returns (TransactionReply) {}
     rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (TransactionReply) {}
-    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (TransactionReply) {}
-    rpc SignMultisigERC20TransferInput(SignMultisigERC20TransferInputRequest) returns (TransactionReply) {}
-    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (TransactionReply) {}
-    rpc SignMultisigInput(SignMultisigTransferInputRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
+
+    // input
+    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}
+
+    rpc BuildMultiSendInput(BuildMultiSendInputRequest) returns (TransactionReply) {}
+
+    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigERC20TransferInput(SignMultisigInputRequest) returns (TransactionReply) {}
+    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (TransactionReply) {}
+    rpc SignMultisigInput(SignMultisigInputRequest) returns (TransactionReply) {}
+
+    // owner manger input
+    rpc BuildAddOwnerWithThresholdInput(BuildAddOwnerWithThresholdInputRequest) returns (TransactionReply) {}
+    rpc BuildChangeThresholdInput(BuildChangeThresholdInputRequest) returns (TransactionReply) {}
+    rpc BuildRemoveOwnerInput(BuildRemoveOwnerInputRequest) returns (TransactionReply) {}
+    rpc BuildSwapOwnerInput(BuildSwapOwnerInputRequest) returns (TransactionReply) {}
 }

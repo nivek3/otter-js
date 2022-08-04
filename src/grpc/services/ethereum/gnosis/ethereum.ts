@@ -11,13 +11,18 @@ import {
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
   BuildMultisigTransferInputRequest,
-  SignMultisigTransferInputRequest,
+  SignMultisigInputRequest,
   BuildMultisigTransactionRequest,
   BuildMultisigERC20TransferInputRequest,
-  SignMultisigERC20TransferInputRequest,
   GetAccountAddressRequest,
   GetAccountAddressReply,
   BuildMultisigInputRequest,
+  BuildMultiSendInputRequest,
+  // owner manger
+  BuildAddOwnerWithThresholdInputRequest,
+  BuildChangeThresholdInputRequest,
+  BuildRemoveOwnerInputRequest,
+  BuildSwapOwnerInputRequest,
 } from '@src/__proto__/ethereum/gnosis/types';
 
 const filename = path.join(__dirname, '../../../../../proto/ethereum/ethereum.gnosis.proto');
@@ -47,19 +52,14 @@ export const EthereumGnosisImp: ProxyImp<EthereumHandlers> = {
     ctx.body = await provider.buildMultisigInput(req);
   },
 
-  SignMultisigInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, TransactionReply>) {
+  SignMultisigInput: async function (ctx: ImplContext<SignMultisigInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.signMultisigTransferInput(req);
+    ctx.body = provider.signMultisigInput(req);
   },
 
   BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultisigTransferInput(req);
-  },
-
-  SignMultisigTransferInput: async function (ctx: ImplContext<SignMultisigTransferInputRequest, TransactionReply>) {
-    const req = ctx.call.request;
-    ctx.body = provider.signMultisigTransferInput(req);
   },
 
   BuildMultisigTransaction: async function (ctx: ImplContext<BuildMultisigTransactionRequest, TransactionReply>) {
@@ -72,8 +72,29 @@ export const EthereumGnosisImp: ProxyImp<EthereumHandlers> = {
     ctx.body = await provider.buildMultisigERC20TransferInput(req);
   },
 
-  SignMultisigERC20TransferInput: async function (ctx: ImplContext<SignMultisigERC20TransferInputRequest, TransactionReply>) {
+  BuildMultiSendInput: async function (ctx: ImplContext<BuildMultiSendInputRequest, TransactionReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.signMultisigERC20TransferInput(req);
+    ctx.body = await provider.buildMultiSendInput(req);
+  },
+
+  // owner manager
+  BuildAddOwnerWithThresholdInput: async function (ctx: ImplContext<BuildAddOwnerWithThresholdInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildAddOwnerWithThresholdInput(req);
+  },
+
+  BuildChangeThresholdInput: async function (ctx: ImplContext<BuildChangeThresholdInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildChangeThresholdInput(req);
+  },
+
+  BuildRemoveOwnerInput: async function (ctx: ImplContext<BuildRemoveOwnerInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildRemoveOwnerInput(req);
+  },
+
+  BuildSwapOwnerInput: async function (ctx: ImplContext<BuildSwapOwnerInputRequest, TransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildSwapOwnerInput(req);
   },
 };

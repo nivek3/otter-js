@@ -2,11 +2,11 @@ import { pick } from 'lodash';
 import Web3 from 'web3';
 import { toBN, toHex } from 'web3-utils';
 import type { TransactionConfig } from 'web3-core';
-import { TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, TypedTransaction } from '@ethereumjs/tx';
+import { TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, TypedTransaction, TxOptions } from '@ethereumjs/tx';
 import Common from '@ethereumjs/common';
-import { BN, bnToHex, stripHexPrefix } from 'ethereumjs-util';
+import { BN, bnToHex } from 'ethereumjs-util';
+import { utils } from 'ethers';
 import { errors, AppError } from '@src/error';
-
 import { Network, TransactionParams } from '@src/__proto__/ethereum/common/types';
 import { isBip1559Transaction } from './utils';
 
@@ -37,8 +37,14 @@ export abstract class BaseProvider {
     return common;
   }
 
-  async getReqNonce(address: string, web3: Web3, nonce?: number) {
+  getTxOptions(network: Network): TxOptions {
+    const common = this.getTxCommon(network);
+    return { common };
+  }
+
+  async getReqNonce(address?: string, web3?: Web3, nonce?: number | string) {
     if (nonce === undefined) {
+      if (!web3 || !address) throw new AppError(errors.INVALID_ARGUMENT);
       nonce = await web3.eth.getTransactionCount(address, 'pending');
     }
     return toBN(nonce).toNumber();
@@ -109,11 +115,11 @@ export abstract class BaseProvider {
     return new Web3(provider!);
   }
 
-  async getTxData(tx: FactoryTxData, _common: Common, params: TransactionParams, web3: Web3, from: string): Promise<FactoryTxData> {
+  async getTxData(tx: FactoryTxData, _common: Common, web3: Web3, from?: string, params?: TransactionParams): Promise<FactoryTxData> {
     tx.data = tx.data || '0x';
     tx.value = bnToHex(toBN(tx.value?.toString() || '0x00'));
     const { to, value, data } = tx;
-    const nonce = await this.getReqNonce(from, web3, params?.nonce);
+    const nonce = await this.getReqNonce(from, web3, params?.nonce || tx?.nonce?.toString());
     const gasPrice = await this.getReqGasPrice(web3, params?.gasPrice);
     const gasLimit = await this.getReqGasLimit(
       web3,
@@ -164,14 +170,22 @@ export abstract class BaseProvider {
     return cost.sub(tx.value).toString();
   }
 
-  getERC20TransferInput(toAddress: string, quantity: string) {
-    const raw = '0000000000000000000000000000000000000000000000000000000000000000';
-    const amount = stripHexPrefix(toHex(toBN(quantity)));
-    return (
-      '0xa9059cbb000000000000000000000000' + // token transfer method
-      stripHexPrefix(toAddress) + // to address
-      raw.substring(0, raw.length - amount.length) + // placeholder
-      amount
-    );
+  encodeERC20Method(method: string, values: any[]) {
+    const iface = new utils.Interface([
+      'function name() view returns (string)',
+      'function approve(address _spender, uint256 _value) returns (bool)',
+      'function totalSupply() view returns (uint256)',
+      'function transferFrom(address _from, address _to, uint256 _value) returns (bool)',
+      'function decimals() view returns (uint8)',
+      'function transferAndCall(address _to, uint256 _value, bytes _data) returns (bool success)',
+      'function decreaseApproval(address _spender, uint256 _subtractedValue) returns (bool success)',
+      'function balanceOf(address _owner) view returns (uint256 balance)',
+      'function symbol() view returns (string)',
+      'function transfer(address _to, uint256 _value) returns (bool success)',
+      'function increaseApproval(address _spender, uint256 _addedValue) returns (bool success)',
+      'function allowance(address _owner, address _spender) view returns (uint256 remaining)',
+    ]);
+
+    return iface.encodeFunctionData(method, values);
   }
 }

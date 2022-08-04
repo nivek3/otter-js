@@ -81,6 +81,14 @@ message BuildContractTransactionRequest {
     string value             = 8;
 }
 
+message BuildContractInputRequest {
+    Network network         = 1;
+    string contract_address = 2;
+    repeated string abis    = 3;
+    string method           = 4;
+    repeated string args    = 5;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
 
@@ -95,5 +103,6 @@ service Ethereum {
     rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
 
+    rpc BuildContractInput(BuildContractInputRequest) returns (TransactionReply) {}
     rpc BuildContractTransaction(BuildContractTransactionRequest) returns (TransactionReply) {}
 }
