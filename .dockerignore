@@ -21,6 +21,7 @@ dist
 src/vendor
 src/dist
 build/
-
+logs/
+.git
 Dockerfile
 lib
