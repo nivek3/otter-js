@@ -33,6 +33,16 @@ router.post('/buildMultisigTransferInput', async function (req: Request, res: Re
   }
 });
 
+router.post('/buildMultisigInput', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.buildMultisigInput(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.error('BuildMultisigInput =>', err);
+    return next(err);
+  }
+});
+
 router.post('/signMultisigInput', async function (req: Request, res: Response, next) {
   try {
     const result = provider.signMultisigInput(req.body);

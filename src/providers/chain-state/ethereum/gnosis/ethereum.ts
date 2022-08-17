@@ -2,7 +2,7 @@ import Web3 from 'web3';
 import { utils, BigNumber } from 'ethers';
 import { toBN } from 'web3-utils';
 import { _TypedDataEncoder } from '@ethersproject/hash';
-import { splitSignature, joinSignature } from '@ethersproject/bytes';
+import { splitSignature, joinSignature, isHexString, hexValue } from '@ethersproject/bytes';
 import { TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx';
 
 import { stripHexPrefix, addHexPrefix } from 'ethereumjs-util';
@@ -164,7 +164,7 @@ export class Provider extends CoreProvider {
       to: contract,
       nonce,
       data,
-      value,
+      value: isHexString(value) ? hexValue(value) : value,
     });
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
@@ -181,7 +181,7 @@ export class Provider extends CoreProvider {
       to: contract,
       nonce,
       data,
-      value,
+      value: isHexString(value) ? hexValue(value) : value,
     });
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
@@ -195,7 +195,7 @@ export class Provider extends CoreProvider {
     const multiSigContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const safeTx = buildSafeTransaction({
       to,
-      value,
+      value: isHexString(value) ? hexValue(value) : value,
       nonce: multiSigContractNonce,
       data,
     });
@@ -211,7 +211,7 @@ export class Provider extends CoreProvider {
     const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const safeTx = buildSafeTransaction({
       to: toAddress,
-      value,
+      value: isHexString(value) ? hexValue(value) : value,
       nonce: safeContractNonce,
     });
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
@@ -239,7 +239,7 @@ export class Provider extends CoreProvider {
     const txInput: FactoryTxData = {
       to: contract,
       data,
-      value,
+      value: isHexString(value) ? hexValue(value) : value,
     };
     return this.getTransactionReply(txInput, txOptions, web3, sender, params!);
   }
@@ -273,7 +273,7 @@ export class Provider extends CoreProvider {
     const transactions = txs.map((tx) => {
       return buildSafeTransaction({
         to: tx.to!,
-        value: tx.value ? BigNumber.from(tx.value).toString() : '0',
+        value: isHexString(value) ? hexValue(value) : value,
         data: tx.data ? addHexPrefix(tx.data) : '',
         nonce: 0,
         operation: 0,
