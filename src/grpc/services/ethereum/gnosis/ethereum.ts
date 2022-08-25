@@ -18,6 +18,7 @@ import {
   GetAccountAddressReply,
   BuildMultisigInputRequest,
   BuildMultiSendInputRequest,
+  BuildSafeInputReply,
   // owner manger
   BuildAddOwnerWithThresholdInputRequest,
   BuildChangeThresholdInputRequest,
@@ -47,53 +48,53 @@ export const EthereumGnosisImp: ProxyImp<EthereumHandlers> = {
     ctx.body = await provider.buildAccountTransaction(req);
   },
 
-  BuildMultisigInput: async function (ctx: ImplContext<BuildMultisigInputRequest, TransactionReply>) {
+  BuildMultisigInput: async function (ctx: ImplContext<BuildMultisigInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultisigInput(req);
   },
 
-  SignMultisigInput: async function (ctx: ImplContext<SignMultisigInputRequest, TransactionReply>) {
+  SignMultisigInput: async function (ctx: ImplContext<SignMultisigInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = provider.signMultisigInput(req);
   },
 
-  BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, TransactionReply>) {
+  BuildMultisigTransferInput: async function (ctx: ImplContext<BuildMultisigTransferInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultisigTransferInput(req);
   },
 
-  BuildMultisigTransaction: async function (ctx: ImplContext<BuildMultisigTransactionRequest, TransactionReply>) {
+  BuildMultisigTransaction: async function (ctx: ImplContext<BuildMultisigTransactionRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultisigTransaction(req);
   },
 
-  BuildMultisigERC20TransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, TransactionReply>) {
+  BuildMultisigERC20TransferInput: async function (ctx: ImplContext<BuildMultisigERC20TransferInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultisigERC20TransferInput(req);
   },
 
-  BuildMultiSendInput: async function (ctx: ImplContext<BuildMultiSendInputRequest, TransactionReply>) {
+  BuildMultiSendInput: async function (ctx: ImplContext<BuildMultiSendInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultiSendInput(req);
   },
 
   // owner manager
-  BuildAddOwnerWithThresholdInput: async function (ctx: ImplContext<BuildAddOwnerWithThresholdInputRequest, TransactionReply>) {
+  BuildAddOwnerWithThresholdInput: async function (ctx: ImplContext<BuildAddOwnerWithThresholdInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildAddOwnerWithThresholdInput(req);
   },
 
-  BuildChangeThresholdInput: async function (ctx: ImplContext<BuildChangeThresholdInputRequest, TransactionReply>) {
+  BuildChangeThresholdInput: async function (ctx: ImplContext<BuildChangeThresholdInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildChangeThresholdInput(req);
   },
 
-  BuildRemoveOwnerInput: async function (ctx: ImplContext<BuildRemoveOwnerInputRequest, TransactionReply>) {
+  BuildRemoveOwnerInput: async function (ctx: ImplContext<BuildRemoveOwnerInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildRemoveOwnerInput(req);
   },
 
-  BuildSwapOwnerInput: async function (ctx: ImplContext<BuildSwapOwnerInputRequest, TransactionReply>) {
+  BuildSwapOwnerInput: async function (ctx: ImplContext<BuildSwapOwnerInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildSwapOwnerInput(req);
   },

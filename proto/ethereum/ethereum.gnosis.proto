@@ -32,6 +32,12 @@ message GetAccountAddressReply {
     int64 salt_nonce = 2;
 }
 
+message BuildSafeInputReply {
+    string serialized             = 1;
+    repeated Signature signatures = 2;
+    int32 nonce                   = 3;
+}
+
 message BuildAccountTransactionRequest {
     Network network          = 1;
     repeated string keys     = 2;
@@ -170,24 +176,24 @@ message DecodeTransactionRequest {
 
 service Ethereum {
     rpc GetAccountAddress(GetAccountAddressRequest) returns (GetAccountAddressReply) {}
+
     // transcation
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
     rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
 
     // input
-    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (TransactionReply) {}
+    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildMultiSendInput(BuildMultiSendInputRequest) returns (BuildSafeInputReply) {}
 
-    rpc BuildMultiSendInput(BuildMultiSendInputRequest) returns (TransactionReply) {}
-
-    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (TransactionReply) {}
-    rpc SignMultisigERC20TransferInput(SignMultisigInputRequest) returns (TransactionReply) {}
-    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (TransactionReply) {}
-    rpc SignMultisigInput(SignMultisigInputRequest) returns (TransactionReply) {}
+    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (BuildSafeInputReply) {}
+    rpc SignMultisigERC20TransferInput(SignMultisigInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (BuildSafeInputReply) {}
+    rpc SignMultisigInput(SignMultisigInputRequest) returns (BuildSafeInputReply) {}
 
     // owner manger input
-    rpc BuildAddOwnerWithThresholdInput(BuildAddOwnerWithThresholdInputRequest) returns (TransactionReply) {}
-    rpc BuildChangeThresholdInput(BuildChangeThresholdInputRequest) returns (TransactionReply) {}
-    rpc BuildRemoveOwnerInput(BuildRemoveOwnerInputRequest) returns (TransactionReply) {}
-    rpc BuildSwapOwnerInput(BuildSwapOwnerInputRequest) returns (TransactionReply) {}
+    rpc BuildAddOwnerWithThresholdInput(BuildAddOwnerWithThresholdInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildChangeThresholdInput(BuildChangeThresholdInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildRemoveOwnerInput(BuildRemoveOwnerInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildSwapOwnerInput(BuildSwapOwnerInputRequest) returns (BuildSafeInputReply) {}
 }

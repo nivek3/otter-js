@@ -1,4 +1,3 @@
-import { Transaction } from '@cryptoless/utxo-lib';
 export const EthereumRefSchema = {
   $id: 'base',
   definitions: {
