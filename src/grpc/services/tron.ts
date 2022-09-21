@@ -2,7 +2,7 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '@src/providers/chain-state/tron/tron';
-import { ImplContext, ProxyImp } from '@src/utils/context';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 
 import { ProtoGrpcType } from '@src/__proto__/tron';
 import { TransactionReply } from '@src/__proto__/polkadot/TransactionReply';
@@ -31,44 +31,44 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 
 export const TronService = protoDescriptor.tron.Tron.service;
 
-export const TronImp: ProxyImp<TronHandlers> = {
-  DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+export const TronImplementation: ProxyUntypedServiceImplementation<TronHandlers> = {
+  DeployAccount: function (ctx: ImplementationContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
   },
 
-  BuildTransferTransaction: async function (ctx: ImplContext<BuildTransferTransactionRequest, TransactionReply>) {
+  BuildTransferTransaction: async function (ctx: ImplementationContext<BuildTransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransferTransaction(req);
   },
 
-  BuildTRC10TransferTransaction: async function (ctx: ImplContext<BuildTRC10TransferTransactionRequest, TransactionReply>) {
+  BuildTRC10TransferTransaction: async function (ctx: ImplementationContext<BuildTRC10TransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTRC10TransferTransaction(req);
   },
 
-  BuildTRC20TransferTransaction: async function (ctx: ImplContext<BuildTRC20TransferTransactionRequest, TransactionReply>) {
+  BuildTRC20TransferTransaction: async function (ctx: ImplementationContext<BuildTRC20TransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTRC20TransferTransaction(req);
   },
 
-  SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
+  SignTransaction: async function (ctx: ImplementationContext<SignTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.signTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>) {
+  SendTransaction: async function (ctx: ImplementationContext<SendTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
   },
 
-  DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>) {
+  DecodeTransaction: async function (ctx: ImplementationContext<DecodeTransactionRequest, TransactionParams>) {
     const req = ctx.call.request;
     ctx.body = await provider.decodeTransaction(req);
   },
 
-  RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
+  RebuildTransaction: async function (ctx: ImplementationContext<RebuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.rebuildTransaction(req);
   },

@@ -3,7 +3,7 @@ import Web3 from 'web3';
 import { toBN, toHex } from 'web3-utils';
 import { utils, BigNumber } from 'ethers';
 import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, Capability, TxOptions } from '@ethereumjs/tx';
-import { BN, stripHexPrefix, addHexPrefix, padToEven } from 'ethereumjs-util';
+import { BN, stripHexPrefix, addHexPrefix, padToEven, toBuffer } from 'ethereumjs-util';
 
 import { canonicalSignature } from '@src/utils/signature';
 import { Validator } from '@src/utils/ajv';
@@ -23,6 +23,8 @@ import {
   DecodeTransactionRequest,
   BuildContractInputRequest,
   BuildContractTransactionRequest,
+  DecodeRawTransactionRequest,
+  DecodeRawTransactionReply,
 } from '@src/__proto__/ethereum/core/types';
 import { pubToBIP55Address, compactPublicKey } from '../common/utils';
 import { BaseProvider } from '../common/base';
@@ -92,8 +94,8 @@ export class Provider extends BaseProvider {
 
     const common = this.getTxCommon(network!);
     const txOptions = { common };
-    const txBuf = Buffer.from(stripHexPrefix(serialized), 'hex');
-    const tx = TransactionFactory.fromSerializedData(txBuf, txOptions);
+    const txBuffer = toBuffer(addHexPrefix(serialized));
+    const tx = TransactionFactory.fromSerializedData(txBuffer, txOptions);
     const type = tx.type;
     const sign = stripHexPrefix(signatures[0].signature!);
     const { r, s, v } = canonicalSignature(sign!);
@@ -258,7 +260,7 @@ export class Provider extends BaseProvider {
 
     const { serialized, network } = req as Required<DecodeTransactionRequest>;
     const txOptions = this.getTxOptions(network!);
-    const data = Buffer.from(stripHexPrefix(serialized), 'hex');
+    const data = toBuffer(addHexPrefix(serialized));
     const tx = TransactionFactory.fromSerializedData(data, txOptions);
     const params: TransactionParams = {
       type: addHexPrefix(padToEven(new BN(tx.type || 0).toString('hex'))),
@@ -272,6 +274,41 @@ export class Provider extends BaseProvider {
       }
     });
     return params;
+  }
+
+  async decodeRawTransaction(req: DecodeRawTransactionRequest): Promise<DecodeRawTransactionReply> {
+    validator.assert(DecodeTransactionRequestSchema, req);
+
+    const { serialized } = req as Required<DecodeRawTransactionRequest>;
+    const tx = utils.parseTransaction(toBuffer(addHexPrefix(serialized)));
+    const decoded: DecodeRawTransactionReply = {
+      nonce: BigNumber.from(tx.nonce).toHexString(),
+      to: tx.to?.toString(),
+      data: tx.data?.toString(),
+      value: tx.value?.toHexString(),
+      gasPrice: tx.gasPrice?.toHexString(),
+      gasLimit: tx.gasLimit?.toHexString(),
+      maxFeePerGas: tx.maxFeePerGas?.toHexString(),
+      maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toHexString(),
+      r: tx.r,
+      s: tx.s,
+      accessList: tx.accessList,
+      from: tx.from,
+    };
+    if (!isNil(tx.v)) decoded.v = BigNumber.from(tx.v).toHexString();
+    if (!isNil(tx.type)) decoded.type = BigNumber.from(tx.type).toHexString();
+    if (!isNil(tx.chainId)) decoded.chainId = BigNumber.from(tx.chainId).toHexString();
+    return decoded;
+  }
+
+  async _decodeRawTransaction(req: DecodeRawTransactionRequest): Promise<DecodeRawTransactionReply> {
+    validator.assert(DecodeTransactionRequestSchema, req);
+
+    const { serialized } = req as Required<DecodeRawTransactionRequest>;
+    const tx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serialized)));
+    const jsonTx = tx.toJSON();
+    jsonTx.type = tx.type.toString();
+    return jsonTx;
   }
 
   async getTransactionReply(

@@ -2,7 +2,7 @@ import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '@src/providers/chain-state/solana/solana';
-import { ImplContext, ProxyImp } from '@src/utils/context';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 
 import { ProtoGrpcType } from '@src/__proto__/solana';
 import { TransactionReply } from '@src/__proto__/common/types';
@@ -30,39 +30,39 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 
 export const SolanaService = protoDescriptor.solana.Solana.service;
 
-export const SolanaImp: ProxyImp<SolanaHandlers> = {
-  DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+export const SolanaImplementation: ProxyUntypedServiceImplementation<SolanaHandlers> = {
+  DeployAccount: function (ctx: ImplementationContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
   },
 
-  BuildTransferTransaction: async function (ctx: ImplContext<BuildTransferTransactionRequest, TransactionReply>) {
+  BuildTransferTransaction: async function (ctx: ImplementationContext<BuildTransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransferTransaction(req);
   },
 
-  BuildTokenTransferTransaction: async function (ctx: ImplContext<BuildTokenTransferTransactionRequest, TransactionReply>) {
+  BuildTokenTransferTransaction: async function (ctx: ImplementationContext<BuildTokenTransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTokenTransferTransaction(req);
   },
 
-  SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
+  SignTransaction: async function (ctx: ImplementationContext<SignTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.signTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>) {
+  SendTransaction: async function (ctx: ImplementationContext<SendTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
   },
 
-  DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>) {
+  DecodeTransaction: async function (ctx: ImplementationContext<DecodeTransactionRequest, TransactionParams>) {
     const req = ctx.call.request;
     ctx.body = provider.decodeTransaction(req);
   },
 
-  RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
+  RebuildTransaction: async function (ctx: ImplementationContext<RebuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.rebuildTransaction(req);
   },

@@ -2,32 +2,32 @@ import 'dotenv/config';
 import * as grpc from '@grpc/grpc-js';
 import { LoggifyClass } from '@src/decorators/Loggify';
 import { Middleware } from 'koa-compose';
-import { ImplContext, ProxyImp } from '@src/utils/context';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 import { loggerInterceptor } from '@src/grpc/interceptors/logger';
 import { GracefulService } from '@src/internal/exit';
 import { GrpcInterceptorProxy } from '@src/grpc/internals/grpcInterceptor';
 import {
   AvalancheAVAXService,
-  AvalancheAVAXImp,
+  AvalancheAVAXImplementation,
   EthereumBitgoService,
-  EthereumBitgoImp,
+  EthereumBitgoImplementation,
   EthereumCoreService,
-  EthereumCoreImp,
+  EthereumCoreImplementation,
   EthereumGnosisService,
-  EthereumGnosisImp,
+  EthereumGnosisImplementation,
   HealthService,
-  HealthImp,
+  HealthImplementation,
   PolkadotService,
-  PolkadotImp,
+  PolkadotImplementation,
   BitcoinService,
-  BitcoinImp,
-  CosmosImp,
+  BitcoinImplementation,
+  CosmosImplementation,
   CosmosService,
-  RippleImp,
+  RippleImplementation,
   RippleService,
-  TronImp,
+  TronImplementation,
   TronService,
-  SolanaImp,
+  SolanaImplementation,
   SolanaService,
 } from '@src/grpc/services';
 
@@ -52,22 +52,22 @@ export class GRPCServer extends GrpcInterceptorProxy implements GracefulService 
     this.server = this.proxy(server);
   }
 
-  success(ctx: ImplContext<any, any>, callback: grpc.sendUnaryData<any>) {
+  success(ctx: ImplementationContext<any, any>, callback: grpc.sendUnaryData<any>) {
     callback(null, ctx.body, ctx.call.metadata);
   }
 
-  fail(err: grpc.StatusObject, callback: grpc.sendUnaryData<any>, ctx?: ImplContext<any, any>) {
+  fail(err: grpc.StatusObject, callback: grpc.sendUnaryData<any>, ctx?: ImplementationContext<any, any>) {
     callback(err, err.details, err.metadata || ctx?.call.metadata);
   }
 
   addService(
     service: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>,
-    implementation: ProxyImp<grpc.UntypedServiceImplementation>,
+    implementation: ProxyUntypedServiceImplementation<grpc.UntypedServiceImplementation>,
   ) {
     this.server.addService(service, implementation as any);
   }
 
-  use(interceptor: Middleware<ImplContext<unknown, unknown>>) {
+  use(interceptor: Middleware<ImplementationContext<unknown, unknown>>) {
     this.interceptors.push(interceptor);
   }
 
@@ -98,17 +98,17 @@ const GRPC_PORT = process.env.GRPC_PORT || '50051';
 export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 
 // services
-grpcServer.addService(AvalancheAVAXService, AvalancheAVAXImp);
-grpcServer.addService(BitcoinService, BitcoinImp);
-grpcServer.addService(CosmosService, CosmosImp);
-grpcServer.addService(EthereumBitgoService, EthereumBitgoImp);
-grpcServer.addService(EthereumCoreService, EthereumCoreImp);
-grpcServer.addService(EthereumGnosisService, EthereumGnosisImp);
-grpcServer.addService(HealthService, HealthImp);
-grpcServer.addService(PolkadotService, PolkadotImp);
-grpcServer.addService(RippleService, RippleImp);
-grpcServer.addService(TronService, TronImp);
-grpcServer.addService(SolanaService, SolanaImp);
+grpcServer.addService(AvalancheAVAXService, AvalancheAVAXImplementation);
+grpcServer.addService(BitcoinService, BitcoinImplementation);
+grpcServer.addService(CosmosService, CosmosImplementation);
+grpcServer.addService(EthereumBitgoService, EthereumBitgoImplementation);
+grpcServer.addService(EthereumCoreService, EthereumCoreImplementation);
+grpcServer.addService(EthereumGnosisService, EthereumGnosisImplementation);
+grpcServer.addService(HealthService, HealthImplementation);
+grpcServer.addService(PolkadotService, PolkadotImplementation);
+grpcServer.addService(RippleService, RippleImplementation);
+grpcServer.addService(TronService, TronImplementation);
+grpcServer.addService(SolanaService, SolanaImplementation);
 
 // interceptors
 grpcServer.use(loggerInterceptor);

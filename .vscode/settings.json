@@ -1,3 +1,18 @@
 {
-  "cSpell.words": ["AVAX", "cosmjs", "ethersproject", "Multisigned", "Numberish", "pubkeys", "Redelegate", "Stargate", "Undelegate"]
+  "cSpell.words": [
+    "AVAX",
+    "cosmjs",
+    "ethersproject",
+    "locktime",
+    "Multisigned",
+    "Numberish",
+    "pubkeys",
+    "Redelegate",
+    "Segwit",
+    "Stargate",
+    "txid",
+    "Undelegate",
+    "vout",
+    "vsize"
+  ]
 }

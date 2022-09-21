@@ -82,6 +82,44 @@ message SendTransactionRequest {
     Network network   = 2;
 }
 
+message ScriptPubKey {
+    string asm     = 1;
+    string hex     = 2;
+    string address = 3;
+    string type    = 4;
+}
+
+message TransactionVin {
+    string txid             = 1;
+    int32 vout              = 2;
+    string type             = 3;
+    repeated string witness = 4;
+    string sequence         = 5;
+    ScriptPubKey script_sig = 6;
+}
+
+message TransactionVout {
+    string value                = 1;
+    ScriptPubKey script_pub_key = 3;
+}
+
+message DecodeRawTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message DecodeRawTransactionReply {
+    string txid                   = 1;
+    string hash                   = 2;
+    int32 version                 = 3;
+    int32 size                    = 4;
+    int32 vsize                   = 5;
+    int32 weight                  = 6;
+    int32 locktime                = 7;
+    repeated TransactionVin vin   = 8;
+    repeated TransactionVout vout = 9;
+}
+
 service Bitcoin {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
     rpc DeploySegwitAccount(DeployAccountRequest) returns (DeployAccountReply) {}
@@ -91,4 +129,5 @@ service Bitcoin {
     rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc SignTransaction(SignTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
+    rpc DecodeRawTransaction(DecodeRawTransactionRequest) returns (DecodeRawTransactionReply) {}
 }

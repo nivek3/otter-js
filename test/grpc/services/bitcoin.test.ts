@@ -733,6 +733,49 @@ describe('Bitcoin service', () => {
           expect(hash).toEqual('303cd630dda84b89f933e378c590d9d6ffbcd36ccde9a2abaa63130d426b2eba');
         });
       });
+
+      describe('DecodeRawTransaction', () => {
+        test('mainnet', async () => {
+          const req = {
+            network: {
+              pubKeyHash: '0x00',
+              scriptHash: '0x05',
+              coin: 'btc',
+            },
+            serialized:
+              '020000000112d211b907a50e44665ca8c68024ba7483749bccdaff7195207e536fe3678844170000006b483045022100cc85fa69314666d739aef9598bd5e2efb8b81f0ee8e34b8ff0708563d0c13d48022019656ca1053a6b2659bbb0680eaa854cc77807285826a6dd2a82825189b1e48b012102ca1e3ea0c6d1af43842309efb297446380fb55c8ba4868f043d2e32dd758efbdffffffff016a7103000000000017a914fc178a85f2824eb8a4f86550c90d03099ae354cf8700000000',
+          };
+
+          const Method = promisify(client.DecodeRawTransaction.bind(client));
+
+          const decoded = await Method(req);
+
+          expect(decoded).toEqual(
+            expect.objectContaining({
+              txid: 'bc2dcfc7f9fa625bc9706faf3c8bce60a5cc9e5ff40cb075e5e1647ad061a95e',
+              hash: 'bc2dcfc7f9fa625bc9706faf3c8bce60a5cc9e5ff40cb075e5e1647ad061a95e',
+              version: 2,
+              size: 190,
+              vsize: 190,
+              weight: 760,
+              locktime: 0,
+            }),
+          );
+          expect(decoded.vin).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                txid: '448867e36f537e209571ffdacc9b748374ba2480c6a85c66440ea507b911d212',
+                vout: 23,
+                scriptSig: {
+                  asm: '3045022100cc85fa69314666d739aef9598bd5e2efb8b81f0ee8e34b8ff0708563d0c13d48022019656ca1053a6b2659bbb0680eaa854cc77807285826a6dd2a82825189b1e48b01 02ca1e3ea0c6d1af43842309efb297446380fb55c8ba4868f043d2e32dd758efbd',
+                  hex: '483045022100cc85fa69314666d739aef9598bd5e2efb8b81f0ee8e34b8ff0708563d0c13d48022019656ca1053a6b2659bbb0680eaa854cc77807285826a6dd2a82825189b1e48b012102ca1e3ea0c6d1af43842309efb297446380fb55c8ba4868f043d2e32dd758efbd',
+                },
+                sequence: '4294967295',
+              }),
+            ]),
+          );
+        });
+      });
     });
   });
 });

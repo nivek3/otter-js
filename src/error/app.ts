@@ -1,5 +1,5 @@
 import { StatusObject, status as Status, Metadata } from '@grpc/grpc-js';
-import type { ImplContext } from '@src/utils/context';
+import type { ImplementationContext } from '@src/utils/context';
 
 export interface ErrorOptions {
   code: Status;
@@ -28,7 +28,7 @@ export class AppError extends Error {
     this.details = options.details;
   }
 
-  display(ctx?: ImplContext<unknown, unknown>): Omit<ErrorObject, 'ctx'> {
+  display(ctx?: ImplementationContext<unknown, unknown>): Omit<ErrorObject, 'ctx'> {
     const metadata = ctx?.call.metadata;
     return {
       code: this.code,

@@ -1,8 +1,9 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
+
 import * as protoLoader from '@grpc/proto-loader';
 import { provider } from '@src/providers/chain-state/ethereum/core/ethereum';
-import { ImplContext, ProxyImp } from '@src/utils/context';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 
 import { ProtoGrpcType } from '@src/__proto__/ethereum.core';
 import { TransactionReply } from '@src/__proto__/common/types';
@@ -21,6 +22,8 @@ import {
   DecodeTransactionRequest,
   BuildContractInputRequest,
   BuildContractTransactionRequest,
+  DecodeRawTransactionRequest,
+  DecodeRawTransactionReply,
 } from '@src/__proto__/ethereum/core/types';
 
 const filename = path.join(__dirname, '../../../../../proto/ethereum/ethereum.core.proto');
@@ -34,60 +37,65 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 
 export const EthereumCoreService = protoDescriptor.ethereum.core.Ethereum.service;
 
-export const EthereumCoreImp: ProxyImp<EthereumHandlers> = {
-  DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+export const EthereumCoreImplementation: ProxyUntypedServiceImplementation<EthereumHandlers> = {
+  DeployAccount: function (ctx: ImplementationContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
   },
 
-  BuildTransferTransaction: async function (ctx: ImplContext<BuildTransferTransactionRequest, TransactionReply>) {
+  BuildTransferTransaction: async function (ctx: ImplementationContext<BuildTransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransferTransaction(req);
   },
 
-  BuildERC20TransferTransaction: async function (ctx: ImplContext<BuildERC20TransferTransactionRequest, TransactionReply>) {
+  BuildERC20TransferTransaction: async function (ctx: ImplementationContext<BuildERC20TransferTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildERC20TransferTransaction(req);
   },
 
-  BuildContractInput: async function (ctx: ImplContext<BuildContractInputRequest, TransactionReply>) {
+  BuildContractInput: async function (ctx: ImplementationContext<BuildContractInputRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildContractInput(req);
   },
 
-  BuildContractTransaction: async function (ctx: ImplContext<BuildContractTransactionRequest, TransactionReply>) {
+  BuildContractTransaction: async function (ctx: ImplementationContext<BuildContractTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildContractTransaction(req);
   },
 
-  SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>) {
+  SignTransaction: async function (ctx: ImplementationContext<SignTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.signTransaction(req);
   },
 
-  BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>) {
+  BuildTransaction: async function (ctx: ImplementationContext<BuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransaction(req);
   },
 
-  RebuildTransaction: async function (ctx: ImplContext<RebuildTransactionRequest, TransactionReply>) {
+  RebuildTransaction: async function (ctx: ImplementationContext<RebuildTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.rebuildTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>) {
+  SendTransaction: async function (ctx: ImplementationContext<SendTransactionRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
   },
 
-  HashForSignature: async function (ctx: ImplContext<HashForSignatureRequest, TransactionReply>) {
+  HashForSignature: async function (ctx: ImplementationContext<HashForSignatureRequest, TransactionReply>) {
     const req = ctx.call.request;
     ctx.body = provider.hashForSignature(req);
   },
 
-  DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>) {
+  DecodeTransaction: async function (ctx: ImplementationContext<DecodeTransactionRequest, TransactionParams>) {
     const req = ctx.call.request;
     ctx.body = provider.decodeTransaction(req);
+  },
+
+  DecodeRawTransaction: async function (ctx: ImplementationContext<DecodeRawTransactionRequest, DecodeRawTransactionReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.decodeRawTransaction(req);
   },
 };

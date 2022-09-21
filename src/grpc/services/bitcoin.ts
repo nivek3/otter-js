@@ -3,7 +3,7 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
 import { provider } from '@src/providers/chain-state/bitcoin/bitcoin';
-import { ImplContext, ProxyImp } from '@src/utils/context';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 import { AppError, errors } from '@src/error';
 
 import { ProtoGrpcType } from '@src/__proto__/bitcoin';
@@ -31,20 +31,20 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 
 export const BitcoinService = protoDescriptor.bitcoin.Bitcoin.service;
 
-export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
-  DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+export const BitcoinImplementation: ProxyUntypedServiceImplementation<BitcoinHandlers> = {
+  DeployAccount: function (ctx: ImplementationContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
   },
 
-  DeploySegwitAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+  DeploySegwitAccount: function (ctx: ImplementationContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deploySegwitAccount(req);
     ctx.body = { address };
   },
 
-  DeployMultisigLegacyAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
+  DeployMultisigLegacyAccount: function (ctx: ImplementationContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
     const req = ctx.call.request;
     if (!req.threshold || req.threshold < 1) {
       throw new AppError(errors.INVALID_ARGUMENT);
@@ -53,7 +53,7 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     ctx.body = { address };
   },
 
-  DeployMultisigSegwitAccount: function (ctx: ImplContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
+  DeployMultisigSegwitAccount: function (ctx: ImplementationContext<DeployMultisigAccountRequest, DeployMultisigAccountReply>) {
     const req = ctx.call.request;
     if (!req.threshold || req.threshold < 1) {
       throw new AppError(errors.INVALID_ARGUMENT);
@@ -62,23 +62,28 @@ export const BitcoinImp: ProxyImp<BitcoinHandlers> = {
     ctx.body = { address };
   },
 
-  BuildTransaction: async function (ctx: ImplContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
+  BuildTransaction: async function (ctx: ImplementationContext<BuildTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildTransaction(req);
   },
 
-  HashForSignature: function (ctx: ImplContext<HashForSignatureRequest, TransactionReply>): void {
+  HashForSignature: function (ctx: ImplementationContext<HashForSignatureRequest, TransactionReply>): void {
     const req = ctx.call.request;
     ctx.body = provider.hashForSignature(req);
   },
 
-  SignTransaction: function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): void {
+  SignTransaction: function (ctx: ImplementationContext<SignTransactionRequest, TransactionReply>): void {
     const req = ctx.call.request;
     ctx.body = provider.signTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>): Promise<void> {
+  SendTransaction: async function (ctx: ImplementationContext<SendTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
+  },
+
+  DecodeRawTransaction: async function (ctx: ImplementationContext<SendTransactionRequest, TransactionReply>): Promise<void> {
+    const req = ctx.call.request;
+    ctx.body = await provider.decodeRawTransaction(req);
   },
 };

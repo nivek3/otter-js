@@ -89,6 +89,34 @@ message BuildContractInputRequest {
     repeated string args    = 5;
 }
 
+message DecodeRawTransactionRequest {
+    Network network   = 1;
+    string serialized = 2;
+}
+
+message AccessListItem {
+    string address               = 1;
+    repeated string storage_keys = 2;
+};
+
+message DecodeRawTransactionReply {
+    string chainId                      = 1;
+    string nonce                        = 2;
+    string to                           = 3;
+    string data                         = 4;
+    string value                        = 5;
+    string gas_price                    = 6;
+    string gas_limit                    = 7;
+    string max_priority_fee_per_gas     = 8;
+    string max_fee_per_gas              = 9;
+    string type                         = 10;
+    repeated AccessListItem access_list = 11;
+    string r                            = 12;
+    string s                            = 13;
+    string v                            = 14;
+    string from                         = 15;
+}
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
 
@@ -105,4 +133,6 @@ service Ethereum {
 
     rpc BuildContractInput(BuildContractInputRequest) returns (TransactionReply) {}
     rpc BuildContractTransaction(BuildContractTransactionRequest) returns (TransactionReply) {}
+
+    rpc DecodeRawTransaction(DecodeRawTransactionRequest) returns (DecodeRawTransactionReply) {}
 }

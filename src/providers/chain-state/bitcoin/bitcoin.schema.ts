@@ -123,3 +123,12 @@ export const SendTransactionRequestSchema = {
     serialized: { type: 'string' },
   },
 };
+
+export const DecodeRawTransactionRequestSchema = {
+  type: 'object',
+  required: ['network', 'serialized'],
+  properties: {
+    network: { $ref: 'base#/definitions/network' },
+    serialized: { type: 'string' },
+  },
+};

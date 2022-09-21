@@ -1,9 +1,12 @@
 import { Middleware } from 'koa-compose';
 import { v4 as uuidV4 } from 'uuid';
 import logger from '@src/logger';
-import { ImplContext } from '@src/utils/context';
+import { ImplementationContext } from '@src/utils/context';
 
-export const loggerInterceptor: Middleware<ImplContext<unknown, unknown>> = async function <T, K>(ctx: ImplContext<T, K>, next: Function) {
+export const loggerInterceptor: Middleware<ImplementationContext<unknown, unknown>> = async function <T, K>(
+  ctx: ImplementationContext<T, K>,
+  next: Function,
+) {
   const startAt = Date.now();
   if (!ctx.call.metadata.get('requestId')[0]) {
     ctx.call.metadata.set('requestId', uuidV4());

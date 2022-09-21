@@ -3,7 +3,7 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
 import { provider } from '@src/providers/chain-state/avalanche/avax';
-import { ImplContext, ProxyImp } from '@src/utils/context';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 
 import { ProtoGrpcType } from '@src/__proto__/avax';
 import { TransactionReply } from '@src/__proto__/common/types';
@@ -29,29 +29,31 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as unknown
 
 export const AvalancheAVAXService = protoDescriptor.avalanche.avax.Avalanche.service;
 
-export const AvalancheAVAXImp: ProxyImp<AvalancheHandlers> = {
-  DeployAccount: function (ctx: ImplContext<DeployAccountRequest, DeployAccountReply>) {
+export const AvalancheAVAXImplementation: ProxyUntypedServiceImplementation<AvalancheHandlers> = {
+  DeployAccount: function (ctx: ImplementationContext<DeployAccountRequest, DeployAccountReply>) {
     const req = ctx.call.request;
     const address = provider.deployAccount(req);
     ctx.body = { address };
   },
 
-  BuildAVAXTransferTransaction: async function (ctx: ImplContext<BuildAVAXTransferTransactionRequest, TransactionReply>): Promise<void> {
+  BuildAVAXTransferTransaction: async function (
+    ctx: ImplementationContext<BuildAVAXTransferTransactionRequest, TransactionReply>,
+  ): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.buildAVAXTransferTransaction(req);
   },
 
-  SignTransaction: async function (ctx: ImplContext<SignTransactionRequest, TransactionReply>): Promise<void> {
+  SignTransaction: async function (ctx: ImplementationContext<SignTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.signTransaction(req);
   },
 
-  SendTransaction: async function (ctx: ImplContext<SendTransactionRequest, TransactionReply>): Promise<void> {
+  SendTransaction: async function (ctx: ImplementationContext<SendTransactionRequest, TransactionReply>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.sendTransaction(req);
   },
 
-  DecodeTransaction: async function (ctx: ImplContext<DecodeTransactionRequest, TransactionParams>): Promise<void> {
+  DecodeTransaction: async function (ctx: ImplementationContext<DecodeTransactionRequest, TransactionParams>): Promise<void> {
     const req = ctx.call.request;
     ctx.body = await provider.decodeTransaction(req);
   },

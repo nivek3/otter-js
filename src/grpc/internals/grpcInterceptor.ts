@@ -1,15 +1,15 @@
 import * as grpc from '@grpc/grpc-js';
 import compose, { Middleware } from 'koa-compose';
-import { ImplContext } from '@src/utils/context';
+import { ImplementationContext } from '@src/utils/context';
 import { AppError, errors } from '@src/error';
 export class GrpcInterceptorProxy {
-  interceptors: Middleware<ImplContext<unknown, unknown>>[] = [];
+  interceptors: Middleware<ImplementationContext<unknown, unknown>>[] = [];
 
-  success<T, K>(ctx: ImplContext<T, K>, callback: grpc.sendUnaryData<unknown>) {
+  success<T, K>(ctx: ImplementationContext<T, K>, callback: grpc.sendUnaryData<unknown>) {
     callback(null, ctx.body, ctx.call.metadata);
   }
 
-  fail<T, K>(err: grpc.ServiceError, callback: grpc.sendUnaryData<string>, ctx?: ImplContext<T, K>) {
+  fail<T, K>(err: grpc.ServiceError, callback: grpc.sendUnaryData<string>, ctx?: ImplementationContext<T, K>) {
     callback(err, err.message, ctx?.call.metadata);
   }
 
@@ -27,7 +27,7 @@ export class GrpcInterceptorProxy {
           for (const prop in implementation) {
             const originFn = implementation[prop];
             newImplementation[prop] = async function (call: grpc.ServerUnaryCall<Q, S>, callback: grpc.sendUnaryData<any>) {
-              const ctx: ImplContext<Q, S> = {
+              const ctx: ImplementationContext<Q, S> = {
                 call,
                 body: {} as S,
                 state: {},

@@ -94,6 +94,7 @@
     "elliptic": "^6.5.4",
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^7.0.10",
+    "ethers": "^5.7.1",
     "express": "^4.16.3",
     "hash.js": "^1.1.7",
     "heapdump": "^0.3.15",

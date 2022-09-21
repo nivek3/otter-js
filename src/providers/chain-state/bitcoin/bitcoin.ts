@@ -1,9 +1,18 @@
-import { toBuffer, addHexPrefix } from 'ethereumjs-util';
 import { toNumber } from 'lodash';
 import { ec as EC } from 'elliptic';
 import ECSignature from 'elliptic/lib/elliptic/ec/signature';
 import rp from 'request-promise';
-import { payments, bitgo, networks, Network as BitgoNetwork, classify, BitcoinJSNetwork, Transaction } from '@cryptoless/utxo-lib';
+import {
+  payments,
+  bitgo,
+  networks,
+  Network as BitgoNetwork,
+  classify,
+  BitcoinJSNetwork,
+  Transaction,
+  script,
+  address,
+} from '@cryptoless/utxo-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
 import { canonicalSignature } from '@src/utils/signature';
@@ -20,6 +29,8 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   HashForSignatureRequest,
+  DecodeRawTransactionRequest,
+  DecodeRawTransactionReply,
 } from '@src/__proto__/bitcoin/types';
 
 import {
@@ -30,6 +41,7 @@ import {
   HashForSignatureRequestSchema,
   SignTransactionRequestSchema,
   SendTransactionRequestSchema,
+  DecodeRawTransactionRequestSchema,
 } from './bitcoin.schema';
 
 const DUST_AMOUNT = 546;
@@ -240,6 +252,53 @@ export class Provider {
     }
     return {
       hash: result,
+    };
+  }
+
+  async decodeRawTransaction(req: DecodeRawTransactionRequest): Promise<DecodeRawTransactionReply> {
+    validator.assert(DecodeRawTransactionRequestSchema, req);
+
+    const network = this.getNetWork(req.network!);
+    const tx = Transaction.fromHex(req.serialized!);
+
+    const vin = tx.ins.map((input) => {
+      return {
+        txid: this.getTxId(input.hash),
+        vout: input.index,
+        type: classify.input(input.script),
+        witness: input.witness?.map((item) => item.toString('hex')),
+        sequence: input.sequence?.toString(),
+        scriptSig: {
+          asm: script.toASM(input.script),
+          hex: input.script.toString('hex'),
+        },
+      };
+    });
+    const vout = tx.outs.map((out) => {
+      const asm = script.toASM(out.script);
+      const hex = out.script.toString('hex');
+      const type = classify.output(out.script);
+      return {
+        value: out.value.toString(),
+        scriptPubKey: {
+          asm,
+          hex,
+          address: address.fromOutputScript(out.script, network),
+          type,
+        },
+      };
+    });
+
+    return {
+      txid: tx.getId(),
+      hash: tx.getId(),
+      version: tx.version,
+      size: tx.byteLength(false),
+      vsize: tx.virtualSize(),
+      weight: tx.weight(),
+      locktime: tx.locktime,
+      vin,
+      vout,
     };
   }
 
