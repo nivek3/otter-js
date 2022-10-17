@@ -3,6 +3,7 @@
     "AVAX",
     "cosmjs",
     "ethersproject",
+    "Keccak",
     "locktime",
     "Multisigned",
     "Numberish",

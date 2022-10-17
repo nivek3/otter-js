@@ -23,52 +23,52 @@ router.post('/buildAccountTransaction', async function (req: Request, res: Respo
   }
 });
 
-router.post('/buildMultisigTransferInput', async function (req: Request, res: Response, next) {
+router.post('/buildTransferInput', async function (req: Request, res: Response, next) {
   try {
-    const result = await provider.buildMultisigTransferInput(req.body);
+    const result = await provider.buildTransferInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.error('BuildMultisigTransferInput =>', err);
+    logger.error('BuildTransferInput =>', err);
     return next(err);
   }
 });
 
-router.post('/buildMultisigInput', async function (req: Request, res: Response, next) {
+router.post('/buildInput', async function (req: Request, res: Response, next) {
   try {
-    const result = await provider.buildMultisigInput(req.body);
+    const result = await provider.buildInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.error('BuildMultisigInput =>', err);
+    logger.error('BuildInput =>', err);
     return next(err);
   }
 });
 
-router.post('/signMultisigInput', async function (req: Request, res: Response, next) {
+router.post('/signInput', async function (req: Request, res: Response, next) {
   try {
-    const result = provider.signMultisigInput(req.body);
+    const result = provider.signInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.error('SignMultisigInput =>', err);
+    logger.error('SignInput =>', err);
     return next(err);
   }
 });
 
-router.post('/buildMultisigTransaction', async function (req: Request, res: Response, next) {
+router.post('/buildTransaction', async function (req: Request, res: Response, next) {
   try {
-    const result = await provider.buildMultisigTransaction(req.body);
+    const result = await provider.buildTransaction(req.body);
     return res.json(result);
   } catch (err) {
-    logger.error('BuildMultisigTransaction =>', err);
+    logger.error('BuildTransaction =>', err);
     return next(err);
   }
 });
 
-router.post('/buildMultisigERC20TransferInput', async function (req: Request, res: Response, next) {
+router.post('/buildERC20TransferInput', async function (req: Request, res: Response, next) {
   try {
-    const result = await provider.buildMultisigERC20TransferInput(req.body);
+    const result = await provider.buildERC20TransferInput(req.body);
     return res.json(result);
   } catch (err) {
-    logger.error('BuildMultisigERC20TransferInput =>', err);
+    logger.error('BuildERC20TransferInput =>', err);
     return next(err);
   }
 });

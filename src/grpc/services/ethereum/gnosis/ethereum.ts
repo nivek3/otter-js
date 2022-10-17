@@ -10,13 +10,13 @@ import {
   EthereumHandlers,
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
-  BuildMultisigTransferInputRequest,
-  SignMultisigInputRequest,
-  BuildMultisigTransactionRequest,
-  BuildMultisigERC20TransferInputRequest,
+  BuildTransferInputRequest,
+  SignInputRequest,
+  BuildTransactionRequest,
+  BuildERC20TransferInputRequest,
   GetAccountAddressRequest,
   GetAccountAddressReply,
-  BuildMultisigInputRequest,
+  BuildInputRequest,
   BuildMultiSendInputRequest,
   BuildSafeInputReply,
   // owner manger
@@ -48,31 +48,29 @@ export const EthereumGnosisImplementation: ProxyUntypedServiceImplementation<Eth
     ctx.body = await provider.buildAccountTransaction(req);
   },
 
-  BuildMultisigInput: async function (ctx: ImplementationContext<BuildMultisigInputRequest, BuildSafeInputReply>) {
+  BuildInput: async function (ctx: ImplementationContext<BuildInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigInput(req);
+    ctx.body = await provider.buildInput(req);
   },
 
-  SignMultisigInput: async function (ctx: ImplementationContext<SignMultisigInputRequest, BuildSafeInputReply>) {
+  signInput: async function (ctx: ImplementationContext<SignInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
-    ctx.body = provider.signMultisigInput(req);
+    ctx.body = provider.signInput(req);
   },
 
-  BuildMultisigTransferInput: async function (ctx: ImplementationContext<BuildMultisigTransferInputRequest, BuildSafeInputReply>) {
+  BuildTransferInput: async function (ctx: ImplementationContext<BuildTransferInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigTransferInput(req);
+    ctx.body = await provider.buildTransferInput(req);
   },
 
-  BuildMultisigTransaction: async function (ctx: ImplementationContext<BuildMultisigTransactionRequest, BuildSafeInputReply>) {
+  BuildTransaction: async function (ctx: ImplementationContext<BuildTransactionRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigTransaction(req);
+    ctx.body = await provider.buildTransaction(req);
   },
 
-  BuildMultisigERC20TransferInput: async function (
-    ctx: ImplementationContext<BuildMultisigERC20TransferInputRequest, BuildSafeInputReply>,
-  ) {
+  BuildERC20TransferInput: async function (ctx: ImplementationContext<BuildERC20TransferInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildMultisigERC20TransferInput(req);
+    ctx.body = await provider.buildERC20TransferInput(req);
   },
 
   BuildMultiSendInput: async function (ctx: ImplementationContext<BuildMultiSendInputRequest, BuildSafeInputReply>) {

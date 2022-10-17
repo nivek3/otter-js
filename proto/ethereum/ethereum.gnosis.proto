@@ -54,22 +54,28 @@ message BuildAccountTransactionReply {
     string estimated_fee          = 4;
 }
 
-message BuildMultisigTransferInputRequest {
+message BuildTransferInputRequest {
     Network network              = 1;
     string to_address            = 2;
     string value                 = 3;
     string contract              = 4;
     int32 contract_nonce         = 5;
     string sender                = 6;
-    repeated string participants = 7;
+    repeated string participants = 7;  // the participants of the safe who should sign the input
+    int32 operation              = 8;
+    string safe_tx_gas           = 9;
+    string base_gas              = 10;
+    string gas_price             = 11;
+    string gas_token             = 12;
+    string refund_receiver       = 13;
 }
 
-message SignMultisigInputRequest {
+message SignInputRequest {
     string serialized             = 1;
     repeated Signature signatures = 2;
 }
 
-message BuildMultisigInputRequest {
+message BuildInputRequest {
     Network network              = 1;
     string to                    = 2;
     string value                 = 3;
@@ -78,9 +84,15 @@ message BuildMultisigInputRequest {
     int32 contract_nonce         = 6;
     string sender                = 7;
     repeated string participants = 8;
+    int32 operation              = 9;
+    string safe_tx_gas           = 10;
+    string base_gas              = 11;
+    string gas_price             = 12;
+    string gas_token             = 13;
+    string refund_receiver       = 14;
 }
 
-message BuildMultisigTransactionRequest {
+message BuildTransactionRequest {
     Network network               = 1;
     string contract               = 2;
     string data                   = 3;
@@ -89,9 +101,15 @@ message BuildMultisigTransactionRequest {
     TransactionParams params      = 6;
     string serialized             = 7;
     repeated Signature signatures = 8;
+    int32 operation               = 9;
+    string safe_tx_gas            = 10;
+    string base_gas               = 11;
+    string gas_price              = 12;
+    string gas_token              = 13;
+    string refund_receiver        = 14;
 }
 
-message BuildMultisigERC20TransferInputRequest {
+message BuildERC20TransferInputRequest {
     Network network              = 1;
     string token_address         = 2;
     string to_address            = 3;
@@ -100,13 +118,24 @@ message BuildMultisigERC20TransferInputRequest {
     int32 contract_nonce         = 6;
     string sender                = 7;
     repeated string participants = 8;
+    int32 operation              = 9;
+    string safe_tx_gas           = 10;
+    string base_gas              = 11;
+    string gas_price             = 12;
+    string gas_token             = 13;
+    string refund_receiver       = 14;
 }
 
 message SafeCall {
-    string to       = 1;
-    string data     = 2;
-    string value    = 3;
-    int32 operation = 4;
+    string to              = 1;
+    string data            = 2;
+    string value           = 3;
+    int32 operation        = 4;
+    string safe_tx_gas     = 5;
+    string base_gas        = 6;
+    string gas_price       = 7;
+    string gas_token       = 8;
+    string refund_receiver = 9;
 }
 
 message BuildMultiSendInputRequest {
@@ -118,6 +147,11 @@ message BuildMultiSendInputRequest {
     int32 contract_nonce         = 6;
     string sender                = 7;
     repeated string participants = 8;
+    string safe_tx_gas           = 9;
+    string base_gas              = 10;
+    string gas_price             = 11;
+    string gas_token             = 12;
+    string refund_receiver       = 13;
 }
 
 // owner manger
@@ -131,6 +165,12 @@ message BuildAddOwnerWithThresholdInputRequest {
     string value                 = 7;
     string sender                = 8;
     repeated string participants = 9;
+    int32 operation              = 10;
+    string safe_tx_gas           = 11;
+    string base_gas              = 12;
+    string gas_price             = 13;
+    string gas_token             = 14;
+    string refund_receiver       = 15;
 }
 
 message BuildChangeThresholdInputRequest {
@@ -142,6 +182,12 @@ message BuildChangeThresholdInputRequest {
     string value                 = 6;
     string sender                = 7;
     repeated string participants = 8;
+    int32 operation              = 9;
+    string safe_tx_gas           = 10;
+    string base_gas              = 11;
+    string gas_price             = 12;
+    string gas_token             = 13;
+    string refund_receiver       = 14;
 }
 
 message BuildRemoveOwnerInputRequest {
@@ -155,6 +201,12 @@ message BuildRemoveOwnerInputRequest {
     string value                 = 8;
     string sender                = 9;
     repeated string participants = 10;
+    int32 operation              = 11;
+    string safe_tx_gas           = 12;
+    string base_gas              = 13;
+    string gas_price             = 14;
+    string gas_token             = 15;
+    string refund_receiver       = 16;
 }
 
 message BuildSwapOwnerInputRequest {
@@ -179,17 +231,17 @@ service Ethereum {
 
     // transcation
     rpc BuildAccountTransaction(BuildAccountTransactionRequest) returns (BuildAccountTransactionReply) {}
-    rpc BuildMultisigTransaction(BuildMultisigTransactionRequest) returns (TransactionReply) {}
+    rpc BuildTransaction(BuildTransactionRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
 
     // input
-    rpc BuildMultisigTransferInput(BuildMultisigTransferInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildTransferInput(BuildTransferInputRequest) returns (BuildSafeInputReply) {}
     rpc BuildMultiSendInput(BuildMultiSendInputRequest) returns (BuildSafeInputReply) {}
 
-    rpc BuildMultisigERC20TransferInput(BuildMultisigERC20TransferInputRequest) returns (BuildSafeInputReply) {}
-    rpc SignMultisigERC20TransferInput(SignMultisigInputRequest) returns (BuildSafeInputReply) {}
-    rpc BuildMultisigInput(BuildMultisigInputRequest) returns (BuildSafeInputReply) {}
-    rpc SignMultisigInput(SignMultisigInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildERC20TransferInput(BuildERC20TransferInputRequest) returns (BuildSafeInputReply) {}
+    rpc SignERC20TransferInput(SignInputRequest) returns (BuildSafeInputReply) {}
+    rpc BuildInput(BuildInputRequest) returns (BuildSafeInputReply) {}
+    rpc SignInput(SignInputRequest) returns (BuildSafeInputReply) {}
 
     // owner manger input
     rpc BuildAddOwnerWithThresholdInput(BuildAddOwnerWithThresholdInputRequest) returns (BuildSafeInputReply) {}

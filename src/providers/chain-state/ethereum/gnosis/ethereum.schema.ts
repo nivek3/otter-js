@@ -75,7 +75,7 @@ export const BuildERC20TransferTransactionRequestSchema = {
   },
 };
 
-export const BuildMultisigTransferInputRequestSchema = {
+export const BuildTransferInputRequestSchema = {
   type: 'object',
   required: ['toAddress', 'value', 'contract', 'participants'],
   properties: {
@@ -88,7 +88,7 @@ export const BuildMultisigTransferInputRequestSchema = {
   },
 };
 
-export const BuildMultisigInputRequestSchema = {
+export const BuildInputRequestSchema = {
   type: 'object',
   required: ['to', 'contract', 'participants'],
   properties: {
@@ -102,7 +102,7 @@ export const BuildMultisigInputRequestSchema = {
   },
 };
 
-export const SignMultisigInputRequestSchema = {
+export const SignInputRequestSchema = {
   type: 'object',
   required: ['serialized', 'signatures'],
   properties: {
@@ -111,7 +111,7 @@ export const SignMultisigInputRequestSchema = {
   },
 };
 
-export const BuildMultisigTransactionRequestSchema = {
+export const BuildTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'contract', 'data'],
   properties: {
@@ -122,7 +122,7 @@ export const BuildMultisigTransactionRequestSchema = {
   },
 };
 
-export const BuildMultisigERC20TransferInputRequestSchema = {
+export const BuildERC20TransferInputRequestSchema = {
   type: 'object',
   required: ['network', 'contract', 'tokenAddress', 'toAddress', 'quantity'],
   properties: {

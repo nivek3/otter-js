@@ -15,11 +15,11 @@ import {
   GetAccountAddressReply,
   BuildAccountTransactionRequest,
   BuildAccountTransactionReply,
-  BuildMultisigTransferInputRequest,
-  SignMultisigInputRequest,
-  BuildMultisigTransactionRequest,
-  BuildMultisigERC20TransferInputRequest,
-  BuildMultisigInputRequest,
+  BuildTransferInputRequest,
+  SignInputRequest,
+  BuildTransactionRequest,
+  BuildERC20TransferInputRequest,
+  BuildInputRequest,
   BuildMultiSendInputRequest,
   BuildSafeInputReply,
 
@@ -56,12 +56,12 @@ import {
 import {
   EthereumRefSchema,
   GetAccountRequestSchema,
-  BuildMultisigInputRequestSchema,
+  BuildInputRequestSchema,
   BuildAccountTransactionRequestSchema,
-  SignMultisigInputRequestSchema,
-  BuildMultisigTransferInputRequestSchema,
-  BuildMultisigERC20TransferInputRequestSchema,
-  BuildMultisigTransactionRequestSchema,
+  SignInputRequestSchema,
+  BuildTransferInputRequestSchema,
+  BuildERC20TransferInputRequestSchema,
+  BuildTransactionRequestSchema,
   BuildMultiSendInputRequestSchema,
 
   // owner manger
@@ -93,10 +93,10 @@ export class Provider extends CoreProvider {
     };
   }
 
-  async buildMultisigTransaction(req: BuildMultisigTransactionRequest): Promise<TransactionReply> {
-    validator.assert(BuildMultisigTransactionRequestSchema, req);
+  async buildTransaction(req: BuildTransactionRequest): Promise<TransactionReply> {
+    validator.assert(BuildTransactionRequestSchema, req);
 
-    const { network, contract, sender, params, value } = req as Required<BuildMultisigTransactionRequest>;
+    const { network, contract, sender, params, value } = req as Required<BuildTransactionRequest>;
     const { provider } = network!;
     const common = this.getTxCommon(network!);
     const txOptions = { common };
@@ -139,13 +139,15 @@ export class Provider extends CoreProvider {
 
   async buildAddOwnerWithThresholdInput(req: BuildAddOwnerWithThresholdInputRequest): Promise<BuildSafeInputReply> {
     validator.assert(BuildAddOwnerWithThresholdInputRequestSchema, req);
-    const { network, owner, threshold, contract, value, participants, sender } = req as Required<BuildAddOwnerWithThresholdInputRequest>;
+    const { network, owner, threshold, contract, value, participants, sender, params, ...call } =
+      req as Required<BuildAddOwnerWithThresholdInputRequest>;
     const { chainId } = network!;
     const web3 = new Web3(network?.provider!);
     const nonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const iface = new utils.Interface(safeSingletonABI);
     const data = iface.encodeFunctionData('addOwnerWithThreshold', [owner, threshold]);
     const safeTx = buildSafeTransaction({
+      ...call,
       to: contract,
       nonce,
       data,
@@ -156,13 +158,15 @@ export class Provider extends CoreProvider {
 
   async buildChangeThresholdInput(req: BuildChangeThresholdInputRequest): Promise<BuildSafeInputReply> {
     validator.assert(BuildChangeThresholdInputRequestSchema, req);
-    const { network, threshold, contract, value, participants, sender } = req as Required<BuildChangeThresholdInputRequest>;
+    const { network, threshold, contract, value, participants, sender, params, ...call } =
+      req as Required<BuildChangeThresholdInputRequest>;
     const { chainId } = network!;
     const web3 = new Web3(network?.provider!);
     const nonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const iface = new utils.Interface(safeSingletonABI);
     const data = iface.encodeFunctionData('changeThreshold', [threshold]);
     const safeTx = buildSafeTransaction({
+      ...call,
       to: contract,
       nonce,
       data,
@@ -173,13 +177,15 @@ export class Provider extends CoreProvider {
 
   async buildRemoveOwnerInput(req: BuildRemoveOwnerInputRequest): Promise<BuildSafeInputReply> {
     validator.assert(BuildRemoveOwnerInputRequestSchema, req);
-    const { network, contract, value, prevOwner, owner, threshold, participants, sender } = req as Required<BuildRemoveOwnerInputRequest>;
+    const { network, contract, value, prevOwner, owner, threshold, participants, sender, params, ...call } =
+      req as Required<BuildRemoveOwnerInputRequest>;
     const { chainId } = network!;
     const web3 = new Web3(network?.provider!);
     const nonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const iface = new utils.Interface(safeSingletonABI);
     const data = iface.encodeFunctionData('removeOwner', [prevOwner, owner, threshold]);
     const safeTx = buildSafeTransaction({
+      ...call,
       to: contract,
       nonce,
       data,
@@ -190,13 +196,15 @@ export class Provider extends CoreProvider {
 
   async buildSwapOwnerInput(req: BuildSwapOwnerInputRequest): Promise<BuildSafeInputReply> {
     validator.assert(BuildSwapOwnerInputRequestSchema, req);
-    const { network, contract, value, prevOwner, oldOwner, newOwner, participants, sender } = req as Required<BuildSwapOwnerInputRequest>;
+    const { network, contract, value, prevOwner, oldOwner, newOwner, participants, sender, params, ...call } =
+      req as Required<BuildSwapOwnerInputRequest>;
     const { chainId } = network!;
     const web3 = new Web3(network?.provider!);
     const nonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const iface = new utils.Interface(safeSingletonABI);
     const data = iface.encodeFunctionData('swapOwner', [prevOwner, oldOwner, newOwner]);
     const safeTx = buildSafeTransaction({
+      ...call,
       to: contract,
       nonce,
       data,
@@ -205,14 +213,15 @@ export class Provider extends CoreProvider {
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
 
-  async buildMultisigInput(req: BuildMultisigInputRequest): Promise<BuildSafeInputReply> {
-    validator.assert(BuildMultisigInputRequestSchema, req);
+  async buildInput(req: BuildInputRequest): Promise<BuildSafeInputReply> {
+    validator.assert(BuildInputRequestSchema, req);
 
-    const { network, value, to, data, contract, participants, sender } = req as Required<BuildMultisigInputRequest>;
+    const { network, value, to, data, contract, participants, sender, ...call } = req as Required<BuildInputRequest>;
     const { chainId } = network!;
     const web3 = new Web3(network?.provider!);
     const multiSigContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const safeTx = buildSafeTransaction({
+      ...call,
       to,
       value: isHexString(value) ? hexValue(value) : value,
       nonce: multiSigContractNonce,
@@ -221,14 +230,15 @@ export class Provider extends CoreProvider {
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
 
-  async buildMultisigTransferInput(req: BuildMultisigTransferInputRequest): Promise<BuildSafeInputReply> {
-    validator.assert(BuildMultisigTransferInputRequestSchema, req);
+  async buildTransferInput(req: BuildTransferInputRequest): Promise<BuildSafeInputReply> {
+    validator.assert(BuildTransferInputRequestSchema, req);
 
-    const { network, toAddress, value, contract, participants, sender } = req as Required<BuildMultisigTransferInputRequest>;
+    const { network, toAddress, value, contract, participants, sender, ...call } = req as Required<BuildTransferInputRequest>;
     const { chainId } = network!;
     const web3 = new Web3(network?.provider!);
     const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const safeTx = buildSafeTransaction({
+      ...call,
       to: toAddress,
       value: isHexString(value) ? hexValue(value) : value,
       nonce: safeContractNonce,
@@ -236,8 +246,8 @@ export class Provider extends CoreProvider {
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
 
-  signMultisigInput(req: SignMultisigInputRequest): BuildSafeInputReply {
-    validator.assert(SignMultisigInputRequestSchema, req);
+  signInput(req: SignInputRequest): BuildSafeInputReply {
+    validator.assert(SignInputRequestSchema, req);
 
     const serialized = this.signExecFunctionInput(req.serialized!, req.signatures!);
     return {
@@ -245,10 +255,10 @@ export class Provider extends CoreProvider {
     };
   }
 
-  async buildMultisigERC20TransferInput(req: BuildMultisigERC20TransferInputRequest): Promise<BuildSafeInputReply> {
-    validator.assert(BuildMultisigERC20TransferInputRequestSchema, req);
+  async buildERC20TransferInput(req: BuildERC20TransferInputRequest): Promise<BuildSafeInputReply> {
+    validator.assert(BuildERC20TransferInputRequestSchema, req);
 
-    const { toAddress, quantity, tokenAddress, contract, participants, sender } = req as Required<BuildMultisigERC20TransferInputRequest>;
+    const { toAddress, quantity, tokenAddress, contract, participants, sender, ...call } = req as Required<BuildERC20TransferInputRequest>;
     const { chainId, provider } = req.network!;
     const web3 = new Web3(provider!);
 
@@ -257,6 +267,7 @@ export class Provider extends CoreProvider {
     const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
 
     const safeTx = buildSafeTransaction({
+      ...call,
       to: tokenAddress,
       data,
       nonce: safeContractNonce,
@@ -267,12 +278,13 @@ export class Provider extends CoreProvider {
   async buildMultiSendInput(req: BuildMultiSendInputRequest): Promise<BuildSafeInputReply> {
     validator.assert(BuildMultiSendInputRequestSchema, req);
 
-    const { network, contract, txs, participants, sender, value } = req as Required<BuildMultiSendInputRequest>;
+    const { network, contract, txs, participants, sender, value, ...call } = req as Required<BuildMultiSendInputRequest>;
     const { multiSendCallABI, multiSendCallAddress } = this.getGnosisAddresses(network?.chainId!);
     const { chainId, provider } = req.network!;
     const web3 = new Web3(provider!);
     const transactions = txs.map((tx) => {
       return buildSafeTransaction({
+        ...tx,
         to: tx.to!,
         value: tx.value && isHexString(tx.value) ? hexValue(tx.value) : tx.value,
         data: tx.data ? addHexPrefix(tx.data) : '',
@@ -285,6 +297,7 @@ export class Provider extends CoreProvider {
     const data = iface.encodeFunctionData('multiSend', [transaction]);
     const multiSigContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
     const safeTx = buildSafeTransaction({
+      ...call,
       to: multiSendCallAddress,
       operation: 1,
       data,
