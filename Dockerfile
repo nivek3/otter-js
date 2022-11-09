@@ -1,7 +1,7 @@
 # The builder image
-FROM node:14.17.0-alpine AS builder
+FROM node:16.18.0-alpine AS builder
 
-RUN apk add --no-cache python make gcc g++ bash git
+RUN apk add --no-cache python3 py3-pip make gcc g++ bash git
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
 USER node
@@ -17,9 +17,9 @@ COPY --chown=node:node . .
 RUN npm run compile
 
 # The production image
-FROM node:14.17.0-alpine as production
+FROM node:16.18.0-alpine as production
 
-RUN apk add --no-cache python make gcc g++ bash git
+RUN apk add --no-cache python3 py3-pip make gcc g++ bash git
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
 ENV NODE_ENV production
