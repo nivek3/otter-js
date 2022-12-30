@@ -20,10 +20,13 @@ import {
   SendTransactionRequest,
   HashForSignatureRequest,
   DecodeTransactionRequest,
-  BuildContractInputRequest,
+  BuildContractExecutionTransactionInputRequest,
+  BuildContractExecutionTransactionInputReply,
   BuildContractTransactionRequest,
   DecodeRawTransactionRequest,
   DecodeRawTransactionReply,
+  GetFeeDataRequest,
+  GetFeeDataReply,
 } from '@src/__proto__/ethereum/core/types';
 
 const filename = path.join(__dirname, '../../../../../proto/ethereum/ethereum.core.proto');
@@ -54,9 +57,11 @@ export const EthereumCoreImplementation: ProxyUntypedServiceImplementation<Ether
     ctx.body = await provider.buildERC20TransferTransaction(req);
   },
 
-  BuildContractInput: async function (ctx: ImplementationContext<BuildContractInputRequest, TransactionReply>) {
+  BuildContractExecutionTransactionInput: async function (
+    ctx: ImplementationContext<BuildContractExecutionTransactionInputRequest, BuildContractExecutionTransactionInputReply>,
+  ) {
     const req = ctx.call.request;
-    ctx.body = await provider.buildContractInput(req);
+    ctx.body = await provider.buildContractExecutionTransactionInput(req);
   },
 
   BuildContractTransaction: async function (ctx: ImplementationContext<BuildContractTransactionRequest, TransactionReply>) {
@@ -97,5 +102,10 @@ export const EthereumCoreImplementation: ProxyUntypedServiceImplementation<Ether
   DecodeRawTransaction: async function (ctx: ImplementationContext<DecodeRawTransactionRequest, DecodeRawTransactionReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.decodeRawTransaction(req);
+  },
+
+  GetFeeData: async function (ctx: ImplementationContext<GetFeeDataRequest, GetFeeDataReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.getFeeData(req);
   },
 };

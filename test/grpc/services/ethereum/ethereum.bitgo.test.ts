@@ -48,7 +48,7 @@ describe('Ethereum Bitgo service', () => {
               chainId: 42,
             },
             params: {
-              nonce: 170,
+              nonce: '170',
               gasLimit: '0x26520c',
               gasPrice: '5000000000',
             },
@@ -119,7 +119,7 @@ describe('Ethereum Bitgo service', () => {
             contract: '0x317028fb803594ebcc310481303965f984fb3e19',
             sender: '0x370BA1dc25C07d0C77Ba9b83fcc75Fcc2a0aC243',
             params: {
-              nonce: 5,
+              nonce: '5',
               gasPrice: '0x147d35700',
               gasLimit: '0x1710e',
             },

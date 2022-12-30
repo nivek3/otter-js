@@ -5,7 +5,6 @@ import { provider } from '@src/providers/chain-state/ethereum/gnosis/ethereum';
 import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 
 import { ProtoGrpcType } from '@src/__proto__/ethereum.gnosis';
-import { TransactionReply } from '@src/__proto__/common/types';
 import {
   EthereumHandlers,
   BuildAccountTransactionRequest,
@@ -19,6 +18,8 @@ import {
   BuildInputRequest,
   BuildMultiSendInputRequest,
   BuildSafeInputReply,
+  EncodeMultiSendRequest,
+  EncodeMultiSendReply,
   // owner manger
   BuildAddOwnerWithThresholdInputRequest,
   BuildChangeThresholdInputRequest,
@@ -76,6 +77,11 @@ export const EthereumGnosisImplementation: ProxyUntypedServiceImplementation<Eth
   BuildMultiSendInput: async function (ctx: ImplementationContext<BuildMultiSendInputRequest, BuildSafeInputReply>) {
     const req = ctx.call.request;
     ctx.body = await provider.buildMultiSendInput(req);
+  },
+
+  EncodeMultiSend: async function (ctx: ImplementationContext<EncodeMultiSendRequest, EncodeMultiSendReply>) {
+    const req = ctx.call.request;
+    ctx.body = await provider.encodeMultiSend(req);
   },
 
   // owner manager

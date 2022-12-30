@@ -49,7 +49,7 @@ export const DeployAccountRequestSchema = {
   required: ['key', 'network'],
   properties: {
     key: { type: 'string' },
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
   },
 };
 
@@ -57,15 +57,15 @@ export const BuildAVAXTransferTransactionSchema = {
   type: 'object',
   required: ['network', 'utxos', 'recipients'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
-    utxos: { type: 'array', uniqueItems: true, items: { $ref: 'base#/definitions/utxo' } },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
+    utxos: { type: 'array', uniqueItems: true, items: { type: 'object', $ref: 'base#/definitions/utxo' } },
     recipients: {
       type: 'array',
       uniqueItems: true,
-      items: { $ref: 'base#/definitions/recipient', type: 'object', required: ['addresses', 'amount'] },
+      items: { type: 'object', $ref: 'base#/definitions/recipient', required: ['addresses', 'amount'] },
     },
-    change: { $ref: 'base#/definitions/recipient', type: 'object', required: ['addresses'] },
-    params: { $ref: 'base#/definitions/params' },
+    change: { type: 'object', $ref: 'base#/definitions/recipient', required: ['addresses'] },
   },
 };
 
@@ -73,9 +73,9 @@ export const HashForSignatureRequestSchema = {
   type: 'object',
   required: ['network', 'serialized', 'utxos'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },
-    utxos: { type: 'array', uniqueItems: true, items: { $ref: 'base#/definitions/utxo' } },
+    utxos: { type: 'array', uniqueItems: true, items: { type: 'object', $ref: 'base#/definitions/utxo' } },
   },
 };
 
@@ -83,9 +83,9 @@ export const SignTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized', 'signatures'],
   properties: {
-    network: { $ref: 'base#/definitions/network', type: 'object', required: ['networkId'] },
+    network: { type: 'object', $ref: 'base#/definitions/network', required: ['networkId'] },
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature' } },
+    signatures: { type: 'array', items: { type: 'object', $ref: 'base#/definitions/signature' } },
   },
 };
 
@@ -93,7 +93,7 @@ export const SendTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
   properties: {
-    network: { $ref: 'base#/definitions/network', type: 'object', required: ['networkId', 'provider'] },
+    network: { type: 'object', $ref: 'base#/definitions/network', required: ['networkId', 'provider'] },
     serialized: { type: 'string' },
   },
 };
@@ -102,7 +102,7 @@ export const DecodeTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
   properties: {
-    network: { $ref: 'base#/definitions/network', type: 'object', required: ['networkId'] },
+    network: { type: 'object', $ref: 'base#/definitions/network', required: ['networkId'] },
     serialized: { type: 'string' },
   },
 };

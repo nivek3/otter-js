@@ -79,7 +79,7 @@ export abstract class BaseProvider {
     return gasLimit;
   }
 
-  async getReqEip155FeePerGas(web3: Web3, tx: FeeMarketEIP1559TxData): Promise<FactoryTxData> {
+  async getTxFeeData(web3: Web3, tx: FeeMarketEIP1559TxData): Promise<Partial<FactoryTxData>> {
     if (tx['maxFeePerGas'] && tx['maxPriorityFeePerGas']) {
       return tx;
     }
@@ -90,6 +90,7 @@ export abstract class BaseProvider {
       tx.maxPriorityFeePerGas = await this.maxPriorityFeePerGas(web3);
     }
     const maxPriorityFeePerGas = tx.maxPriorityFeePerGas as string;
+    // https://github.com/ethers-io/ethers.js/blob/c80fcddf50a9023486e9f9acb1848aba4c19f7b6/packages/abstract-provider/src.ts/index.ts#L253
     const maxFeePerGas = toHex(toBN(baseFeePerGas).mul(toBN(2)).add(toBN(maxPriorityFeePerGas)));
     return Object.assign(tx, {
       maxFeePerGas,
@@ -145,7 +146,7 @@ export abstract class BaseProvider {
     if (isBip1559Transaction(txData?.type)) {
       delete txData.gasPrice;
       Object.assign(txData, pick(params, ['maxFeePerGas', 'maxPriorityFeePerGas']));
-      const newData = await this.getReqEip155FeePerGas(web3, txData as FeeMarketEIP1559TxData);
+      const newData = await this.getTxFeeData(web3, txData as FeeMarketEIP1559TxData);
       Object.assign(txData, newData);
     }
 
@@ -166,7 +167,11 @@ export abstract class BaseProvider {
   }
 
   getTxEstimatedFee(tx: TypedTransaction): string {
-    const cost = tx.getUpfrontCost();
+    const gasLimit = tx.gasLimit;
+    const gasPrice: BN = tx['gasPrice'] ? tx['gasPrice'] : tx['maxFeePerGas'];
+    if (gasLimit && gasPrice) return new BN(gasPrice).mul(gasLimit).toString();
+
+    const cost = tx.getUpfrontCost(); // should never be called.
     return cost.sub(tx.value).toString();
   }
 

@@ -13,7 +13,7 @@ message Network {
 message TransactionParams {
     string gas_limit                = 1;
     string gas_price                = 2;
-    int32 nonce                     = 3;
+    string nonce                    = 3;
     string type                     = 4;
     string max_fee_per_gas          = 5;
     string max_priority_fee_per_gas = 6;

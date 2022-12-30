@@ -45,12 +45,12 @@ router.post('/buildERC20TransferTransaction', async function (req: Request, res:
   }
 });
 
-router.post('/buildContractInput', async function (req: Request, res: Response, next) {
+router.post('/buildContractExecutionTransactionInput', async function (req: Request, res: Response, next) {
   try {
-    const data = await provider.buildContractInput(req.body);
+    const data = await provider.buildContractExecutionTransactionInput(req.body);
     return res.json(data);
   } catch (err) {
-    logger.error('BuildContractInput =>', err);
+    logger.error('BuildContractExecutionTransactionInput =>', err);
     return next(err);
   }
 });
@@ -111,6 +111,16 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
     return res.json(result);
   } catch (err) {
     logger.error('DecodeTransaction =>', err);
+    return next(err);
+  }
+});
+
+router.post('/getFeeData', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.getFeeData(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.error('GetFeeData =>', err);
     return next(err);
   }
 });

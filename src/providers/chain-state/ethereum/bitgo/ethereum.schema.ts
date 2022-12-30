@@ -14,7 +14,7 @@ export const EthereumRefSchema = {
       properties: {
         gasLimit: { type: 'string' },
         gasPrice: { type: 'string' },
-        nonce: { type: 'integer' },
+        nonce: { type: 'string' },
       },
     },
     signature: {
@@ -33,10 +33,10 @@ export const BuildAccountTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'keys', 'sender'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     keys: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     sender: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -65,11 +65,11 @@ export const BuildMultisigTransferTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'contract', 'sender'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     contract: { type: 'string' },
     input: { type: 'string' },
     sender: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 

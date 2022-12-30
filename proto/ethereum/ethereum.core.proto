@@ -81,12 +81,15 @@ message BuildContractTransactionRequest {
     string value             = 8;
 }
 
-message BuildContractInputRequest {
-    Network network         = 1;
-    string contract_address = 2;
-    repeated string abis    = 3;
-    string method           = 4;
-    repeated string args    = 5;
+message BuildContractExecutionTransactionInputRequest {
+    Network network      = 1;
+    repeated string abis = 2;
+    string method        = 3;
+    repeated string args = 4;
+}
+
+message BuildContractExecutionTransactionInputReply {
+    string data = 1;
 }
 
 message DecodeRawTransactionRequest {
@@ -117,6 +120,16 @@ message DecodeRawTransactionReply {
     string from                         = 15;
 }
 
+message GetFeeDataRequest {
+    Network network = 1;
+}
+
+message GetFeeDataReply {
+    string gas_price                = 1;
+    string max_fee_per_gas          = 2;
+    string max_priority_fee_per_gas = 3;
+};
+
 service Ethereum {
     rpc DeployAccount(DeployAccountRequest) returns (DeployAccountReply) {}
 
@@ -128,10 +141,11 @@ service Ethereum {
     rpc RebuildTransaction(RebuildTransactionRequest) returns (TransactionReply) {}
     rpc SendTransaction(SendTransactionRequest) returns (TransactionReply) {}
 
+    rpc GetFeeData(GetFeeDataRequest) returns (GetFeeDataReply) {}
     rpc HashForSignature(HashForSignatureRequest) returns (TransactionReply) {}
     rpc DecodeTransaction(DecodeTransactionRequest) returns (TransactionParams) {}
 
-    rpc BuildContractInput(BuildContractInputRequest) returns (TransactionReply) {}
+    rpc BuildContractExecutionTransactionInput(BuildContractExecutionTransactionInputRequest) returns (BuildContractExecutionTransactionInputReply) {}
     rpc BuildContractTransaction(BuildContractTransactionRequest) returns (TransactionReply) {}
 
     rpc DecodeRawTransaction(DecodeRawTransactionRequest) returns (DecodeRawTransactionReply) {}

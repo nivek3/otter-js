@@ -14,7 +14,7 @@ export const EthereumRefSchema = {
       properties: {
         gasLimit: { type: 'string' },
         gasPrice: { type: 'string' },
-        nonce: { type: 'integer' },
+        nonce: { type: 'string' },
       },
     },
     signature: {
@@ -34,7 +34,7 @@ export const DeployAccountRequestSchema = {
   required: ['key'],
   properties: {
     key: { type: 'string' },
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
   },
 };
 
@@ -42,11 +42,11 @@ export const BuildTransferTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'from', 'to', 'quantity'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     from: { type: 'string' },
     to: { type: 'string' },
     quantity: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -54,11 +54,11 @@ export const BuildERC20TransferTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'from', 'to', 'quantity', 'tokenAddress'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     from: { type: 'string' },
     to: { type: 'string' },
     quantity: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -66,9 +66,9 @@ export const SignTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized', 'signatures'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },
-    signatures: { type: 'array', items: { $ref: 'base#/definitions/signature', type: 'object', required: ['signature'] } },
+    signatures: { type: 'array', items: { type: 'object', $ref: 'base#/definitions/signature', required: ['signature'] } },
   },
 };
 
@@ -76,21 +76,24 @@ export const SendTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },
   },
 };
 
 export const BuildTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'to', 'value', 'data'],
+  anyOf: [
+    { required: ['network', 'from', 'to', 'value'] },
+    { required: ['network', 'from', 'to', 'data'] }, // contract
+  ],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     from: { type: 'string' },
     to: { type: 'string' },
     value: { type: 'string' },
     data: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -98,9 +101,9 @@ export const RebuildTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     serialized: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -108,7 +111,7 @@ export const HashForSignatureRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
     serialized: { type: 'string' },
     pubKey: { type: 'string' },
   },
@@ -122,11 +125,11 @@ export const DecodeTransactionRequestSchema = {
   },
 };
 
-export const BuildContractInputRequestSchema = {
+export const BuildContractExecutionTransactionInputRequestSchema = {
   type: 'object',
   required: ['abis', 'method', 'args'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
     contractAddress: { type: 'string' },
     abis: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
@@ -136,13 +139,21 @@ export const BuildContractInputRequestSchema = {
 
 export const BuildContractTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'contractAddress', 'abis', 'method', 'args'],
+  required: ['network', 'from', 'contractAddress', 'abis', 'method'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
     from: { type: 'string' },
     contractAddress: { type: 'string' },
     abis: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
     args: { type: 'array', items: { type: 'string' } },
+  },
+};
+
+export const GetFeeDataRequestSchema = {
+  type: 'object',
+  required: ['network'],
+  properties: {
+    network: { type: 'object', $ref: 'base#/definitions/network', required: ['provider', 'chainId'] },
   },
 };

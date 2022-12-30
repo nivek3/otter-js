@@ -30,5 +30,6 @@ config.json
 src/__proto__/
 
 logs
+!log/.gitkeep
 *.log
 pkg

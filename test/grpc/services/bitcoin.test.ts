@@ -732,6 +732,45 @@ describe('Bitcoin service', () => {
           );
           expect(hash).toEqual('303cd630dda84b89f933e378c590d9d6ffbcd36ccde9a2abaa63130d426b2eba');
         });
+
+        test('support maximumFeeRate', async () => {
+          const req = {
+            network: {
+              pubKeyHash: '0x1e',
+              scriptHash: '0x16',
+              coin: 'doge',
+              dustLimit: 100000000,
+              maximumFeeRate: '200000', // be string
+            },
+            serialized:
+              '0100000001ff6f92a543b4d4e823068fc53752ec05d58b4dac0063206d09c2e512c290a8a80000000000ffffffff0150d41200000000001976a91408e6066989ae8dbb3d52d61e971fcd575064863988ac00000000',
+            signatures: [
+              {
+                pubKey: '032207ee434431716f63dd296e29fa5523cf730e8262968309947a0c3658baa7e7',
+                hash: 'a3ac6628811f497e01cf54b512aa8685cf44eca986c4423949ed427f289659c3',
+                signature:
+                  'f4ba0639229ae31e07c1575aea9cc200c3dc7fef3e5cb900e089ce27336f044171e895a1f7f22a30371f10eb6f1932b4ef572c9390e2c382ef21a38b00ed6aa901',
+              },
+            ],
+            utxos: [
+              {
+                txid: 'a8a890c212e5c2096d206300ac4d8bd505ec5237c58f0623e8d4b443a5926fff',
+                prevOutScript: '76a914c0e785cc7fd6f77ce9e3fffbe0879e5e2f29c6e088ac',
+                amount: '5000000',
+                signers: ['032207ee434431716f63dd296e29fa5523cf730e8262968309947a0c3658baa7e7'],
+              },
+            ],
+          };
+
+          const SignTransaction = promisify(client.SignTransaction.bind(client));
+
+          const { serialized, hash, estimatedFee } = await SignTransaction(req);
+          expect(estimatedFee).toEqual('3766000');
+          expect(serialized).toEqual(
+            '0100000001ff6f92a543b4d4e823068fc53752ec05d58b4dac0063206d09c2e512c290a8a8000000006b483045022100f4ba0639229ae31e07c1575aea9cc200c3dc7fef3e5cb900e089ce27336f0441022071e895a1f7f22a30371f10eb6f1932b4ef572c9390e2c382ef21a38b00ed6aa90121032207ee434431716f63dd296e29fa5523cf730e8262968309947a0c3658baa7e7ffffffff0150d41200000000001976a91408e6066989ae8dbb3d52d61e971fcd575064863988ac00000000',
+          );
+          expect(hash).toEqual('a2da6f73e595d8ee0fa7db2c9a5d5bc86af6bdb6ad38a8d332c6350d5d74c0b7');
+        });
       });
 
       describe('DecodeRawTransaction', () => {

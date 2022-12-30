@@ -1,7 +1,7 @@
 import { isNil, pick } from 'lodash';
 import Web3 from 'web3';
 import { toBN, toHex } from 'web3-utils';
-import { utils, BigNumber } from 'ethers';
+import { ethers, utils, BigNumber } from 'ethers';
 import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, Capability, TxOptions } from '@ethereumjs/tx';
 import { BN, stripHexPrefix, addHexPrefix, padToEven, toBuffer } from 'ethereumjs-util';
 
@@ -21,10 +21,13 @@ import {
   RebuildTransactionRequest,
   HashForSignatureRequest,
   DecodeTransactionRequest,
-  BuildContractInputRequest,
+  BuildContractExecutionTransactionInputRequest,
+  BuildContractExecutionTransactionInputReply,
   BuildContractTransactionRequest,
   DecodeRawTransactionRequest,
   DecodeRawTransactionReply,
+  GetFeeDataRequest,
+  GetFeeDataReply,
 } from '@src/__proto__/ethereum/core/types';
 import { pubToBIP55Address, compactPublicKey } from '../common/utils';
 import { BaseProvider } from '../common/base';
@@ -39,7 +42,7 @@ import {
   SendTransactionRequestSchema,
   HashForSignatureRequestSchema,
   DecodeTransactionRequestSchema,
-  BuildContractInputRequestSchema,
+  BuildContractExecutionTransactionInputRequestSchema,
   BuildContractTransactionRequestSchema,
 } from './ethereum.schema';
 
@@ -127,19 +130,21 @@ export class Provider extends BaseProvider {
     const txInput = {
       from,
       to,
-      data,
+      data: data ? addHexPrefix(data) : '0x',
       value: value ? toBN(value) : undefined,
     };
     return this.getTransactionReply(txInput, txOptions, web3, from, params!);
   }
 
-  async buildContractInput(req: BuildContractInputRequest): Promise<TransactionReply> {
-    validator.assert(BuildContractInputRequestSchema, req);
-    const { abis, args, method } = req as Required<BuildContractInputRequest>;
+  async buildContractExecutionTransactionInput(
+    req: BuildContractExecutionTransactionInputRequest,
+  ): Promise<BuildContractExecutionTransactionInputReply> {
+    validator.assert(BuildContractExecutionTransactionInputRequestSchema, req);
+    const { abis, args = [], method } = req as Required<BuildContractExecutionTransactionInputRequest>;
     const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
     const iface = new utils.Interface(abis);
     const input = iface.encodeFunctionData(method, values);
-    return { serialized: stripHexPrefix(input) };
+    return { data: stripHexPrefix(input) };
   }
 
   async buildContractTransaction(req: BuildContractTransactionRequest): Promise<TransactionReply> {
@@ -149,7 +154,11 @@ export class Provider extends BaseProvider {
     const { provider } = network!;
     const web3 = this.getWeb3Provider(provider!);
     const txOptions = this.getTxOptions(network!);
-    const { serialized: input } = await this.buildContractInput({ abis, args, method });
+    const { data: input } = await this.buildContractExecutionTransactionInput({
+      abis,
+      args,
+      method,
+    });
     const txInput = {
       to: contractAddress,
       data: addHexPrefix(input!),
@@ -184,7 +193,7 @@ export class Provider extends BaseProvider {
       ...params,
       type,
     };
-
+    if (params?.nonce) txData.nonce = toHex(toBN(params!.nonce));
     if (!params?.gasPrice) {
       txData.gasPrice = await this.getReqGasPrice(web3);
     }
@@ -209,7 +218,7 @@ export class Provider extends BaseProvider {
       txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
       txData.maxFeePerGas && delete txData.maxFeePerGas;
       delete txData.gasPrice;
-      txData = (await this.getReqEip155FeePerGas(web3, txData as FeeMarketEIP1559TxData)) as any;
+      txData = (await this.getTxFeeData(web3, txData as FeeMarketEIP1559TxData)) as any;
     }
     const reply = await this.getTransactionReply(txData, txOptions, web3, from, params!);
     const signatures = reply?.signatures || [];
@@ -264,7 +273,7 @@ export class Provider extends BaseProvider {
     const tx = TransactionFactory.fromSerializedData(data, txOptions);
     const params: TransactionParams = {
       type: addHexPrefix(padToEven(new BN(tx.type || 0).toString('hex'))),
-      nonce: tx.nonce.toNumber(),
+      nonce: tx.nonce.toString(),
       gasLimit: addHexPrefix(tx.gasLimit.toString('hex')),
     };
     const opts = pick(tx, ['gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas']);
@@ -309,6 +318,17 @@ export class Provider extends BaseProvider {
     const jsonTx = tx.toJSON();
     jsonTx.type = tx.type.toString();
     return jsonTx;
+  }
+
+  async getFeeData(req: GetFeeDataRequest): Promise<GetFeeDataReply> {
+    const { network } = req as Required<GetFeeDataRequest>;
+    const web3 = new Web3(network!.provider!);
+    const txData: FeeMarketEIP1559TxData = {};
+    const [fee, gasPrice] = await Promise.all([
+      this.getTxFeeData(web3, txData), // fallback to eip1559
+      web3.eth.getGasPrice(), // fallback to legacy gasPrice
+    ]);
+    return Object.assign(fee, { gasPrice: toHex(gasPrice) });
   }
 
   async getTransactionReply(

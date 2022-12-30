@@ -5,13 +5,14 @@ option go_package = "./bitcoin";
 import "common.proto";
 
 message Network {
-    string pub_key_hash = 1;
-    string script_hash  = 2;
-    string coin         = 3;
-    string provider     = 4;
-    int32 dust_limit    = 5;
-    string fork_chain   = 6;
-    string bech32       = 7;
+    string pub_key_hash     = 1;
+    string script_hash      = 2;
+    string coin             = 3;
+    string provider         = 4;
+    int32 dust_limit        = 5;
+    string fork_chain       = 6;
+    string bech32           = 7;
+    string maximum_fee_rate = 8;
 }
 
 message DeployAccountRequest {

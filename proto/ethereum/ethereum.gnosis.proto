@@ -3,21 +3,13 @@ syntax = "proto3";
 package ethereum.gnosis;
 option go_package = "./ethereum/gnosis";
 
+import "./ethereum.common.proto";
 import "../common.proto";
 
 message Network {
     string provider  = 1;
     int32 chain_id   = 2;
     string hard_fork = 3;
-}
-
-message TransactionParams {
-    string gas_limit                = 1;
-    string gas_price                = 2;
-    int32 nonce                     = 3;
-    string type                     = 4;
-    string max_fee_per_gas          = 5;
-    string max_priority_fee_per_gas = 6;
 }
 
 message GetAccountAddressRequest {
@@ -30,6 +22,8 @@ message GetAccountAddressRequest {
 message GetAccountAddressReply {
     string address   = 1;
     int64 salt_nonce = 2;
+    string to        = 3;
+    string data      = 4;
 }
 
 message BuildSafeInputReply {
@@ -59,7 +53,7 @@ message BuildTransferInputRequest {
     string to_address            = 2;
     string value                 = 3;
     string contract              = 4;
-    int32 contract_nonce         = 5;
+    string contract_nonce        = 5;
     string sender                = 6;
     repeated string participants = 7;  // the participants of the safe who should sign the input
     int32 operation              = 8;
@@ -81,7 +75,7 @@ message BuildInputRequest {
     string value                 = 3;
     string data                  = 4;
     string contract              = 5;
-    int32 contract_nonce         = 6;
+    string contract_nonce        = 6;
     string sender                = 7;
     repeated string participants = 8;
     int32 operation              = 9;
@@ -115,7 +109,7 @@ message BuildERC20TransferInputRequest {
     string to_address            = 3;
     string quantity              = 4;
     string contract              = 5;
-    int32 contract_nonce         = 6;
+    string contract_nonce        = 6;
     string sender                = 7;
     repeated string participants = 8;
     int32 operation              = 9;
@@ -144,7 +138,7 @@ message BuildMultiSendInputRequest {
     repeated SafeCall txs        = 3;
     string value                 = 4;
     string contract              = 5;
-    int32 contract_nonce         = 6;
+    string contract_nonce        = 6;
     string sender                = 7;
     repeated string participants = 8;
     string safe_tx_gas           = 9;
@@ -159,7 +153,7 @@ message BuildAddOwnerWithThresholdInputRequest {
     Network network              = 1;
     TransactionParams params     = 2;
     string contract              = 3;
-    int32 contract_nonce         = 4;
+    string contract_nonce        = 4;
     string owner                 = 5;
     int32 threshold              = 6;
     string value                 = 7;
@@ -177,7 +171,7 @@ message BuildChangeThresholdInputRequest {
     Network network              = 1;
     TransactionParams params     = 2;
     string contract              = 3;
-    int32 contract_nonce         = 4;
+    string contract_nonce        = 4;
     int32 threshold              = 5;
     string value                 = 6;
     string sender                = 7;
@@ -194,7 +188,7 @@ message BuildRemoveOwnerInputRequest {
     Network network              = 1;
     TransactionParams params     = 2;
     string contract              = 3;
-    int32 contract_nonce         = 4;
+    string contract_nonce        = 4;
     string prev_owner            = 5;
     string owner                 = 6;
     int32 threshold              = 7;
@@ -213,7 +207,7 @@ message BuildSwapOwnerInputRequest {
     Network network              = 1;
     TransactionParams params     = 2;
     string contract              = 3;
-    int32 contract_nonce         = 4;
+    string contract_nonce        = 4;
     string prev_owner            = 5;
     string old_owner             = 6;
     string new_owner             = 7;
@@ -221,9 +215,20 @@ message BuildSwapOwnerInputRequest {
     string sender                = 9;
     repeated string participants = 10;
 }
+
 message DecodeTransactionRequest {
     Network network   = 1;
     string serialized = 2;
+}
+
+message EncodeMultiSendRequest {
+    Network network       = 1;
+    repeated SafeCall txs = 2;
+}
+
+message EncodeMultiSendReply {
+    string to   = 1;
+    string data = 2;
 }
 
 service Ethereum {
@@ -237,6 +242,9 @@ service Ethereum {
     // input
     rpc BuildTransferInput(BuildTransferInputRequest) returns (BuildSafeInputReply) {}
     rpc BuildMultiSendInput(BuildMultiSendInputRequest) returns (BuildSafeInputReply) {}
+
+    // multisend
+    rpc EncodeMultiSend(EncodeMultiSendRequest) returns (EncodeMultiSendReply) {}
 
     rpc BuildERC20TransferInput(BuildERC20TransferInputRequest) returns (BuildSafeInputReply) {}
     rpc SignERC20TransferInput(SignInputRequest) returns (BuildSafeInputReply) {}

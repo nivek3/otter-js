@@ -5,13 +5,13 @@ export const SolanaRefSchema = {
       type: 'object',
       required: ['provider'],
       properties: {
-        provider: { type: 'string' }
+        provider: { type: 'string' },
       },
     },
     params: {
       type: 'object',
       properties: {
-        recentBlockhash: { type: 'string' }
+        recentBlockhash: { type: 'string' },
       },
     },
     signature: {
@@ -39,11 +39,11 @@ export const BuildTransferTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'from', 'to', 'quantity'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     from: { type: 'string' },
     to: { type: 'string' },
     quantity: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -51,13 +51,13 @@ export const BuildTokenTransferTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'from', 'to', 'quantity', 'mintAddress', 'decimals'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    params: { type: 'object', $ref: 'base#/definitions/params' },
     from: { type: 'string' },
     to: { type: 'string' },
     mintAddress: { type: 'string' },
     decimals: { type: 'integer' },
     quantity: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };
 
@@ -91,8 +91,8 @@ export const RebuildTransactionRequestSchema = {
   type: 'object',
   required: ['network', 'serialized'],
   properties: {
-    network: { $ref: 'base#/definitions/network' },
+    network: { type: 'object', $$ref: 'base#/definitions/network' },
+    params: { type: 'object', $$ref: 'base#/definitions/params' },
     serialized: { type: 'string' },
-    params: { $ref: 'base#/definitions/params' },
   },
 };

@@ -23,6 +23,10 @@ import {
   BuildMultiSendInputRequest,
   BuildSafeInputReply,
 
+  // multi send encode
+  EncodeMultiSendRequest,
+  EncodeMultiSendReply,
+
   // owner manger
   BuildAddOwnerWithThresholdInputRequest,
   BuildChangeThresholdInputRequest,
@@ -63,7 +67,7 @@ import {
   BuildERC20TransferInputRequestSchema,
   BuildTransactionRequestSchema,
   BuildMultiSendInputRequestSchema,
-
+  EncodeMultiSendRequestSchema,
   // owner manger
   BuildAddOwnerWithThresholdInputRequestSchema,
   BuildChangeThresholdInputRequestSchema,
@@ -85,11 +89,13 @@ export class Provider extends CoreProvider {
     const { provider, chainId } = network!;
     if (!chainId) throw new AppError(errors.INVALID_ARGUMENT, { details: 'chainId is required' });
     const web3 = new Web3(provider!);
-    const { address } = await this.getSetupTxData(web3, chainId, keys, threshold, BigNumber.from(saltNonce!));
+    const { address, input, proxyFactoryAddress } = await this.getSetupTxData(web3, chainId, keys, threshold, BigNumber.from(saltNonce!));
 
     return {
       address,
       saltNonce,
+      data: stripHexPrefix(input),
+      to: proxyFactoryAddress,
     };
   }
 
@@ -135,6 +141,42 @@ export class Provider extends CoreProvider {
       address,
       ...reply,
     };
+  }
+
+  async buildTransferInput(req: BuildTransferInputRequest): Promise<BuildSafeInputReply> {
+    validator.assert(BuildTransferInputRequestSchema, req);
+
+    const { network, toAddress, value, contract, participants, sender, ...call } = req as Required<BuildTransferInputRequest>;
+    const { chainId } = network!;
+    const web3 = new Web3(network?.provider!);
+    const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
+    const safeTx = buildSafeTransaction({
+      ...call,
+      to: toAddress,
+      value: isHexString(value) ? hexValue(value) : value,
+      nonce: safeContractNonce,
+    });
+    return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
+  }
+
+  async buildERC20TransferInput(req: BuildERC20TransferInputRequest): Promise<BuildSafeInputReply> {
+    validator.assert(BuildERC20TransferInputRequestSchema, req);
+
+    const { toAddress, quantity, tokenAddress, contract, participants, sender, ...call } = req as Required<BuildERC20TransferInputRequest>;
+    const { chainId, provider } = req.network!;
+    const web3 = new Web3(provider!);
+
+    const data = this.encodeERC20Method('transfer', [toAddress, quantity]);
+
+    const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
+
+    const safeTx = buildSafeTransaction({
+      ...call,
+      to: tokenAddress,
+      data,
+      nonce: safeContractNonce,
+    });
+    return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
 
   async buildAddOwnerWithThresholdInput(req: BuildAddOwnerWithThresholdInputRequest): Promise<BuildSafeInputReply> {
@@ -225,23 +267,7 @@ export class Provider extends CoreProvider {
       to,
       value: isHexString(value) ? hexValue(value) : value,
       nonce: multiSigContractNonce,
-      data,
-    });
-    return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
-  }
-
-  async buildTransferInput(req: BuildTransferInputRequest): Promise<BuildSafeInputReply> {
-    validator.assert(BuildTransferInputRequestSchema, req);
-
-    const { network, toAddress, value, contract, participants, sender, ...call } = req as Required<BuildTransferInputRequest>;
-    const { chainId } = network!;
-    const web3 = new Web3(network?.provider!);
-    const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
-    const safeTx = buildSafeTransaction({
-      ...call,
-      to: toAddress,
-      value: isHexString(value) ? hexValue(value) : value,
-      nonce: safeContractNonce,
+      data: data ? addHexPrefix(data) : '',
     });
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
@@ -253,26 +279,6 @@ export class Provider extends CoreProvider {
     return {
       serialized: stripHexPrefix(serialized),
     };
-  }
-
-  async buildERC20TransferInput(req: BuildERC20TransferInputRequest): Promise<BuildSafeInputReply> {
-    validator.assert(BuildERC20TransferInputRequestSchema, req);
-
-    const { toAddress, quantity, tokenAddress, contract, participants, sender, ...call } = req as Required<BuildERC20TransferInputRequest>;
-    const { chainId, provider } = req.network!;
-    const web3 = new Web3(provider!);
-
-    const data = this.encodeERC20Method('transfer', [toAddress, quantity]);
-
-    const safeContractNonce = await this.getSafeContractNonce(contract, web3, req?.contractNonce);
-
-    const safeTx = buildSafeTransaction({
-      ...call,
-      to: tokenAddress,
-      data,
-      nonce: safeContractNonce,
-    });
-    return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
 
   async buildMultiSendInput(req: BuildMultiSendInputRequest): Promise<BuildSafeInputReply> {
@@ -307,6 +313,24 @@ export class Provider extends CoreProvider {
     return this.getSafeTxInputReply(web3, chainId!, safeTx, contract, participants, sender);
   }
 
+  async encodeMultiSend(req: EncodeMultiSendRequest): Promise<EncodeMultiSendReply> {
+    validator.assert(EncodeMultiSendRequestSchema, req);
+
+    const { network, txs } = req as Required<EncodeMultiSendRequest>;
+    const { multiSendCallABI, multiSendCallAddress } = this.getGnosisAddresses(network?.chainId!);
+    const transactions = txs.map((tx) => {
+      if (tx.data) tx.data = addHexPrefix(tx.data);
+      return buildSafeTransaction(tx as any);
+    });
+    const transaction = encodeMultiSend(transactions);
+    const iface = new utils.Interface(multiSendCallABI);
+    const data = iface.encodeFunctionData('multiSend', [transaction]);
+    return {
+      to: multiSendCallAddress,
+      data: addHexPrefix(data),
+    };
+  }
+
   getGnosisAddresses(chainId: number) {
     const safeSingletonAddress = safeSingleton?.networkAddresses[chainId];
     const compatHandlerAddress = compatHandler?.networkAddresses[chainId];
@@ -337,7 +361,7 @@ export class Provider extends CoreProvider {
     return utils.solidityPack(['bytes', 'uint256'], [creationCode, safeSingletonAddress]);
   }
 
-  async getSafeContractNonce(multiSigAddress: string, web3: Web3, multiSigContractNonce?: number) {
+  async getSafeContractNonce(multiSigAddress: string, web3: Web3, multiSigContractNonce?: string) {
     if (multiSigContractNonce === undefined) {
       const multisigContract = new Contract(safeSingletonABI, multiSigAddress);
       multisigContract.setProvider(web3.currentProvider);

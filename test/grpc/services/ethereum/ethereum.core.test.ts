@@ -79,7 +79,7 @@ describe('Ethereum Core service', () => {
             ],
             network: {
               chainId: 3,
-              provider: 'https://ropsten.infura.io/v3/eb95583755214676866b88506b0c25fe',
+              provider: 'https://goerli.infura.io/v3/eb95583755214676866b88506b0c25fe',
             },
           });
           expect(response).toHaveProperty('serialized', expected);
@@ -135,7 +135,7 @@ describe('Ethereum Core service', () => {
             serialized:
               'f86a098502540be40082a410945f560610a5f64834fb2c40402226745c32ec9f8585174876e8008081e6a0212d53d06acb66a1bf72c75538841e7d5d52672a7204a1364467c1eb85065875a07e74ca88cab076d5e2a961ce062340f953f9a2a5d586baea844c472c14490622',
             params: {
-              nonce: 10,
+              nonce: '10',
               gasPrice: '0x2540be400',
               gasLimit: '0xa410',
             },
@@ -165,7 +165,7 @@ describe('Ethereum Core service', () => {
           const response = await RebuildTransaction({
             serialized: 'e9098502540be40082a410945f560610a5f64834fb2c40402226745c32ec9f8585174876e80080808080',
             params: {
-              nonce: 10,
+              nonce: '10',
               gasPrice: '0x2540be400',
               gasLimit: '0xa410',
             },
@@ -229,7 +229,7 @@ describe('Ethereum Core service', () => {
 
           expect(response).toEqual(
             expect.objectContaining({
-              nonce: 5,
+              nonce: '5',
               gasPrice: '0x0147d35700',
               gasLimit: '0x1710e',
             }),
@@ -287,7 +287,7 @@ describe('Ethereum Core service', () => {
       describe('ERC20', () => {
         describe('BuildERC20TransferTransaction', () => {
           test('BAT', async () => {
-            const uri = 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
+            const uri = 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
             const web3 = provider.getWeb3Provider(uri);
             jest.spyOn(provider, 'getWeb3Provider').mockReturnValueOnce(web3);
             jest.spyOn(web3.eth, 'getGasPrice').mockResolvedValueOnce('1300002921');
@@ -328,11 +328,11 @@ describe('Ethereum Core service', () => {
           });
         });
 
-        describe('BuildContractInput', () => {
+        describe('BuildContractExecutionTransactionInput', () => {
           test('ETC20 transfer', async () => {
             const serialized =
               'a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000';
-            const Method = promisify(client.BuildContractInput.bind(client));
+            const Method = promisify(client.BuildContractExecutionTransactionInput.bind(client));
             const response = await Method({
               abis: [
                 'function name() view returns (string)',
@@ -343,13 +343,13 @@ describe('Ethereum Core service', () => {
               method: 'transfer',
               args: ['0x370BA1dc25C07d0C77Ba9b83fcc75Fcc2a0aC243', '1000000000000000000'],
             });
-            expect(response).toHaveProperty('serialized', serialized);
+            expect(response).toHaveProperty('data', serialized);
           });
         });
 
         describe('BuildContractTransaction', () => {
           test('BAT', async () => {
-            const uri = 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
+            const uri = 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
             const web3 = provider.getWeb3Provider(uri);
             jest.spyOn(provider, 'getWeb3Provider').mockReturnValueOnce(web3);
             jest.spyOn(web3.eth, 'getGasPrice').mockResolvedValueOnce('1300002921');
@@ -397,7 +397,7 @@ describe('Ethereum Core service', () => {
 
         describe('BuildERC20TransferTransaction', () => {
           test('BAT', async () => {
-            const uri = 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
+            const uri = 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
             const web3 = provider.getWeb3Provider(uri);
             jest.spyOn(provider, 'getWeb3Provider').mockReturnValueOnce(web3);
             jest.spyOn(web3.eth, 'getGasPrice').mockResolvedValueOnce('1300002921');
@@ -446,7 +446,7 @@ describe('Ethereum Core service', () => {
             const response = await HashForSignature({
               serialized: serialized,
               network: {
-                provider: 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+                provider: 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
                 chainId: 3,
                 hardFork: 'london',
               },
@@ -476,7 +476,7 @@ describe('Ethereum Core service', () => {
                 },
               ],
               network: {
-                provider: 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+                provider: 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
                 chainId: 3,
                 hardFork: 'london',
               },
@@ -496,7 +496,7 @@ describe('Ethereum Core service', () => {
               serialized:
                 '02f86f033f849502f9008495030c6a8289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c0808080',
               network: {
-                provider: 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+                provider: 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
                 chainId: 3,
                 hardFork: 'london',
               },
@@ -508,7 +508,7 @@ describe('Ethereum Core service', () => {
                 maxPriorityFeePerGas: '0x9502f900',
                 maxFeePerGas: '0x95030c6a',
                 gasLimit: '0x89d0',
-                nonce: 63,
+                nonce: '63',
               }),
             );
           });
@@ -516,7 +516,7 @@ describe('Ethereum Core service', () => {
 
         describe('RebuildTransaction', () => {
           test('use new nonce', async () => {
-            const uri = 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
+            const uri = 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3';
             const web3 = provider.getWeb3Provider(uri);
             jest.spyOn(provider, 'getWeb3Provider').mockReturnValueOnce(web3);
             jest.spyOn(web3.eth, 'getGasPrice').mockResolvedValueOnce('1300002921');
@@ -529,12 +529,12 @@ describe('Ethereum Core service', () => {
               serialized:
                 '02f8af033f849502f900849507e4d88289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c001a00325bf9b32bca0084b54e1938ebb9e047aaab9270deb89c214ea030c17be9acfa007c6f88a61ec1f964387440c4ffa2f8822df80d7afdb7ba84da610f12579f57a',
               network: {
-                provider: 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+                provider: 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
                 chainId: 3,
                 hardFork: 'london',
               },
               params: {
-                nonce: 64,
+                nonce: '64',
               },
               from: '0xd73d9AA55ABBd6CFbeD3e9Ad7f8Be2f6D83C70dC',
             });
@@ -556,12 +556,12 @@ describe('Ethereum Core service', () => {
               serialized:
                 '02f8af033f849502f900849507e4d88289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c001a00325bf9b32bca0084b54e1938ebb9e047aaab9270deb89c214ea030c17be9acfa007c6f88a61ec1f964387440c4ffa2f8822df80d7afdb7ba84da610f12579f57a',
               network: {
-                provider: 'https://ropsten.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
+                provider: 'https://goerli.infura.io/v3/de9290b603fc4609a6f0a65e23e8c7d3',
                 chainId: 3,
                 hardFork: 'london',
               },
               params: {
-                nonce: 64,
+                nonce: '64',
                 gasLimit: '0x89d0',
                 maxPriorityFeePerGas: '0x9502f900',
                 maxFeePerGas: '0x9507e4d8',

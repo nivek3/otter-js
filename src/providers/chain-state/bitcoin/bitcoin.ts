@@ -122,7 +122,7 @@ export class Provider {
 
     if (!inputs || !outputs) throw new AppError(errors.NOT_ENOUGH_BALANCE);
 
-    const txb = bitgo.createTransactionBuilderForNetwork(network);
+    const txb = this.createTransactionBuilderForNetwork(network);
 
     inputs.forEach((input) => {
       let prevOutScript: Buffer | undefined;
@@ -163,8 +163,8 @@ export class Provider {
 
     const utxoMap = new Map(utxos.map((utxo: any) => [this.getUtxoKey(utxo), utxo]));
     const tx = bitgo.createTransactionFromHex(serialized, network);
-    const txb = bitgo.createTransactionBuilderForNetwork(network);
-    this.cloneTx(txb, tx, utxoMap);
+    const txb = this.createTransactionBuilderForNetwork(network);
+    this.combineUtxoTransactionBuilder(txb, tx, utxoMap);
 
     const signatures = this.getTxbSignatures(txb, hashType, utxoMap);
 
@@ -189,9 +189,8 @@ export class Provider {
     const utxoMap: Map<string, UnspentTransactionOutput> = new Map(utxos.map((utxo) => [this.getUtxoKey(utxo), utxo]));
 
     const tx = bitgo.createTransactionFromHex(serialized, network);
-    const txb = bitgo.createTransactionBuilderForNetwork(network);
-
-    this.cloneTx(txb, tx, utxoMap);
+    const txb = this.createTransactionBuilderForNetwork(network);
+    this.combineUtxoTransactionBuilder(txb, tx, utxoMap);
 
     for (let i = 0; i < tx.ins.length; i++) {
       const ins = tx.ins[i];
@@ -302,7 +301,11 @@ export class Provider {
     };
   }
 
-  cloneTx(txb: bitgo.UtxoTransactionBuilder<bitgo.UtxoTransaction>, tx: bitgo.UtxoTransaction, utxoMap: Map<string, any>) {
+  combineUtxoTransactionBuilder(
+    txb: bitgo.UtxoTransactionBuilder<bitgo.UtxoTransaction>,
+    tx: bitgo.UtxoTransaction,
+    utxoMap: Map<string, any>,
+  ) {
     for (let i = 0; i < tx.ins.length; i++) {
       const { hash, index, sequence } = tx.ins[i];
       const txid = this.getTxId(hash);
@@ -371,7 +374,7 @@ export class Provider {
     });
   }
 
-  getNetWork({ scriptHash, pubKeyHash, coin, forkChain, bech32 }: Network): BitgoNetwork {
+  getNetWork({ scriptHash, pubKeyHash, coin, forkChain, bech32, maximumFeeRate }: Network): BitgoNetwork {
     const bitgoNetwork: any = Object.values(networks).find(
       (network: any) =>
         network.scriptHash === Number(scriptHash) &&
@@ -390,7 +393,7 @@ export class Provider {
     };
 
     if (bech32) network['bech32'] = bech32;
-
+    if (maximumFeeRate) network['maximumFeeRate'] = +maximumFeeRate;
     return network as BitgoNetwork;
   }
 
@@ -473,6 +476,12 @@ export class Provider {
       tx.outs.map((out) => out.value),
     );
     return new BigNumber(inputs).minus(outputs).toString();
+  }
+
+  createTransactionBuilderForNetwork(network: BitgoNetwork) {
+    const txb = bitgo.createTransactionBuilderForNetwork(network);
+    if (network['maximumFeeRate']) txb['maximumFeeRate'] = +network['maximumFeeRate'];
+    return txb;
   }
 }
 
