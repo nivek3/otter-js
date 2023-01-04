@@ -85,7 +85,8 @@ export const BuildTransactionRequestSchema = {
   type: 'object',
   anyOf: [
     { required: ['network', 'from', 'to', 'value'] },
-    { required: ['network', 'from', 'to', 'data'] }, // contract
+    { required: ['network', 'from', 'data'] }, // contract creation
+    { required: ['network', 'from', 'to', 'data'] }, // contract execution
   ],
   properties: {
     network: { type: 'object', $ref: 'base#/definitions/network' },
