@@ -125,13 +125,24 @@ export const DecodeTransactionRequestSchema = {
   },
 };
 
+export const BuildContractCreationTransactionInputRequestSchema = {
+  type: 'object',
+  required: ['abi', 'bytecode', 'args'],
+  properties: {
+    network: { type: 'object', $ref: 'base#/definitions/network' },
+    abi: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    bytecode: { type: 'string' },
+    args: { type: 'array', items: { type: 'string' } },
+  },
+};
+
 export const BuildContractExecutionTransactionInputRequestSchema = {
   type: 'object',
-  required: ['abis', 'method', 'args'],
+  required: ['abi', 'method', 'args'],
   properties: {
     network: { type: 'object', $ref: 'base#/definitions/network' },
     contractAddress: { type: 'string' },
-    abis: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    abi: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
     args: { type: 'array', items: { type: 'string' } },
   },
@@ -139,12 +150,12 @@ export const BuildContractExecutionTransactionInputRequestSchema = {
 
 export const BuildContractTransactionRequestSchema = {
   type: 'object',
-  required: ['network', 'from', 'contractAddress', 'abis', 'method'],
+  required: ['network', 'from', 'contractAddress', 'abi', 'method'],
   properties: {
     network: { type: 'object', $ref: 'base#/definitions/network' },
     from: { type: 'string' },
     contractAddress: { type: 'string' },
-    abis: { type: 'array', uniqueItems: true, items: { type: 'string' } },
+    abi: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
     args: { type: 'array', items: { type: 'string' } },
   },

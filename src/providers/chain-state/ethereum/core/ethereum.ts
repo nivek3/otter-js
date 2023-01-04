@@ -1,7 +1,7 @@
 import { isNil, pick } from 'lodash';
 import Web3 from 'web3';
 import { toBN, toHex } from 'web3-utils';
-import { ethers, utils, BigNumber } from 'ethers';
+import { ContractFactory, utils, BigNumber } from 'ethers';
 import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, Capability, TxOptions } from '@ethereumjs/tx';
 import { BN, stripHexPrefix, addHexPrefix, padToEven, toBuffer } from 'ethereumjs-util';
 
@@ -23,6 +23,8 @@ import {
   DecodeTransactionRequest,
   BuildContractExecutionTransactionInputRequest,
   BuildContractExecutionTransactionInputReply,
+  BuildContractCreationTransactionInputRequest,
+  BuildContractCreationTransactionInputReply,
   BuildContractTransactionRequest,
   DecodeRawTransactionRequest,
   DecodeRawTransactionReply,
@@ -43,6 +45,7 @@ import {
   HashForSignatureRequestSchema,
   DecodeTransactionRequestSchema,
   BuildContractExecutionTransactionInputRequestSchema,
+  BuildContractCreationTransactionInputRequestSchema,
   BuildContractTransactionRequestSchema,
 } from './ethereum.schema';
 
@@ -140,22 +143,36 @@ export class Provider extends BaseProvider {
     req: BuildContractExecutionTransactionInputRequest,
   ): Promise<BuildContractExecutionTransactionInputReply> {
     validator.assert(BuildContractExecutionTransactionInputRequestSchema, req);
-    const { abis, args = [], method } = req as Required<BuildContractExecutionTransactionInputRequest>;
+    const { abi, args = [], method } = req as Required<BuildContractExecutionTransactionInputRequest>;
     const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
-    const iface = new utils.Interface(abis);
+    const iface = new utils.Interface(abi);
     const input = iface.encodeFunctionData(method, values);
     return { data: stripHexPrefix(input) };
+  }
+
+  async buildContractCreationTransactionInput(
+    req: BuildContractCreationTransactionInputRequest,
+  ): Promise<BuildContractCreationTransactionInputReply> {
+    validator.assert(BuildContractCreationTransactionInputRequestSchema, req);
+
+    const { abi, bytecode, args = [] } = req as Required<BuildContractCreationTransactionInputRequest>;
+    const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
+    const iface = new utils.Interface(abi);
+    const contract = new ContractFactory(iface, addHexPrefix(bytecode));
+    const { data } = contract.getDeployTransaction(...values);
+    if (!data) throw new AppError(errors.INTERNAL, { details: 'Failed to deploy contract' });
+    return { data: stripHexPrefix(utils.hexlify(data)) };
   }
 
   async buildContractTransaction(req: BuildContractTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildContractTransactionRequestSchema, req);
 
-    const { params = {}, network, from, abis, args, contractAddress, method, value } = req as Required<BuildContractTransactionRequest>;
+    const { params = {}, network, from, abi, args, contractAddress, method, value } = req as Required<BuildContractTransactionRequest>;
     const { provider } = network!;
     const web3 = this.getWeb3Provider(provider!);
     const txOptions = this.getTxOptions(network!);
     const { data: input } = await this.buildContractExecutionTransactionInput({
-      abis,
+      abi,
       args,
       method,
     });

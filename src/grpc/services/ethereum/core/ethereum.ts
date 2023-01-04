@@ -57,6 +57,13 @@ export const EthereumCoreImplementation: ProxyUntypedServiceImplementation<Ether
     ctx.body = await provider.buildERC20TransferTransaction(req);
   },
 
+  BuildContractCreationTransactionInput: async function (
+    ctx: ImplementationContext<BuildContractExecutionTransactionInputRequest, BuildContractExecutionTransactionInputReply>,
+  ) {
+    const req = ctx.call.request;
+    ctx.body = await provider.buildContractCreationTransactionInput(req);
+  },
+
   BuildContractExecutionTransactionInput: async function (
     ctx: ImplementationContext<BuildContractExecutionTransactionInputRequest, BuildContractExecutionTransactionInputReply>,
   ) {

@@ -4,6 +4,7 @@
     "AVAX",
     "cosmjs",
     "ethersproject",
+    "hexlify",
     "Keccak",
     "locktime",
     "Multisigned",
