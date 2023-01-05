@@ -115,6 +115,16 @@ router.post('/decodeTransaction', async function (req: Request, res: Response, n
   }
 });
 
+router.post('/decodeRawTransaction', async function (req: Request, res: Response, next) {
+  try {
+    const result = await provider.decodeRawTransaction(req.body);
+    return res.json(result);
+  } catch (err) {
+    logger.error('DecodeRawTransaction =>', err);
+    return next(err);
+  }
+});
+
 router.post('/getFeeData', async function (req: Request, res: Response, next) {
   try {
     const result = await provider.getFeeData(req.body);

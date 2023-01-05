@@ -85,6 +85,8 @@ export abstract class BaseProvider {
     }
     const block = await web3.eth.getBlock('latest');
     const baseFeePerGas = block['baseFeePerGas']!;
+    // unsupported baseFeePerGas
+    if (!baseFeePerGas) return tx;
 
     if (!tx.maxPriorityFeePerGas) {
       tx.maxPriorityFeePerGas = await this.maxPriorityFeePerGas(web3);
