@@ -133,7 +133,7 @@ export const BuildContractCreationTransactionInputRequestSchema = {
     network: { type: 'object', $ref: 'base#/definitions/network' },
     abi: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     bytecode: { type: 'string' },
-    args: { type: 'array', items: { type: 'string' } },
+    args: { type: 'string' },
   },
 };
 
@@ -145,7 +145,7 @@ export const BuildContractExecutionTransactionInputRequestSchema = {
     contractAddress: { type: 'string' },
     abi: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
-    args: { type: 'array', items: { type: 'string' } },
+    args: { type: 'string' },
   },
 };
 
@@ -158,7 +158,7 @@ export const BuildContractTransactionRequestSchema = {
     contractAddress: { type: 'string' },
     abi: { type: 'array', uniqueItems: true, items: { type: 'string' } },
     method: { type: 'string' },
-    args: { type: 'array', items: { type: 'string' } },
+    args: { type: 'string' },
   },
 };
 

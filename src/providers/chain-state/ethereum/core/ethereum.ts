@@ -143,8 +143,8 @@ export class Provider extends BaseProvider {
     req: BuildContractExecutionTransactionInputRequest,
   ): Promise<BuildContractExecutionTransactionInputReply> {
     validator.assert(BuildContractExecutionTransactionInputRequestSchema, req);
-    const { abi, args = [], method } = req as Required<BuildContractExecutionTransactionInputRequest>;
-    const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
+    const { abi, method } = req as Required<BuildContractExecutionTransactionInputRequest>;
+    const values = this.getReqArgs(req.args);
     const iface = new utils.Interface(abi);
     const input = iface.encodeFunctionData(method, values);
     return { data: stripHexPrefix(input) };
@@ -155,8 +155,8 @@ export class Provider extends BaseProvider {
   ): Promise<BuildContractCreationTransactionInputReply> {
     validator.assert(BuildContractCreationTransactionInputRequestSchema, req);
 
-    const { abi, bytecode, args = [] } = req as Required<BuildContractCreationTransactionInputRequest>;
-    const values = args.map((value) => (value.startsWith('[') && value.endsWith(']') ? JSON.parse(value) : value));
+    const { abi, bytecode } = req as Required<BuildContractCreationTransactionInputRequest>;
+    const values = this.getReqArgs(req.args);
     const iface = new utils.Interface(abi);
     const contract = new ContractFactory(iface, addHexPrefix(bytecode));
     const { data } = contract.getDeployTransaction(...values);
@@ -368,6 +368,17 @@ export class Provider extends BaseProvider {
       signatures: [signature],
       estimatedFee,
     };
+  }
+
+  getReqArgs(args?: string) {
+    try {
+      if (!args) return [];
+      const value = JSON.parse(args);
+      if (!Array.isArray(value)) throw new AppError(errors.INVALID_ARGUMENT, { details: `invalid args ${args}` });
+      return value;
+    } catch (e) {
+      throw new AppError(errors.INVALID_ARGUMENT, { details: `invalid args ${args}` });
+    }
   }
 }
 
