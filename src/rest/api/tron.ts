@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 const router = require('express').Router({ mergeParams: true });
-import { provider } from '../../providers/chain-state/tron/tron';
-import logger from '../../logger';
+import { provider } from '@src/providers/chain-state/tron/tron';
+import logger from '@src/logger';
 
 router.post('/deployAccount', async function (req: Request, res: Response, next) {
   try {

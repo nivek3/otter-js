@@ -4,8 +4,8 @@ import { promisify } from 'util';
 
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { grpcServer } from '../../../src/services/grpc';
-import { provider } from '../../../src/providers/chain-state/tron/tron';
+import { grpcServer } from '@src/services/grpc';
+import { provider } from '@src/providers/chain-state/tron/tron';
 
 const PROTO_PATH = path.join(__dirname, '../../../proto/tron.proto');
 

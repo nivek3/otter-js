@@ -16,7 +16,7 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   TransactionParams,
-} from '../../../__proto__/avalanche/avax/types';
+} from '@src/__proto__/avalanche/avax/types';
 
 const filename = path.join(__dirname, '../../../../proto/avalanche/avax.proto');
 const options = {

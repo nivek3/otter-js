@@ -1,7 +1,6 @@
 import Web3 from 'web3';
 import { utils, BigNumber } from 'ethers';
 import { toBN } from 'web3-utils';
-import { _TypedDataEncoder } from '@ethersproject/hash';
 import { splitSignature, joinSignature, isHexString, hexValue } from '@ethersproject/bytes';
 import { TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData } from '@ethereumjs/tx';
 

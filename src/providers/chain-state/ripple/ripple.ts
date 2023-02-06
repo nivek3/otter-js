@@ -1,7 +1,6 @@
 import BN from 'bn.js';
 import hashjs from 'hash.js';
 import { get, omit, cloneDeep, isNil, pickBy } from 'lodash';
-import { ec as EC } from 'elliptic';
 import { stripHexPrefix } from 'ethereumjs-util';
 import { APIOptions, RippleAPI, TransactionJSON } from 'ripple-lib';
 import { setCanonicalFlag } from 'ripple-lib/dist/npm/transaction/utils';
@@ -9,11 +8,12 @@ import { JsonObject } from 'ripple-binary-codec/dist/types/serialized-type';
 import { deriveAddress } from 'ripple-keypairs';
 import { hexToBytes } from 'ripple-keypairs/dist/utils';
 import rippleBinaryCodec from 'ripple-binary-codec';
-import { canonicalSignature } from './../../../utils/signature';
+
 import { compareSigners } from './util';
 import { ApiCache } from './cache';
 
-import { Signature, TransactionReply } from '../../../__proto__/common/types';
+import { canonicalSignature } from '@src/utils/signature';
+import { Signature, TransactionReply } from '@src/__proto__/common/types';
 import {
   Account,
   TransactionParams,
@@ -26,10 +26,9 @@ import {
   SendTransactionRequest,
   DecodeTransactionRequest,
   RebuildTransactionRequest,
-} from '../../../__proto__/ripple/types';
+} from '@src/__proto__/ripple/types';
 
 const ECSignature = require('elliptic/lib/elliptic/ec/signature');
-const ec = new EC('secp256k1');
 export class Provider {
   apis: ApiCache;
 

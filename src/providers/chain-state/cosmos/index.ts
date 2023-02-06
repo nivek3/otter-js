@@ -11,10 +11,10 @@ import { TxRaw, AuthInfo, Fee } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { MsgDelegate, MsgUndelegate, MsgBeginRedelegate } from 'cosmjs-types/cosmos/staking/v1beta1/tx';
 import { MsgWithdrawDelegatorReward } from 'cosmjs-types/cosmos/distribution/v1beta1/tx';
 
-import { canonicalSignature } from '../../../utils/signature';
-import { Validator } from '../../../utils/ajv';
-import { AppError, errors } from '../../../error';
-import { TransactionReply } from '../../../__proto__/common/types';
+import { canonicalSignature } from '@src/utils/signature';
+import { Validator } from '@src/utils/ajv';
+import { AppError, errors } from '@src/error';
+import { TransactionReply } from '@src/__proto__/common/types';
 
 import {
   TransactionParams,
@@ -40,7 +40,7 @@ import {
   BuildMultisigUndelegateTransactionRequest,
   BuildMultisigRedelegateTransactionRequest,
   BuildMultisigWithdrawDelegationRewardTransactionRequest,
-} from '../../../__proto__/cosmos/types';
+} from '@src/__proto__/cosmos/types';
 
 import {
   BuildTransferTransactionRequestSchema,

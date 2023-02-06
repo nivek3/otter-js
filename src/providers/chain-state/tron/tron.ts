@@ -1,8 +1,8 @@
 import { isNil, pick } from 'lodash';
 import TronWeb from 'tronweb';
 import { pubToBase58Address } from './utils/address';
-import { Validator } from '../../../utils/ajv';
-import { AppError, errors } from './../../../error';
+import { Validator } from '@src/utils/ajv';
+import { AppError, errors } from '@src/error';
 
 import {
   DeployAccountRequest,
@@ -14,8 +14,8 @@ import {
   DecodeTransactionRequest,
   TransactionParams,
   RebuildTransactionRequest,
-} from '../../../__proto__/tron/types';
-import { TransactionReply } from '../../../__proto__/common/TransactionReply';
+} from '@src/__proto__/tron/types';
+import { TransactionReply } from '@src/__proto__/common/TransactionReply';
 import {
   TronRefSchema,
   DeployAccountRequestSchema,

@@ -1,5 +1,5 @@
 import LRU from 'lru-cache';
-import { LRUCache } from '../../../cache/lru';
+import { LRUCache } from '@src/providers/cache/lru';
 import { RippleAPI } from 'ripple-lib';
 
 export class ApiCache extends LRUCache<RippleAPI> {

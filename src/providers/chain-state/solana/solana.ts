@@ -1,4 +1,4 @@
-import { TransactionReply } from '../../../__proto__/common/types';
+import { TransactionReply } from '@src/__proto__/common/types';
 import {
   DeployAccountRequest,
   SendTransactionRequest,
@@ -7,8 +7,8 @@ import {
   BuildTokenTransferTransactionRequest,
   DecodeTransactionRequest,
   TransactionParams,
-  RebuildTransactionRequest
-} from '../../../__proto__/solana/types';
+  RebuildTransactionRequest,
+} from '@src/__proto__/solana/types';
 
 import {
   SolanaRefSchema,
@@ -18,38 +18,27 @@ import {
   SignTransactionRequestSchema,
   SendTransactionRequestSchema,
   DecodeTransactionRequestSchema,
-  RebuildTransactionRequestSchema
+  RebuildTransactionRequestSchema,
 } from './solana.schema';
 
-import {
-  Connection,
-  PublicKey,
-  SystemProgram,
-  Transaction
-} from '@solana/web3.js';
-import { 
-  Token, 
-  ASSOCIATED_TOKEN_PROGRAM_ID, 
-  TOKEN_PROGRAM_ID 
-} from '@solana/spl-token';
+import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { Token, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 import BigNumber from 'bignumber.js';
-import { Validator } from '../../../utils/ajv';
-import { AppError, errors } from './../../../error';
+import { Validator } from '@src/utils/ajv';
+import { AppError, errors } from '@src/error';
 
-const bs58 = require('bs58')
+const bs58 = require('bs58');
 const validator = new Validator({ schemas: [SolanaRefSchema] });
 
 export class Provider {
-
   deployAccount(req: DeployAccountRequest): string {
     validator.assert(DeployAccountRequestSchema, req);
-    const { key } = req as Required<DeployAccountRequest>
-    return bs58.encode(Buffer.from(key, 'hex'))
+    const { key } = req as Required<DeployAccountRequest>;
+    return bs58.encode(Buffer.from(key, 'hex'));
   }
 
   async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
-
     validator.assert(BuildTransferTransactionRequestSchema, req);
 
     const { from, to, quantity, network, params } = req as Required<BuildTransferTransactionRequest>;
@@ -58,37 +47,35 @@ export class Provider {
 
     // 1. Build
     const transaction = new Transaction();
-    transaction.feePayer = fromPubkey
+    transaction.feePayer = fromPubkey;
     transaction.add(
       SystemProgram.transfer({
         fromPubkey: fromPubkey,
         toPubkey: toPubkey,
-        lamports: +quantity
-      })
+        lamports: +quantity,
+      }),
     );
 
     if (!params?.recentBlockhash) {
       if (!network) throw new AppError(errors.INVALID_NETWORK);
       const { provider } = network!;
       const connection = new Connection(provider!, 'confirmed');
-      const blockhash = (await connection.getRecentBlockhash()).blockhash
-      transaction.recentBlockhash = blockhash
+      const blockhash = (await connection.getRecentBlockhash()).blockhash;
+      transaction.recentBlockhash = blockhash;
     } else {
-      transaction.recentBlockhash = params?.recentBlockhash
+      transaction.recentBlockhash = params?.recentBlockhash;
     }
 
     // 2. Serialized
     const serialized = transaction.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('hex');
-    const hash = transaction.compileMessage().serialize().toString('hex')
+    const hash = transaction.compileMessage().serialize().toString('hex');
     const signature = {
-      hash
-    }
+      hash,
+    };
 
     return {
       serialized: serialized,
-      signatures: [
-        signature
-      ]
+      signatures: [signature],
     };
   }
 
@@ -103,7 +90,7 @@ export class Provider {
 
     return {
       serialized: transaction.serialize().toString('hex'),
-      hash: bs58.encode(transaction.signature) // TxId is a 64-byte Solana transaction signature
+      hash: bs58.encode(transaction.signature), // TxId is a 64-byte Solana transaction signature
     };
   }
 
@@ -117,10 +104,10 @@ export class Provider {
     return new Promise((resolve, reject) => {
       connection
         .sendRawTransaction(Buffer.from(serialized, 'hex'))
-        .then(async hash => {
-          resolve({ hash })
+        .then(async (hash) => {
+          resolve({ hash });
         })
-        .catch(e => reject(e));
+        .catch((e) => reject(e));
     });
   }
 
@@ -137,13 +124,13 @@ export class Provider {
     const mint = new PublicKey(mintAddress);
 
     // Token Transfer info
-    const amount = new BigNumber(quantity).toNumber()
+    const amount = new BigNumber(quantity).toNumber();
     let fromTokenAccount: PublicKey | null = null;
     let toTokenAccount: PublicKey | null = null;
 
-    let shouldCreateNewTokenAccount: Boolean = false
+    let shouldCreateNewTokenAccount: Boolean = false;
     let createNewAccountTransfer: any;
-    let tokenTransfer: any
+    let tokenTransfer: any;
 
     // Config from token account
     if (await isTokenPubkey(connection, fromWallet)) {
@@ -153,12 +140,12 @@ export class Provider {
     } else {
       const fromTokenAccounts = await getTokenAccountsByOwner(connection, fromWallet, mint);
       if (fromTokenAccounts == null) {
-        throw new AppError(errors.INVALID_ARGUMENT, { details: "From token accounts not found" });
+        throw new AppError(errors.INVALID_ARGUMENT, { details: 'From token accounts not found' });
       } else {
         fromTokenAccount = fromTokenAccounts![0].pubkey;
         for (const tokenAccount of fromTokenAccounts) {
           if (tokenAccount.account.data.parsed.info.mint === mint) {
-            fromTokenAccount = tokenAccount.pubkey
+            fromTokenAccount = tokenAccount.pubkey;
           }
         }
       }
@@ -183,13 +170,13 @@ export class Provider {
           mint,
           toTokenAccount!,
           toWallet,
-          fromWallet
-        )
-        shouldCreateNewTokenAccount = true
+          fromWallet,
+        );
+        shouldCreateNewTokenAccount = true;
       } else {
         for (const tokenAccount of toTokenAccounts) {
           if (tokenAccount.account.data.parsed.info.mint == mint) {
-            toTokenAccount = tokenAccount.pubkey
+            toTokenAccount = tokenAccount.pubkey;
           }
         }
       }
@@ -207,15 +194,15 @@ export class Provider {
       fromWallet,
       [],
       amount,
-      new BigNumber(decimals).toNumber()
-    )
+      new BigNumber(decimals).toNumber(),
+    );
 
-    const transaction = new Transaction()
-    if (!params?.recentBlockhash) { 
-      const blockhash = (await connection.getRecentBlockhash()).blockhash
-      transaction.recentBlockhash = blockhash
+    const transaction = new Transaction();
+    if (!params?.recentBlockhash) {
+      const blockhash = (await connection.getRecentBlockhash()).blockhash;
+      transaction.recentBlockhash = blockhash;
     } else {
-      transaction.recentBlockhash = params?.recentBlockhash
+      transaction.recentBlockhash = params?.recentBlockhash;
     }
     transaction.feePayer = fromWallet;
 
@@ -223,14 +210,12 @@ export class Provider {
     if (tokenTransfer) transaction.add(tokenTransfer);
 
     const serialized = transaction.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('hex');
-    const hash = transaction.compileMessage().serialize().toString('hex').replace('0101010', '0100010')
-    const signature = { hash }
+    const hash = transaction.compileMessage().serialize().toString('hex').replace('0101010', '0100010');
+    const signature = { hash };
 
     return {
       serialized: serialized,
-      signatures: [
-        signature
-      ]
+      signatures: [signature],
     };
   }
 
@@ -252,43 +237,44 @@ export class Provider {
       if (!network) throw new AppError(errors.INVALID_NETWORK);
       const { provider } = network!;
       const connection = new Connection(provider!, 'confirmed');
-      const blockhash = (await connection.getRecentBlockhash()).blockhash
-      transaction.recentBlockhash = blockhash
+      const blockhash = (await connection.getRecentBlockhash()).blockhash;
+      transaction.recentBlockhash = blockhash;
     } else {
-      transaction.recentBlockhash = params?.recentBlockhash
+      transaction.recentBlockhash = params?.recentBlockhash;
     }
 
     const reserialized = transaction.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('hex');
-    const hash = transaction.compileMessage().serialize().toString('hex')
-    const signature = { hash }
+    const hash = transaction.compileMessage().serialize().toString('hex');
+    const signature = { hash };
 
     return {
       serialized: reserialized,
-      signatures: [signature]
+      signatures: [signature],
     };
   }
-};
+}
 
 async function isTokenPubkey(connection: Connection, pubkey: PublicKey) {
-  const accountInfo = await connection.getAccountInfo(pubkey, 'recent')
-  return accountInfo && accountInfo!.data.length != 0 
+  const accountInfo = await connection.getAccountInfo(pubkey, 'recent');
+  return accountInfo && accountInfo!.data.length != 0;
 }
 
 async function getTokenAccountsByOwner(connection: Connection, owener: PublicKey, mint: PublicKey) {
-  const tokenAccounts = (await connection.getParsedTokenAccountsByOwner(owener, { mint: mint, programId: TOKEN_PROGRAM_ID }, 'recent')).value
+  const tokenAccounts = (await connection.getParsedTokenAccountsByOwner(owener, { mint: mint, programId: TOKEN_PROGRAM_ID }, 'recent'))
+    .value;
   if (Array.isArray(tokenAccounts) && tokenAccounts.length !== 0) {
-    return tokenAccounts
+    return tokenAccounts;
   } else {
-    return null
+    return null;
   }
 }
 
 async function findAssociatedTokenAddress(pubkey: PublicKey, mint: PublicKey) {
   const addresses = await PublicKey.findProgramAddress(
     [pubkey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  )
-  return addresses[0]
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+  );
+  return addresses[0];
 }
 
 export const provider = new Provider();

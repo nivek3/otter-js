@@ -2,8 +2,8 @@ import { isNil } from 'lodash';
 import { URL } from 'url';
 import createHash from 'create-hash';
 import { Avalanche, avm, BinTools, utils, Buffer, BN, common } from 'avalanche';
-import { Validator } from '../../../utils/ajv';
-import { AppError, errors } from '../../../error';
+import { Validator } from '@src/utils/ajv';
+import { AppError, errors } from '@src/error';
 
 import {
   Network,
@@ -13,8 +13,8 @@ import {
   SignTransactionRequest,
   SendTransactionRequest,
   TransactionParams,
-} from '../../../__proto__/avalanche/avax/types';
-import { TransactionReply } from '../../../__proto__/common/types';
+} from '@src/__proto__/avalanche/avax/types';
+import { TransactionReply } from '@src/__proto__/common/types';
 import {
   AvalancheRefSchema,
   DecodeTransactionRequestSchema,
