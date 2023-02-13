@@ -9,8 +9,6 @@ import { GrpcInterceptorProxy } from '@src/grpc/internals/grpcInterceptor';
 import {
   AvalancheAVAXService,
   AvalancheAVAXImplementation,
-  EthereumBitgoService,
-  EthereumBitgoImplementation,
   EthereumCoreService,
   EthereumCoreImplementation,
   EthereumGnosisService,
@@ -101,7 +99,6 @@ export const grpcServer = new GRPCServer(GRPC_SERVER_NAME, GRPC_PORT);
 grpcServer.addService(AvalancheAVAXService, AvalancheAVAXImplementation);
 grpcServer.addService(BitcoinService, BitcoinImplementation);
 grpcServer.addService(CosmosService, CosmosImplementation);
-grpcServer.addService(EthereumBitgoService, EthereumBitgoImplementation);
 grpcServer.addService(EthereumCoreService, EthereumCoreImplementation);
 grpcServer.addService(EthereumGnosisService, EthereumGnosisImplementation);
 grpcServer.addService(HealthService, HealthImplementation);

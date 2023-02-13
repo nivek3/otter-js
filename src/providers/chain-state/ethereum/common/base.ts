@@ -1,5 +1,6 @@
 import { pick } from 'lodash';
 import Web3 from 'web3';
+import BigNumber from 'bignumber.js';
 import { toBN, toHex } from 'web3-utils';
 import type { TransactionConfig } from 'web3-core';
 import { TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, TypedTransaction, TxOptions } from '@ethereumjs/tx';
@@ -79,7 +80,7 @@ export abstract class BaseProvider {
     return gasLimit;
   }
 
-  async getTxFeeData(web3: Web3, tx: FeeMarketEIP1559TxData): Promise<Partial<FactoryTxData>> {
+  async getTxFeeData(web3: Web3, tx: FeeMarketEIP1559TxData, network: Network): Promise<Partial<FeeMarketEIP1559TxData>> {
     if (tx['maxFeePerGas'] && tx['maxPriorityFeePerGas']) {
       return tx;
     }
@@ -88,14 +89,16 @@ export abstract class BaseProvider {
     // unsupported baseFeePerGas
     if (!baseFeePerGas) return tx;
 
+    const baseFeeRatio = network?.baseFeeRatio || 1;
     if (!tx.maxPriorityFeePerGas) {
       tx.maxPriorityFeePerGas = await this.maxPriorityFeePerGas(web3);
     }
     const maxPriorityFeePerGas = tx.maxPriorityFeePerGas as string;
     // https://github.com/ethers-io/ethers.js/blob/c80fcddf50a9023486e9f9acb1848aba4c19f7b6/packages/abstract-provider/src.ts/index.ts#L253
-    const maxFeePerGas = toHex(toBN(baseFeePerGas).mul(toBN(2)).add(toBN(maxPriorityFeePerGas)));
+    // const maxFeePerGas = toHex(toBN(baseFeePerGas).mul(toBN(baseFeeRatio)).add(toBN(maxPriorityFeePerGas)));
+    const maxFeePerGas = new BigNumber(baseFeePerGas).multipliedBy(new BigNumber(baseFeeRatio)).plus(maxPriorityFeePerGas).toFixed(0);
     return Object.assign(tx, {
-      maxFeePerGas,
+      maxFeePerGas: toHex(maxFeePerGas),
       maxPriorityFeePerGas,
     });
   }
@@ -118,7 +121,7 @@ export abstract class BaseProvider {
     return new Web3(provider!);
   }
 
-  async getTxData(tx: FactoryTxData, _common: Common, web3: Web3, from?: string, params?: TransactionParams): Promise<FactoryTxData> {
+  async getTxData(web3: Web3, tx: FactoryTxData, from?: string, params?: TransactionParams, network?: Network): Promise<FactoryTxData> {
     tx.data = tx.data || '0x';
     tx.value = bnToHex(toBN(tx.value?.toString() || '0x00'));
     const { to, value, data } = tx;
@@ -146,13 +149,23 @@ export abstract class BaseProvider {
 
     // eip1559
     if (isBip1559Transaction(txData?.type)) {
-      delete txData.gasPrice;
-      Object.assign(txData, pick(params, ['maxFeePerGas', 'maxPriorityFeePerGas']));
-      const newData = await this.getTxFeeData(web3, txData as FeeMarketEIP1559TxData);
+      const newData = await this.getFeeMarketEIP1559TxData(web3, txData as FeeMarketEIP1559TxData, params, network);
       Object.assign(txData, newData);
     }
 
     return txData;
+  }
+
+  async getFeeMarketEIP1559TxData(
+    web3: Web3,
+    txData: FeeMarketEIP1559TxData,
+    params?: TransactionParams,
+    network?: Network,
+  ): Promise<FeeMarketEIP1559TxData> {
+    delete txData.gasPrice;
+    Object.assign(txData, pick(params, ['maxFeePerGas', 'maxPriorityFeePerGas']));
+    const newData = await this.getTxFeeData(web3, txData as FeeMarketEIP1559TxData, network!);
+    return Object.assign(txData, newData);
   }
 
   async maxPriorityFeePerGas(web3: Web3): Promise<string> {

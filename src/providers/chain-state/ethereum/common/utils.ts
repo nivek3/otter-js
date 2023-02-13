@@ -15,7 +15,6 @@ export const compactPublicKey = (key: string) => {
   }
   return ec.keyFromPublic(key, 'hex').getPublic(true, 'hex');
 };
-
 export const isBip1559Transaction = (type?: BNLike) => {
   return type && toBN(type.toString()).eqn(2);
 };

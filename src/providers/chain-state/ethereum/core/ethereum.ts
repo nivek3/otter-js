@@ -10,7 +10,7 @@ import { Validator } from '@src/utils/ajv';
 import { errors, AppError } from '@src/error';
 
 import { TransactionReply } from '@src/__proto__/common/types';
-import { TransactionParams } from '@src/__proto__/ethereum/common/types';
+import { TransactionParams, Network } from '@src/__proto__/ethereum/common/types';
 import {
   BuildTransactionRequest,
   DeployAccountRequest,
@@ -73,7 +73,7 @@ export class Provider extends BaseProvider {
       to,
       value: toBN(quantity),
     };
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!);
+    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
   }
 
   async buildERC20TransferTransaction(req: BuildERC20TransferTransactionRequest): Promise<TransactionReply> {
@@ -89,7 +89,7 @@ export class Provider extends BaseProvider {
       to: tokenAddress,
       data: input,
     };
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!);
+    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
   }
 
   signTransaction(req: SignTransactionRequest) {
@@ -136,7 +136,7 @@ export class Provider extends BaseProvider {
       data: data ? addHexPrefix(data) : '0x',
       value: value ? toBN(value) : undefined,
     };
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!);
+    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
   }
 
   async buildContractExecutionTransactionInput(
@@ -182,7 +182,7 @@ export class Provider extends BaseProvider {
       value,
     };
 
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!);
+    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
   }
 
   async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
@@ -195,7 +195,7 @@ export class Provider extends BaseProvider {
     const common = this.getTxCommon(network!);
     const web3 = this.getWeb3Provider(provider!);
     const txOptions = { common };
-    let tx = TransactionFactory.fromSerializedData(serializedBuf, txOptions);
+    const tx = TransactionFactory.fromSerializedData(serializedBuf, txOptions);
     const type = tx.type;
     const { r, s, v, ...jsonTx } = tx.toJSON();
 
@@ -235,9 +235,11 @@ export class Provider extends BaseProvider {
       txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
       txData.maxFeePerGas && delete txData.maxFeePerGas;
       delete txData.gasPrice;
-      txData = (await this.getTxFeeData(web3, txData as FeeMarketEIP1559TxData)) as any;
+      const newData = await this.getFeeMarketEIP1559TxData(web3, txData as FeeMarketEIP1559TxData, params!, network!);
+      Object.assign(txData, newData);
     }
-    const reply = await this.getTransactionReply(txData, txOptions, web3, from, params!);
+
+    const reply = await this.getTransactionReply(txData, txOptions, web3, from, params!, network!);
     const signatures = reply?.signatures || [];
     signatures[0].pubKey = pubKey;
     return { ...reply, signatures };
@@ -342,7 +344,7 @@ export class Provider extends BaseProvider {
     const web3 = new Web3(network!.provider!);
     const txData: FeeMarketEIP1559TxData = {};
     const [fee, gasPrice] = await Promise.all([
-      this.getTxFeeData(web3, txData), // fallback to eip1559
+      this.getTxFeeData(web3, txData, network!), // fallback to eip1559
       web3.eth.getGasPrice(), // fallback to legacy gasPrice
     ]);
     return Object.assign(fee, { gasPrice: toHex(gasPrice) });
@@ -354,8 +356,9 @@ export class Provider extends BaseProvider {
     web3: Web3,
     from?: string,
     params?: TransactionParams,
+    network?: Network,
   ): Promise<TransactionReply> {
-    const txData = await this.getTxData(txInput, txOptions.common!, web3, from, params);
+    const txData = await this.getTxData(web3, txInput, from, params, network);
     const tx = TransactionFactory.fromTxData(txData, txOptions);
 
     const hash = tx.getMessageToSign(true).toString('hex');
