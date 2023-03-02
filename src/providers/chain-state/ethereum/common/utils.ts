@@ -1,20 +1,36 @@
-import { addHexPrefix, BNLike, bufferToHex, importPublic, pubToAddress, toBuffer, toChecksumAddress } from 'ethereumjs-util';
-import { ec as EC } from 'elliptic';
-const ec = new EC('secp256k1');
-import { toBN } from 'web3-utils';
+import assert from 'assert';
+import { pick } from 'lodash';
+import { ethers } from 'ethers';
+import { addHexPrefix, stripHexPrefix } from '@ethereumjs/util';
 
-export const pubToBIP55Address = (key: string) => {
-  const pubKey = importPublic(toBuffer(addHexPrefix(key)));
-  const address = bufferToHex(pubToAddress(pubKey));
-  return toChecksumAddress(address);
+export const TX_FIELDS = 'accessList chainId data gasPrice gasLimit maxFeePerGas maxPriorityFeePerGas nonce to type value'.split(' ');
+export const SIG_FIELDS = 'r s v'.split(' ');
+
+export const isEip1559 = (type?: number | string | null) => {
+  return type && ethers.BigNumber.from(type).toNumber() === 2;
 };
 
-export const compactPublicKey = (key: string) => {
-  if (!key.startsWith('04')) {
-    key = '04' + key;
+export const decodeRawTransaction = (raw: string) => {
+  const decoded = ethers.utils.parseTransaction(addHexPrefix(raw));
+  const unsignedTransaction = pick(decoded, TX_FIELDS) as ethers.UnsignedTransaction;
+  const signature = pick(decoded, SIG_FIELDS) as ethers.Signature;
+  const unsignedSerialized = ethers.utils.serializeTransaction(unsignedTransaction);
+  const signatureHash = ethers.utils.keccak256(unsignedSerialized);
+  const signed = signature.r && !ethers.BigNumber.from(signature.r).isZero() && signature.s && !ethers.BigNumber.from(signature.s).isZero();
+  let recoveredPublicKey: string | undefined = undefined;
+  if (signed) {
+    recoveredPublicKey = ethers.utils.recoverPublicKey(signatureHash, signature);
+    recoveredPublicKey = ethers.utils.computePublicKey(recoveredPublicKey, true);
+    const recoveredAddress = ethers.utils.computeAddress(recoveredPublicKey);
+    assert.strictEqual(recoveredAddress, decoded.from, 'Recovered address does not match from address');
+    recoveredPublicKey = stripHexPrefix(recoveredPublicKey);
   }
-  return ec.keyFromPublic(key, 'hex').getPublic(true, 'hex');
-};
-export const isBip1559Transaction = (type?: BNLike) => {
-  return type && toBN(type.toString()).eqn(2);
+
+  return {
+    unsignedSerialized,
+    signatureHash,
+    signature,
+    unsignedTransaction,
+    recoveredPublicKey,
+  };
 };

@@ -3,7 +3,7 @@ import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 import { ISubmittableResult } from '@polkadot/types/types';
 
 import type { SignerPayload } from '@polkadot/types/interfaces/extrinsics';
-import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix, stripHexPrefix } from '@ethereumjs/util';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, encodeAddress } from '@polkadot/util-crypto';
 import { SIGN_PLACEHOLDER } from './const';

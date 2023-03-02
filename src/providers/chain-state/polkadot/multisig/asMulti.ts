@@ -1,4 +1,4 @@
-import { addHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix } from '@ethereumjs/util';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a } from '@polkadot/util';
 import { sortAddresses, encodeMultiAddress } from '@polkadot/util-crypto';

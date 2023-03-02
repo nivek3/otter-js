@@ -30,115 +30,100 @@ describe('Bitcoin service', () => {
 
     describe('Bitcoin testnet', () => {
       describe('DeployAccount', () => {
-        test('generate address', (done) => {
-          client.DeployAccount(
-            {
-              key: '02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231',
-              network: {
-                pubKeyHash: '0x6f',
-                scriptHash: '0xc4',
-                coin: 'btc',
-              },
+        test('generate address', async () => {
+          const req = {
+            key: '02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231',
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc',
             },
-            (err: grpc.ServiceError, response) => {
-              expect(err).toBeNull();
-              expect(response).toHaveProperty('address', 'n1cScasu6XVoDki38WYAJH4ZJGRAfG8XRN');
-              done();
-            },
-          );
+          };
+          const Method = promisify(client.DeployAccount.bind(client));
+          const { address } = await Method(req);
+          expect(address).toEqual('n1cScasu6XVoDki38WYAJH4ZJGRAfG8XRN');
         });
       });
 
       describe('DeploySegwitAccount', () => {
-        test('p2wpkh address', (done) => {
-          client.DeploySegwitAccount(
-            {
-              key: '02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231',
-              network: {
-                pubKeyHash: '0x6f',
-                scriptHash: '0xc4',
-                coin: 'btc',
-              },
+        test('p2wpkh address', async () => {
+          const req = {
+            key: '02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231',
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc',
             },
-            (err: grpc.ServiceError, response) => {
-              expect(err).toBeNull();
-              expect(response).toHaveProperty('address', 'tb1qm3krcsl96tyngcpqj5gr609lsnwu09ljvgpqlw');
-              done();
-            },
-          );
+          };
+          const Method = promisify(client.DeploySegwitAccount.bind(client));
+          const { address } = await Method(req);
+          expect(address).toEqual('tb1qm3krcsl96tyngcpqj5gr609lsnwu09ljvgpqlw');
         });
       });
 
       describe('DeployMultisigLegacyAccount', () => {
-        test('generate a 2-of-3 multisig P2SH address, invalid arguments', (done) => {
-          client.DeployMultisigLegacyAccount(
-            {
-              keys: [
-                '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
-                '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
-                '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
-              ],
-              network: {
-                pubKeyHash: '0x6f',
-                scriptHash: '0xc4',
-                coin: 'btc-not-found',
-              },
+        test('generate a 2-of-3 multisig P2SH address, invalid arguments', async () => {
+          const req = {
+            keys: [
+              '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
+              '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
+              '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
+            ],
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc-not-found',
             },
-            (err: grpc.ServiceError, response) => {
-              expect(err.code).toBe(grpc.status.INVALID_ARGUMENT);
-              expect(err.metadata.getMap()).toHaveProperty('requestid');
-              expect(err.details).toBeDefined();
-              expect(response).toBeUndefined();
-              done();
-            },
-          );
+          };
+          const Method = promisify(client.DeployMultisigLegacyAccount.bind(client));
+          try {
+            await Method(req);
+          } catch (err: any) {
+            expect(err.code).toBe(grpc.status.INVALID_ARGUMENT);
+            expect(err.metadata.getMap()).toHaveProperty('requestid');
+            expect(err.details).toBeDefined();
+          }
         });
 
-        test('generate a 2-of-3 multisig P2SH address, expect valid address', (done) => {
-          const address = '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL';
-          client.DeployMultisigLegacyAccount(
-            {
-              keys: [
-                '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
-                '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
-                '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
-              ],
-              threshold: 2,
-              network: {
-                pubKeyHash: '0x6f',
-                scriptHash: '0xc4',
-                coin: 'btc',
-              },
+        test('generate a 2-of-3 multisig P2SH address, expect valid address', async () => {
+          const req = {
+            keys: [
+              '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
+              '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
+              '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
+            ],
+            threshold: 2,
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc',
             },
-            (_err: grpc.ServiceError, response) => {
-              expect(response).toHaveProperty('address', address);
-              done();
-            },
-          );
+          };
+          const Method = promisify(client.DeployMultisigLegacyAccount.bind(client));
+          const { address } = await Method(req);
+          expect(address).toEqual('2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL');
         });
       });
 
       describe('DeployMultisigSegwitAccount', () => {
-        test('generate a 2-of-3 multisig p2wsh-p2ms address', (done) => {
-          client.DeployMultisigSegwitAccount(
-            {
-              keys: [
-                '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
-                '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
-                '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
-              ],
-              threshold: 2,
-              network: {
-                pubKeyHash: '0x6f',
-                scriptHash: '0xc4',
-                coin: 'btc',
-              },
+        test('generate a 2-of-3 multisig p2wsh-p2ms address', async () => {
+          // client.DeployMultisigSegwitAccount(
+          const req = {
+            keys: [
+              '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
+              '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
+              '02f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266',
+            ],
+            threshold: 2,
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc',
             },
-            (_err: grpc.ServiceError, response) => {
-              expect(response).toHaveProperty('address', 'tb1qjal8arqu87q2ez2qny2wemj3jjkexvw2ytp8kwwz7y0dxmk8vwzsn56avk');
-              done();
-            },
-          );
+          };
+          const Method = promisify(client.DeployMultisigSegwitAccount.bind(client));
+          const { address } = await Method(req);
+          expect(address).toEqual('tb1qjal8arqu87q2ez2qny2wemj3jjkexvw2ytp8kwwz7y0dxmk8vwzsn56avk');
         });
       });
 
@@ -182,11 +167,60 @@ describe('Bitcoin service', () => {
               coin: 'btc',
             },
           };
-          const BuildTransaction = promisify(client.BuildTransaction.bind(client));
-          const { serialized } = await BuildTransaction(req);
+          const Method = promisify(client.BuildTransaction.bind(client));
+          const { serialized, estimatedFee } = await Method(req);
           expect(serialized).toEqual(
             '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187fb1800000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
           );
+          expect(estimatedFee).toEqual('605');
+        });
+
+        test('create a Transaction, with w/ a p2sh input, with dustLimit', async () => {
+          const req = {
+            changer: '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL',
+            recipients: [
+              {
+                address: '2Mz9XKSAiCsRmgnS7xmkqLJTCuGVz7TB3dL',
+                value: '13000',
+              },
+            ],
+            utxos: [
+              {
+                vout: 1,
+                txid: 'fd9b44753db382c410aaf63778aba38a51c43825b21aa5a230148b3fb20d1322',
+                amount: '10000',
+                prevOutScript: 'a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187',
+                redeemScript:
+                  '522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae',
+                signers: [
+                  '02f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5',
+                  '0377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd',
+                ],
+              },
+              {
+                vout: 0,
+                txid: 'b779a919a3f6c4f8b2730cc497626c4703b5d99e9676ca937115ebcbcdcbddd8',
+                amount: '10000',
+                prevOutScript: '76a914dc6c3c43e5d2c934602095103d3cbf84ddc797f288ac',
+                signers: ['02ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231'],
+              },
+            ],
+            params: {
+              feeRate: 1,
+            },
+            network: {
+              pubKeyHash: '0x6f',
+              scriptHash: '0xc4',
+              coin: 'btc',
+              dustLimit: 10000,
+            },
+          };
+          const Method = promisify(client.BuildTransaction.bind(client));
+          const { serialized, estimatedFee } = await Method(req);
+          expect(serialized).toEqual(
+            '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff01c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
+          );
+          expect(estimatedFee).toEqual('7000');
         });
 
         test('create a Transaction, with w/ a P2WPKH input', async () => {
@@ -216,8 +250,8 @@ describe('Bitcoin service', () => {
               coin: 'btc',
             },
           };
-          const BuildTransaction = promisify(client.BuildTransaction.bind(client));
-          const { serialized, signatures } = await BuildTransaction(req);
+          const Method = promisify(client.BuildTransaction.bind(client));
+          const { serialized, signatures } = await Method(req);
           expect(serialized).toEqual(
             '01000000017d2afcc4b91694f926ba6e6e78c069a588ea6cab66c713b7318d0b0ea2a57a650100000000ffffffff0148260000000000001600144f390e5e860550de2bd4e26360a06666b38bd84000000000',
           );
@@ -264,9 +298,8 @@ describe('Bitcoin service', () => {
               coin: 'btc',
             },
           };
-
-          const HashForSignature = promisify(client.HashForSignature.bind(client));
-          const { serialized, signatures, estimatedFee } = await HashForSignature(req);
+          const Method = promisify(client.HashForSignature.bind(client));
+          const { serialized, signatures, estimatedFee } = await Method(req);
           expect(serialized).toEqual(
             '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd0100000000ffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b70000000000ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
           );
@@ -308,8 +341,8 @@ describe('Bitcoin service', () => {
               coin: 'btc',
             },
           };
-          const HashForSignature = promisify(client.HashForSignature.bind(client));
-          const { serialized, signatures } = await HashForSignature(req);
+          const Method = promisify(client.HashForSignature.bind(client));
+          const { serialized, signatures } = await Method(req);
           expect(serialized).toEqual(
             '01000000017d2afcc4b91694f926ba6e6e78c069a588ea6cab66c713b7318d0b0ea2a57a650100000000ffffffff0148260000000000001600144f390e5e860550de2bd4e26360a06666b38bd84000000000',
           );
@@ -377,9 +410,8 @@ describe('Bitcoin service', () => {
             },
           };
 
-          const SignTransaction = promisify(client.SignTransaction.bind(client));
-
-          const { serialized, hash, estimatedFee } = await SignTransaction(req);
+          const Method = promisify(client.SignTransaction.bind(client));
+          const { serialized, hash, estimatedFee } = await Method(req);
           expect(estimatedFee).toEqual('0');
           expect(serialized).toEqual(
             '010000000222130db23f8b1430a2a51ab22538c4518aa3ab7837f6aa10c482b33d75449bfd01000000fdfe0000483045022100b55cd0a2721d850a064bab91b1fabc85cd84214c539d7a70cc32504bd4e793e402204ab7684b4daae0aa0ea12789c848d8daf0b35ffe477370e13ed62a224114978a01483045022100848a041a9172d9de0f8c7097ba0da143b2073ddc564eec6c7d4e628e8e4b53ab022023a7aa0da73bf3328d0d6dbfc76a4bbd4a4a8a97f127db99f86383d7fcafa287014c69522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653aeffffffffd8ddcbcdcbeb157193ca76969ed9b503476c6297c40c73b2f8c4f6a319a979b7000000006a47304402204dec81ebbc7e4983d657eeab7a50cd533e950be7e8689e3f7fb713efd6aeac36022026a8d9862b703c47f2227c3ad58f9682c0ef89b0f37cc48ae2db9828f7026d59012102ff26c5980685ae12d25312a8df8224c951a68272013425ffa60327d7d4b54231ffffffff02c83200000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e187581b00000000000017a9144bb4d9e9f96d79d4c1041087fc18b0ac145982e18700000000',
@@ -418,8 +450,8 @@ describe('Bitcoin service', () => {
               },
             ],
           };
-          const BuildTransaction = promisify(client.BuildTransaction.bind(client));
-          const { serialized, signatures } = await BuildTransaction(req);
+          const Method = promisify(client.BuildTransaction.bind(client));
+          const { serialized, signatures } = await Method(req);
           expect(serialized).toEqual(
             '0100000001ee99fb929b4fb924faeaf00c92ac79cd904e55dbd0f0c90e96f85b45d84232a00000000000ffffffff0134210000000000001600144f390e5e860550de2bd4e26360a06666b38bd84000000000',
           );
@@ -460,8 +492,8 @@ describe('Bitcoin service', () => {
               coin: 'btc',
             },
           };
-          const SignTransaction = promisify(client.SignTransaction.bind(client));
-          const { serialized, hash } = await SignTransaction(req);
+          const Method = promisify(client.SignTransaction.bind(client));
+          const { serialized, hash } = await Method(req);
           expect(serialized).toEqual(
             '01000000000101ee99fb929b4fb924faeaf00c92ac79cd904e55dbd0f0c90e96f85b45d84232a00000000000ffffffff0134210000000000001600144f390e5e860550de2bd4e26360a06666b38bd8400247304402207bd00c149470dfc2f64c2fa10e92a5aa3d7f359f50605b063100a043513fb28a0220605cb5c15f6a3f5e9da456158fb076e8d67c6c555ab5a89954b7ce80db6b8dbb012102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26600000000',
           );
@@ -504,8 +536,8 @@ describe('Bitcoin service', () => {
               },
             ],
           };
-          const BuildTransaction = promisify(client.BuildTransaction.bind(client));
-          const { serialized, signatures } = await BuildTransaction(req);
+          const Method = promisify(client.BuildTransaction.bind(client));
+          const { serialized, signatures } = await Method(req);
           expect(serialized).toEqual(
             '0100000001681b33796e4521f7fb889adc9762e8b1dbcafe3fc2fce3f2b09a455bc2152a510000000000ffffffff011c0c000000000000220020977e7e8c1c3f80ac89409914ecee5194ad9331ca22c27b39c2f11ed36ec7638500000000',
           );
@@ -561,8 +593,8 @@ describe('Bitcoin service', () => {
               },
             ],
           };
-          const SignTransaction = promisify(client.SignTransaction.bind(client));
-          const { serialized, hash } = await SignTransaction(req);
+          const Method = promisify(client.SignTransaction.bind(client));
+          const { serialized, hash } = await Method(req);
           expect(serialized).toEqual(
             '01000000000101681b33796e4521f7fb889adc9762e8b1dbcafe3fc2fce3f2b09a455bc2152a510000000000ffffffff011c0c000000000000220020977e7e8c1c3f80ac89409914ecee5194ad9331ca22c27b39c2f11ed36ec76385040047304402207f7a65db46b61e4f78fd6231ad6b99c17eb341ac83c7d26a6cf09b3c6d7b323302204b78b821f3a41a51879176cc8425187d2e12d1043235e241e8d6cb54b9148f0901473044022013c7e987a1ee2c90b11fc14fc96725df1020294ae3cd9de2570e2126a215eae3022026ce9a65f8496fa92e584eba06b16d079eacbe47bfd836f05f1e7572f05ca3420169522102f4147da97162a214dbe25828ee4c4acc4dc721cd0c15b2761b43ed0292ed82b5210377155e520059d3b85c6afc5c617b7eb519afadd0360f1ef03aff3f7e3f5438dd2102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b26653ae00000000',
           );
@@ -646,8 +678,8 @@ describe('Bitcoin service', () => {
               feeRate: '55',
             },
           };
-          const BuildTransaction = promisify(client.BuildTransaction.bind(client));
-          const { serialized, estimatedFee } = await BuildTransaction(req);
+          const Method = promisify(client.BuildTransaction.bind(client));
+          const { serialized, estimatedFee } = await Method(req);
           expect(estimatedFee).toEqual('12430');
           expect(serialized).toEqual(
             '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
@@ -676,9 +708,8 @@ describe('Bitcoin service', () => {
               '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
           };
 
-          const HashForSignature = promisify(client.HashForSignature.bind(client));
-          const { serialized, signatures, estimatedFee } = await HashForSignature(req);
-
+          const Method = promisify(client.HashForSignature.bind(client));
+          const { serialized, signatures, estimatedFee } = await Method(req);
           expect(estimatedFee).toEqual('12430');
           expect(serialized).toEqual(
             '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d90000000000ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
@@ -723,9 +754,8 @@ describe('Bitcoin service', () => {
             ],
           };
 
-          const SignTransaction = promisify(client.SignTransaction.bind(client));
-
-          const { serialized, hash, estimatedFee } = await SignTransaction(req);
+          const Method = promisify(client.SignTransaction.bind(client));
+          const { serialized, hash, estimatedFee } = await Method(req);
           expect(estimatedFee).toEqual('12430');
           expect(serialized).toEqual(
             '0100000001bfe23d93fc64f5b39e40ad2ec24bedbb47c82d063bd1f821105812ee00d606d9000000006b483045022100d36d9fbc911d80a7fe503baaddfc67ffbca024cba19fc3891898030dbdf83fa1022034b5f3c1ca24bb55768d63656f2dbdc74fafb7db6e84f6e3471a65b65e24586e012102f44bce3eecd274e7aa24ec975388d12905dfc670a99b16e1d968e6ab5f69b266ffffffff020003164e020000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac72b0f505000000001976a9144f390e5e860550de2bd4e26360a06666b38bd84088ac00000000',
@@ -761,10 +791,8 @@ describe('Bitcoin service', () => {
               },
             ],
           };
-
-          const SignTransaction = promisify(client.SignTransaction.bind(client));
-
-          const { serialized, hash, estimatedFee } = await SignTransaction(req);
+          const Method = promisify(client.SignTransaction.bind(client));
+          const { serialized, hash, estimatedFee } = await Method(req);
           expect(estimatedFee).toEqual('3766000');
           expect(serialized).toEqual(
             '0100000001ff6f92a543b4d4e823068fc53752ec05d58b4dac0063206d09c2e512c290a8a8000000006b483045022100f4ba0639229ae31e07c1575aea9cc200c3dc7fef3e5cb900e089ce27336f0441022071e895a1f7f22a30371f10eb6f1932b4ef572c9390e2c382ef21a38b00ed6aa90121032207ee434431716f63dd296e29fa5523cf730e8262968309947a0c3658baa7e7ffffffff0150d41200000000001976a91408e6066989ae8dbb3d52d61e971fcd575064863988ac00000000',
@@ -786,9 +814,7 @@ describe('Bitcoin service', () => {
           };
 
           const Method = promisify(client.DecodeRawTransaction.bind(client));
-
           const decoded = await Method(req);
-
           expect(decoded).toEqual(
             expect.objectContaining({
               txid: 'bc2dcfc7f9fa625bc9706faf3c8bce60a5cc9e5ff40cb075e5e1647ad061a95e',

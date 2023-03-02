@@ -6,9 +6,8 @@ import {
 } from '@gnosis.pm/safe-deployments';
 import { TypedDataDomain } from '@ethersproject/abstract-signer';
 import { _TypedDataEncoder } from '@ethersproject/hash';
-import { BigNumberish, utils } from 'ethers';
-import Web3 from 'web3';
-import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
+import { BigNumberish, utils, ethers } from 'ethers';
+import { addHexPrefix, stripHexPrefix } from '@ethereumjs/util';
 export interface SafeSignature {
   signer: string;
   data: string;
@@ -115,9 +114,9 @@ export function buildSignatureBytes(signatures: SafeSignature[]) {
   return signatureBytes;
 }
 
-export async function populatedResolvedNames(domain: TypedDataDomain, safeTx: SafeTransaction, web3?: Web3) {
+export async function populatedResolvedNames(domain: TypedDataDomain, safeTx: SafeTransaction, provider?: ethers.providers.BaseProvider) {
   const populated = await _TypedDataEncoder.resolveNames(domain, EIP712_SAFE_TX_TYPE, safeTx, async (name): Promise<string> => {
-    const address = await web3?.eth.ens.getAddress(name);
+    const address = await provider?.resolveName(name);
     return address || name;
   });
   return populated;

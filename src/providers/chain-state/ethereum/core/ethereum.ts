@@ -1,9 +1,8 @@
+import type { TransactionRequest } from '@ethersproject/abstract-provider';
+
 import { isNil, pick } from 'lodash';
-import Web3 from 'web3';
-import { toBN, toHex } from 'web3-utils';
-import { ContractFactory, utils, BigNumber } from 'ethers';
-import { TransactionFactory, TxData, AccessListEIP2930TxData, FeeMarketEIP1559TxData, Capability, TxOptions } from '@ethereumjs/tx';
-import { BN, stripHexPrefix, addHexPrefix, padToEven, toBuffer } from 'ethereumjs-util';
+import { ContractFactory, utils, BigNumber, ethers, UnsignedTransaction } from 'ethers';
+import { addHexPrefix, stripHexPrefix } from '@ethereumjs/util';
 
 import { canonicalSignature } from '@src/utils/signature';
 import { Validator } from '@src/utils/ajv';
@@ -31,7 +30,7 @@ import {
   GetFeeDataRequest,
   GetFeeDataReply,
 } from '@src/__proto__/ethereum/core/types';
-import { pubToBIP55Address, compactPublicKey } from '../common/utils';
+import { decodeRawTransaction, isEip1559 } from '../common/utils';
 import { BaseProvider } from '../common/base';
 import {
   BuildTransactionRequestSchema,
@@ -49,8 +48,6 @@ import {
   BuildContractTransactionRequestSchema,
 } from './ethereum.schema';
 
-type FactoryTxData = TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData;
-
 const validator = new Validator({ schemas: [EthereumRefSchema] });
 
 export class Provider extends BaseProvider {
@@ -58,68 +55,50 @@ export class Provider extends BaseProvider {
     validator.assert(DeployAccountRequestSchema, req);
 
     const { key } = req as Required<DeployAccountRequest>;
-    return pubToBIP55Address(key);
+    return ethers.utils.computeAddress(addHexPrefix(key));
   }
 
   async buildTransferTransaction(req: BuildTransferTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildTransferTransactionRequestSchema, req);
 
     const { from, to, quantity, network, params } = req as Required<BuildTransferTransactionRequest>;
-    const { provider } = network!;
-    const common = this.getTxCommon(network!);
-    const txOptions = { common };
-    const web3 = new Web3(provider!);
+    const provider = this.getReqProvider(network!);
     const txInput = {
       to,
-      value: toBN(quantity),
+      value: ethers.BigNumber.from(quantity).toString(),
     };
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
+    return this.getTransactionReply(provider, txInput, from, params!, network!);
   }
 
   async buildERC20TransferTransaction(req: BuildERC20TransferTransactionRequest): Promise<TransactionReply> {
     validator.assert(BuildERC20TransferTransactionRequestSchema, req);
 
     const { from, to, tokenAddress, quantity, network, params = {} } = req as Required<BuildERC20TransferTransactionRequest>;
-    const { provider } = network!;
-    const txOptions = this.getTxOptions(network!);
-    const web3 = this.getWeb3Provider(provider!);
-
+    const provider = this.getReqProvider(network!);
     const input = this.encodeERC20Method('transfer', [to, quantity]);
-    const txInput: FactoryTxData = {
+    const txInput = {
       to: tokenAddress,
       data: input,
     };
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
+    return this.getTransactionReply(provider, txInput, from, params!, network!);
   }
 
   signTransaction(req: SignTransactionRequest) {
     validator.assert(SignTransactionRequestSchema, req);
+    const { serialized, signatures } = req as Required<SignTransactionRequest>;
+    const { signatureHash, unsignedTransaction } = decodeRawTransaction(addHexPrefix(serialized));
+    const invalid = signatures.some((sig) => stripHexPrefix(sig?.hash || '') !== stripHexPrefix(signatureHash));
+    if (invalid) throw new AppError(errors.INVALID_ARGUMENT, { details: `Invalid signatures, expect hash to be ${signatureHash}` });
 
-    const { serialized, signatures, network } = req as Required<SignTransactionRequest>;
-    const { chainId } = network!;
-
-    const common = this.getTxCommon(network!);
-    const txOptions = { common };
-    const txBuffer = toBuffer(addHexPrefix(serialized));
-    const tx = TransactionFactory.fromSerializedData(txBuffer, txOptions);
-    const type = tx.type;
     const sign = stripHexPrefix(signatures[0].signature!);
     const { r, s, v } = canonicalSignature(sign!);
-    const signedData = {
-      ...tx.toJSON(),
-      r: Buffer.from(padToEven(r), 'hex'),
-      s: Buffer.from(padToEven(s), 'hex'),
-      v: this.getChainIdVBN(v!, chainId!, type),
-      type,
-    };
-
-    const signedTx = TransactionFactory.fromTxData(signedData, txOptions);
-    const serializedTx = signedTx.serialize().toString('hex');
-    const estimatedFee = this.getTxEstimatedFee(signedTx);
+    const signature = ethers.utils.joinSignature({ r: addHexPrefix(r), s: addHexPrefix(s), recoveryParam: v });
+    const serializedTx = ethers.utils.serializeTransaction(unsignedTransaction, signature);
+    const hash = ethers.utils.keccak256(serializedTx);
     return {
-      serialized: serializedTx,
-      hash: '0x' + signedTx.hash().toString('hex'),
-      estimatedFee,
+      serialized: stripHexPrefix(serializedTx),
+      hash,
+      estimatedFee: this.getTxEstimatedFee(unsignedTransaction),
     };
   }
 
@@ -127,16 +106,14 @@ export class Provider extends BaseProvider {
     validator.assert(BuildTransactionRequestSchema, req);
 
     const { params = {}, network, from, to, value, data } = req as Required<BuildTransactionRequest>;
-    const { provider } = network!;
-    const txOptions = this.getTxOptions(network!);
-    const web3 = this.getWeb3Provider(provider!);
+    const provider = this.getReqProvider(network!);
     const txInput = {
       from,
       to,
       data: data ? addHexPrefix(data) : '0x',
-      value: value ? toBN(value) : undefined,
+      value: value ? ethers.BigNumber.from(value).toString() : undefined,
     };
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
+    return this.getTransactionReply(provider, txInput, from, params!, network!);
   }
 
   async buildContractExecutionTransactionInput(
@@ -168,9 +145,7 @@ export class Provider extends BaseProvider {
     validator.assert(BuildContractTransactionRequestSchema, req);
 
     const { params = {}, network, from, abi, args, contractAddress, method, value } = req as Required<BuildContractTransactionRequest>;
-    const { provider } = network!;
-    const web3 = this.getWeb3Provider(provider!);
-    const txOptions = this.getTxOptions(network!);
+    const provider = this.getReqProvider(network!);
     const { data: input } = await this.buildContractExecutionTransactionInput({
       abi,
       args,
@@ -181,67 +156,55 @@ export class Provider extends BaseProvider {
       data: addHexPrefix(input!),
       value,
     };
-
-    return this.getTransactionReply(txInput, txOptions, web3, from, params!, network!);
+    return this.getTransactionReply(provider, txInput, from, params!, network!);
   }
 
   async rebuildTransaction(req: RebuildTransactionRequest): Promise<TransactionReply> {
     validator.assert(RebuildTransactionRequestSchema, req);
 
-    let { serialized, params = {}, network, from } = req as Required<RebuildTransactionRequest>;
-    serialized = stripHexPrefix(serialized);
-    const serializedBuf = Buffer.from(serialized, 'hex');
-    const { provider } = network!;
-    const common = this.getTxCommon(network!);
-    const web3 = this.getWeb3Provider(provider!);
-    const txOptions = { common };
-    const tx = TransactionFactory.fromSerializedData(serializedBuf, txOptions);
-    const type = tx.type;
-    const { r, s, v, ...jsonTx } = tx.toJSON();
+    const { serialized, params = {}, network, from } = req as Required<RebuildTransactionRequest>;
+    const provider = this.getReqProvider(network!);
 
-    let pubKey = '';
-    if (tx.isSigned()) {
-      const decompose = tx.getSenderPublicKey().toString('hex');
-      pubKey = compactPublicKey(decompose);
-    }
+    const { unsignedTransaction, recoveredPublicKey } = decodeRawTransaction(addHexPrefix(serialized));
+    const txData = Object.assign({}, unsignedTransaction, {
+      type: unsignedTransaction.type || undefined,
+    });
+    Object.keys(params!).reduce<UnsignedTransaction>((prev: UnsignedTransaction, key: string) => {
+      if (params![key]) prev[key] = params![key];
+      return prev;
+    }, txData);
 
-    let txData = {
-      ...jsonTx,
-      ...params,
-      type,
-    };
-    if (params?.nonce) txData.nonce = toHex(toBN(params!.nonce));
-    if (!params?.gasPrice) {
-      txData.gasPrice = await this.getReqGasPrice(web3);
+    if (params?.nonce) txData.nonce = ethers.BigNumber.from(params!.nonce).toNumber();
+
+    if (!isEip1559(txData.type) && !params?.gasPrice) {
+      params!.gasPrice = await this.getReqGasPrice(provider);
+    } else if (isEip1559(txData.type) && !(params?.maxFeePerGas && params?.maxPriorityFeePerGas)) {
+      txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
+      txData.maxFeePerGas && delete txData.maxFeePerGas;
+      delete txData.gasPrice;
+
+      const populatedTxData = await this.populateEip1559TxData(provider, txData, params!, network!);
+      Object.assign(txData, populatedTxData);
     }
 
     if (!params?.gasLimit) {
       delete txData.gasLimit;
-      txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
-      txData.maxFeePerGas && delete txData.maxFeePerGas;
-      if (!from && toBN(txData.value!).eqn(0) && !toBN(txData.data!).eqn(0)) {
+
+      // txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
+      // txData.maxFeePerGas && delete txData.maxFeePerGas;
+      if (!from && ethers.BigNumber.from(txData.value!).eq(0) && !ethers.BigNumber.from(txData.data!).eq(0)) {
         throw new AppError(errors.INVALID_ARGUMENT, { details: 'from is required' });
       }
       const txInput = {
         ...txData,
         from,
-        nonce: toBN(txData.nonce!).toNumber(),
-        chainId: txData.chainId ? toBN(txData.chainId).toNumber() : common.chainIdBN().toNumber(),
       };
-      txData.gasLimit = await this.getReqGasLimit(web3, txInput);
+      txData.gasLimit = await this.getReqGasLimit(provider, txInput);
     }
 
-    if (tx.supports(Capability.EIP1559FeeMarket) && !(params?.maxFeePerGas && params?.maxPriorityFeePerGas)) {
-      txData.maxPriorityFeePerGas && delete txData.maxPriorityFeePerGas;
-      txData.maxFeePerGas && delete txData.maxFeePerGas;
-      delete txData.gasPrice;
-      const newData = await this.getFeeMarketEIP1559TxData(web3, txData as FeeMarketEIP1559TxData, params!, network!);
-      Object.assign(txData, newData);
-    }
-
-    const reply = await this.getTransactionReply(txData, txOptions, web3, from, params!, network!);
+    const reply = await this.getTransactionReply(provider, txData, from, params!, network!);
     const signatures = reply?.signatures || [];
-    signatures[0].pubKey = pubKey;
+    signatures[0].pubKey = recoveredPublicKey;
     return { ...reply, signatures };
   }
 
@@ -249,36 +212,23 @@ export class Provider extends BaseProvider {
     validator.assert(SendTransactionRequestSchema, req);
 
     const { serialized, network } = req as Required<SendTransactionRequest>;
-    const { provider } = network!;
-    const web3 = new Web3(provider!);
+    const provider = this.getReqProvider(network!);
     const data = addHexPrefix(serialized);
-    return new Promise((resolve, reject) => {
-      web3.eth
-        .sendSignedTransaction(data)
-        .once('transactionHash', (hash) => {
-          resolve({
-            hash,
-          });
-        })
-        .on('error', function (error) {
-          reject(error);
-        });
-    });
+    const { hash } = await provider.sendTransaction(data);
+    return { hash };
   }
 
   hashForSignature(req: HashForSignatureRequest): TransactionReply {
     validator.assert(HashForSignatureRequestSchema, req);
 
-    const { serialized, network } = req as Required<HashForSignatureRequest>;
-    const txOptions = this.getTxOptions(network!);
-    const buf = Buffer.from(stripHexPrefix(serialized), 'hex');
-    const tx = TransactionFactory.fromSerializedData(buf, txOptions);
-    const hash = tx.getMessageToSign(true).toString('hex');
-    const signature = { hash };
-    const estimatedFee = this.getTxEstimatedFee(tx);
+    const { serialized } = req as Required<HashForSignatureRequest>;
+    const { unsignedSerialized, unsignedTransaction } = decodeRawTransaction(addHexPrefix(serialized));
+    const signature = ethers.utils.keccak256(unsignedSerialized);
+    const estimatedFee = this.getTxEstimatedFee(unsignedTransaction);
+
     return {
-      serialized: tx.serialize().toString('hex'),
-      signatures: [signature],
+      serialized: stripHexPrefix(unsignedSerialized),
+      signatures: [{ hash: stripHexPrefix(signature) }],
       estimatedFee,
     };
   }
@@ -286,19 +236,17 @@ export class Provider extends BaseProvider {
   decodeTransaction(req: DecodeTransactionRequest): TransactionParams {
     validator.assert(DecodeTransactionRequestSchema, req);
 
-    const { serialized, network } = req as Required<DecodeTransactionRequest>;
-    const txOptions = this.getTxOptions(network!);
-    const data = toBuffer(addHexPrefix(serialized));
-    const tx = TransactionFactory.fromSerializedData(data, txOptions);
+    const { serialized } = req as Required<DecodeTransactionRequest>;
+    const { unsignedTransaction } = decodeRawTransaction(addHexPrefix(serialized));
     const params: TransactionParams = {
-      type: addHexPrefix(padToEven(new BN(tx.type || 0).toString('hex'))),
-      nonce: tx.nonce.toString(),
-      gasLimit: addHexPrefix(tx.gasLimit.toString('hex')),
+      type: unsignedTransaction.type?.toString(),
+      nonce: unsignedTransaction.nonce?.toString(),
+      gasLimit: unsignedTransaction.gasLimit ? ethers.BigNumber.from(unsignedTransaction.gasLimit!).toHexString() : undefined,
     };
-    const opts = pick(tx, ['gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas']);
+    const opts = pick(unsignedTransaction, ['gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas']);
     Object.keys(opts).forEach((k) => {
       if (!isNil(opts[k])) {
-        params[k] = BigNumber.from(toHex(opts[k])).toHexString();
+        params[k] = BigNumber.from(opts[k]).toHexString();
       }
     });
     return params;
@@ -308,7 +256,7 @@ export class Provider extends BaseProvider {
     validator.assert(DecodeTransactionRequestSchema, req);
 
     const { serialized } = req as Required<DecodeRawTransactionRequest>;
-    const tx = utils.parseTransaction(toBuffer(addHexPrefix(serialized)));
+    const tx = utils.parseTransaction(addHexPrefix(serialized));
     const decoded: DecodeRawTransactionReply = {
       nonce: BigNumber.from(tx.nonce).toHexString(),
       to: tx.to?.toString(),
@@ -329,45 +277,37 @@ export class Provider extends BaseProvider {
     return decoded;
   }
 
-  async _decodeRawTransaction(req: DecodeRawTransactionRequest): Promise<DecodeRawTransactionReply> {
-    validator.assert(DecodeTransactionRequestSchema, req);
-
-    const { serialized } = req as Required<DecodeRawTransactionRequest>;
-    const tx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serialized)));
-    const jsonTx = tx.toJSON();
-    jsonTx.type = tx.type.toString();
-    return jsonTx;
-  }
-
   async getFeeData(req: GetFeeDataRequest): Promise<GetFeeDataReply> {
     const { network } = req as Required<GetFeeDataRequest>;
-    const web3 = new Web3(network!.provider!);
-    const txData: FeeMarketEIP1559TxData = {};
+    const provider = this.getReqProvider(network!);
+    const txData = {};
     const [fee, gasPrice] = await Promise.all([
-      this.getTxFeeData(web3, txData, network!), // fallback to eip1559
-      web3.eth.getGasPrice(), // fallback to legacy gasPrice
+      this.getTxFeeData(provider, txData, network!), // fallback to eip1559
+      provider.getGasPrice(), // fallback to legacy gasPrice
     ]);
-    return Object.assign(fee, { gasPrice: toHex(gasPrice) });
+    return {
+      maxFeePerGas: fee.maxFeePerGas?.toString(),
+      maxPriorityFeePerGas: fee.maxPriorityFeePerGas?.toString(),
+      gasPrice: gasPrice.toString(),
+    };
   }
 
   async getTransactionReply(
-    txInput: FactoryTxData,
-    txOptions: TxOptions,
-    web3: Web3,
+    provider: ethers.providers.BaseProvider,
+    txInput: TransactionRequest,
     from?: string,
     params?: TransactionParams,
     network?: Network,
   ): Promise<TransactionReply> {
-    const txData = await this.getTxData(web3, txInput, from, params, network);
-    const tx = TransactionFactory.fromTxData(txData, txOptions);
+    const unsignedTransaction = await this.getTxData(provider, txInput, from, params, network);
 
-    const hash = tx.getMessageToSign(true).toString('hex');
-    const reserialized = tx.serialize().toString('hex');
-    const estimatedFee = this.getTxEstimatedFee(tx);
+    const serializeTransaction = ethers.utils.serializeTransaction(unsignedTransaction);
+    const hashForSignature = ethers.utils.keccak256(serializeTransaction);
 
-    const signature = { hash };
+    const estimatedFee = this.getTxEstimatedFee(unsignedTransaction);
+    const signature = { hash: stripHexPrefix(hashForSignature) };
     return {
-      serialized: reserialized,
+      serialized: stripHexPrefix(serializeTransaction),
       signatures: [signature],
       estimatedFee,
     };

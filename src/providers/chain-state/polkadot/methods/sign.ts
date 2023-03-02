@@ -1,4 +1,4 @@
-import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix, stripHexPrefix } from '@ethereumjs/util';
 import { u8aToHex } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 

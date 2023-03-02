@@ -1,4 +1,4 @@
-import { toNumber } from 'lodash';
+import { sumBy, toNumber } from 'lodash';
 import { ec as EC } from 'elliptic';
 import ECSignature from 'elliptic/lib/elliptic/ec/signature';
 import rp from 'request-promise';
@@ -119,7 +119,6 @@ export class Provider {
     this.calcInputBytes(utxos, network as BitcoinJSNetwork);
 
     const { inputs, outputs, fee } = this.selectCoins(utxos, recipients, feePerKb);
-
     if (!inputs || !outputs) throw new AppError(errors.NOT_ENOUGH_BALANCE);
 
     const txb = this.createTransactionBuilderForNetwork(network);
@@ -143,11 +142,11 @@ export class Provider {
 
     const serialized = txb.buildIncomplete().toHex();
     const signatures = this.getTxbSignatures(txb, hashType, utxoMap);
-
+    const estimatedFee = sumBy(inputs, 'value') - sumBy(txb.tx.outs, 'value');
     return {
       serialized,
       signatures,
-      estimatedFee: fee,
+      estimatedFee: estimatedFee.toString(),
     };
   }
 

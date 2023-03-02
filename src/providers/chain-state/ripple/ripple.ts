@@ -1,7 +1,7 @@
 import BN from 'bn.js';
 import hashjs from 'hash.js';
 import { get, omit, cloneDeep, isNil, pickBy } from 'lodash';
-import { stripHexPrefix } from 'ethereumjs-util';
+import { stripHexPrefix } from '@ethereumjs/util';
 import { APIOptions, RippleAPI, TransactionJSON } from 'ripple-lib';
 import { setCanonicalFlag } from 'ripple-lib/dist/npm/transaction/utils';
 import { JsonObject } from 'ripple-binary-codec/dist/types/serialized-type';
