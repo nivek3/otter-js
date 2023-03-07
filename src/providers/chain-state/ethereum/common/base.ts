@@ -29,7 +29,7 @@ export abstract class BaseProvider {
     gasLimit?: string,
   ): Promise<string> {
     if (!gasLimit) {
-      const request = omit(tx, ['maxFeePerGas', 'maxPriorityFeePerGas']);
+      const request = omit(tx, ['gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas']);
       const estimateGas = await provider.estimateGas(request);
       gasLimit = ethers.BigNumber.from(estimateGas).toHexString();
     }
