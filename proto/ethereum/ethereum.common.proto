@@ -5,10 +5,10 @@ package ethereum.common;
 option go_package = "./ethereum/common";
 
 message Network {
-    string provider      = 1;
-    int32 chain_id       = 2;
-    string hard_fork     = 3;
-    float base_fee_ratio = 4;
+    string provider       = 1;
+    int32 chain_id        = 2;
+    string hard_fork      = 3;
+    double base_fee_ratio = 4;
 }
 
 message TransactionParams {
