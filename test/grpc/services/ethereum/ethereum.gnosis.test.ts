@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { promisify } from 'util';
-
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+
 import { grpcServer } from '@src/services/grpc';
 
 const CORE_PROTO_PATH = path.join(__dirname, '../../../../proto/ethereum/ethereum.core.proto');

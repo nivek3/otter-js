@@ -97,6 +97,12 @@ export const errors = {
     errno: '40015',
     details: 'broadcast signed tx failed',
   },
+  REQUEST_NODE_FAILED: {
+    code: GRpcStatus.INVALID_ARGUMENT,
+    status: 400,
+    errno: '40016',
+    details: 'request node failed',
+  },
   INTERNAL: {
     code: GRpcStatus.INTERNAL,
     status: 500,

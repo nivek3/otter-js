@@ -1,10 +1,11 @@
 import 'dotenv/config';
 import path from 'path';
 import { promisify } from 'util';
-import { BigNumber } from 'ethers';
-import { stripHexPrefix } from '@ethereumjs/util';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+import { BigNumber } from 'ethers';
+import { stripHexPrefix } from '@ethereumjs/util';
+
 import { grpcServer } from '@src/services/grpc';
 import { provider } from '@src/providers/chain-state/ethereum/core/ethereum';
 

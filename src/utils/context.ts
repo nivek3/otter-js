@@ -1,4 +1,4 @@
-import type * as grpc from '@grpc/grpc-js';
+import * as grpc from '@grpc/grpc-js';
 
 export interface ImplementationContext<T, K> {
   call: grpc.ServerUnaryCall<T, K>;

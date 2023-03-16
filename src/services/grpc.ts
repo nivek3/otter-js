@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import * as grpc from '@grpc/grpc-js';
-import { LoggifyClass } from '@src/decorators/Loggify';
 import { Middleware } from 'koa-compose';
+
 import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 import { loggerInterceptor } from '@src/grpc/interceptors/logger';
 import { GracefulService } from '@src/internal/exit';
@@ -31,7 +31,6 @@ import {
 
 import logger from '@src/logger';
 
-@LoggifyClass
 export class GRPCServer extends GrpcInterceptorProxy implements GracefulService {
   name = 'GRPC Server';
   port: string;
@@ -48,14 +47,6 @@ export class GRPCServer extends GrpcInterceptorProxy implements GracefulService 
       'grpc.http2.max_pings_without_data': parseInt(process.env.GRPC_ARG_HTTP2_MAX_PINGS_WITHOUT_DATA || '2'),
     });
     this.server = this.proxy(server);
-  }
-
-  success(ctx: ImplementationContext<any, any>, callback: grpc.sendUnaryData<any>) {
-    callback(null, ctx.body, ctx.call.metadata);
-  }
-
-  fail(err: grpc.StatusObject, callback: grpc.sendUnaryData<any>, ctx?: ImplementationContext<any, any>) {
-    callback(err, err.details, err.metadata || ctx?.call.metadata);
   }
 
   addService(

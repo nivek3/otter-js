@@ -6,12 +6,6 @@ option go_package = "./ethereum/gnosis";
 import "./ethereum.common.proto";
 import "../common.proto";
 
-message Network {
-    string provider  = 1;
-    int32 chain_id   = 2;
-    string hard_fork = 3;
-}
-
 message GetAccountAddressRequest {
     Network network      = 1;
     repeated string keys = 2;

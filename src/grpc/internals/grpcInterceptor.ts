@@ -1,22 +1,12 @@
 import * as grpc from '@grpc/grpc-js';
 import compose, { Middleware } from 'koa-compose';
 import { ImplementationContext } from '@src/utils/context';
-import { AppError, errors } from '@src/error';
+import { AppError } from '@src/error';
 export class GrpcInterceptorProxy {
   interceptors: Middleware<ImplementationContext<unknown, unknown>>[] = [];
 
-  success<T, K>(ctx: ImplementationContext<T, K>, callback: grpc.sendUnaryData<unknown>) {
-    callback(null, ctx.body, ctx.call.metadata);
-  }
-
-  fail<T, K>(err: grpc.ServiceError, callback: grpc.sendUnaryData<string>, ctx?: ImplementationContext<T, K>) {
-    callback(err, err.message, ctx?.call.metadata);
-  }
-
   proxy(server: grpc.Server) {
     const interceptors = this?.interceptors || [];
-    const success = this.success;
-    const fail = this.fail;
     return new Proxy(server, {
       get(target, propKey) {
         if (propKey !== 'addService') {
@@ -34,12 +24,11 @@ export class GrpcInterceptorProxy {
               };
               try {
                 await compose([...interceptors, originFn])(ctx);
-                success(ctx, callback);
+                callback(null, ctx.body, ctx.call.metadata);
               } catch (err: any) {
-                if (!(err instanceof AppError)) {
-                  err = new AppError(errors.INTERNAL, { details: err.message || err });
-                }
-                fail(err?.display?.(ctx) || err?.toJSON?.(ctx) || err, callback, ctx);
+                const error = AppError.from(err);
+                error.display(ctx);
+                callback(error, error.message, ctx?.call.metadata);
               }
             };
           }

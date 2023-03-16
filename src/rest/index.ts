@@ -56,15 +56,10 @@ app.use(function (err: any, req, res, _) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  const result =
-    err instanceof AppError
-      ? err.display()
-      : err.toJSON?.() || {
-          code: err.code || err.statusCode || 500,
-          message: err.message || err,
-        };
-  res.status(result?.statusCode || result?.status || 500);
-  res.send(result);
+  const error = AppError.from(err);
+  const desc = error.display();
+  res.status(desc?.['statusCode'] || desc?.status || 500);
+  res.send(desc);
 });
 
 export default app;

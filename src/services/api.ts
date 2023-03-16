@@ -3,9 +3,8 @@ import * as http from 'http';
 
 import app from '@src/rest';
 import logger from '@src/logger';
-import { LoggifyClass } from '@src/decorators/Loggify';
 import { GracefulService } from '@src/internal/exit';
-@LoggifyClass
+
 export class ApiService implements GracefulService {
   name = 'API Service';
   port: number;

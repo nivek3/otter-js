@@ -1,10 +1,12 @@
 import { StatusObject, status as Status, Metadata } from '@grpc/grpc-js';
+
 import type { ImplementationContext } from '@src/utils/context';
+import { errors } from './errors';
 
 export interface ErrorOptions {
   code: Status;
-  status: number;
   details: string;
+  status: number;
   errno: string;
   metadata?: Metadata;
 }
@@ -17,6 +19,7 @@ export class AppError extends Error {
   code: number;
   errno: string;
   details: string;
+
   constructor(options: ErrorOptions, extra?: Partial<ErrorOptions>) {
     options = Object.assign({}, options, extra);
 
@@ -28,14 +31,25 @@ export class AppError extends Error {
     this.details = options.details;
   }
 
-  display(ctx?: ImplementationContext<unknown, unknown>): Omit<ErrorObject, 'ctx'> {
-    const metadata = ctx?.call.metadata;
-    return {
-      code: this.code,
+  static from(err: any) {
+    if (err instanceof AppError) return err;
+
+    const options = Object.assign({}, errors.INTERNAL, { details: err.message || err });
+    // ethers.js error
+    if (err.reason && err.code) {
+      Object.assign(options, { details: err.reason, errno: err.code });
+    }
+    return new AppError(options);
+  }
+
+  display(ctx?: ImplementationContext<unknown, unknown>): Omit<ErrorObject, 'ctx' | 'metadata'> {
+    const description: Omit<ErrorObject, 'ctx' | 'metadata'> = {
       status: this.status,
-      errno: this.errno,
       details: this.message,
-      metadata: metadata!,
+      code: this.code,
+      errno: this.errno,
     };
+    if (ctx?.call.metadata) Object.keys(description).forEach((key) => ctx?.call.metadata.set(key, description[key]));
+    return description;
   }
 }

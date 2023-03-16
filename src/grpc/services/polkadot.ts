@@ -1,6 +1,7 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+
 import { provider } from '@src/providers/chain-state/polkadot';
 import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 

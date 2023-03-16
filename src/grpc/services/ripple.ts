@@ -1,9 +1,10 @@
 import path from 'path';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
 
 import { provider } from '@src/providers/chain-state/ripple/ripple';
+import { ImplementationContext, ProxyUntypedServiceImplementation } from '@src/utils/context';
+
 import { ProtoGrpcType } from '@src/__proto__/ripple';
 import { TransactionReply } from '@src/__proto__/common/types';
 import {

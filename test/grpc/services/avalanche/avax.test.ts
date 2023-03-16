@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import path from 'path';
 import { promisify } from 'util';
-
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { grpcServer } from '@src/services/grpc';
 
+import { grpcServer } from '@src/services/grpc';
 const PROTO_PATH = path.join(__dirname, '../../../../proto/avalanche/avax.proto');
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
