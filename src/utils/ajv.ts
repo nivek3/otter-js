@@ -14,20 +14,19 @@ export class Validator {
     );
   }
 
-  validate(schema: object, req: object): string | undefined {
+  validate(schema: object, req: object): string | void {
     const ajv = new Ajv(this.options);
     AjvErrors(ajv);
     AjvMergePatch(ajv);
     const validate = ajv.compile(JSON.parse(JSON.stringify(schema)));
     const valid = validate(req);
-    if (valid) return '';
-    return validate.errors?.map((e) => ((e.instancePath && e.instancePath + ' ') || '') + e.message).join('\n');
+    if (valid) return;
+    return validate.errors?.map((e) => (e.instancePath || e.schemaPath || '') + ': ' + e.message).join('\n');
   }
 
   assert(schema: object, req: object): void {
     const details = this.validate(schema, req);
-    if (details) {
-      throw new AppError(errors.INVALID_ARGUMENT, { details });
-    }
+    if (details) throw new AppError(errors.INVALID_ARGUMENT, { details });
+    return;
   }
 }

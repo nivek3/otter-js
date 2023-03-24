@@ -1,4 +1,4 @@
-import { StatusObject, status as Status, Metadata } from '@grpc/grpc-js';
+import { StatusObject, status as Status, Metadata, MetadataValue } from '@grpc/grpc-js';
 
 import type { ImplementationContext } from '@src/utils/context';
 import { errors } from './errors';
@@ -49,7 +49,19 @@ export class AppError extends Error {
       code: this.code,
       errno: this.errno,
     };
-    if (ctx?.call.metadata) Object.keys(description).forEach((key) => ctx?.call.metadata.set(key, description[key]));
+    if (ctx?.call.metadata) {
+      Object.keys(description).forEach((key) => {
+        if (!description[key]) return;
+        ctx.call.metadata.set(key, this.normalizeMetadataValue(description[key]));
+      });
+    }
     return description;
+  }
+
+  normalizeMetadataValue(value: number | string): MetadataValue {
+    const normalized = value.toString();
+    return normalized
+      .replace(/[\n\r]/g, ',') // replace new line and carriage return with comma
+      .replace(/[^ -~]/g, ''); // remove non-printable ASCII characters
   }
 }
