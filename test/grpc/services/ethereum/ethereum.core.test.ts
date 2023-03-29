@@ -43,6 +43,61 @@ describe('Ethereum Core service', () => {
         });
       });
 
+      describe('BuildTransaction Ethersjs error', () => {
+        test('BuildTransaction execution reverted', async () => {
+          const req = {
+            network: {
+              provider: 'https://proud-wider-shard.bsc-testnet.discover.quiknode.pro/99ddad8ea99cb04a8157f1757312451d218cbe33/',
+              chainId: 97,
+            },
+            from: '0x5e1dee232dfe7341a4dc4edc7dcaee58e76e1d65',
+            to: '0x1EA11b33B8C19539b8964c518fAd2014062EC45e',
+            value: '0020000000000000000',
+            data: '598647f8000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000470de4df820000',
+            params: {},
+          };
+
+          const Method = promisify(client.BuildTransaction.bind(client));
+          try {
+            await Method(req);
+          } catch (err: any) {
+            expect(err.details).toBe('execution reverted: this pool is closed');
+            expect(err.metadata.getMap()).toEqual(
+              expect.objectContaining({
+                details: 'execution reverted: this pool is closed',
+                errno: '40017',
+              }),
+            );
+          }
+        });
+
+        test('BuildTransaction, provider invalid', async () => {
+          const req = {
+            network: {
+              provider: 'https://proud-wider-shard.bsc-testnet.discover.quiknode.pro/99ddad8ea99cb04a8157f1757312451d218cbe3/', //invalid endpoint
+              chainId: 97,
+            },
+            from: '0x5e1dee232dfe7341a4dc4edc7dcaee58e76e1d65',
+            to: '0x1EA11b33B8C19539b8964c518fAd2014062EC45e',
+            value: '0020000000000000000',
+            data: '598647f8000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000470de4df820000',
+            params: {},
+          };
+          const Method = promisify(client.BuildTransaction.bind(client));
+          try {
+            await Method(req);
+          } catch (err: any) {
+            expect(err.details).toBe('bad response');
+            expect(err.metadata.getMap()).toEqual(
+              expect.objectContaining({
+                details: 'bad response',
+                errno: '40018',
+              }),
+            );
+          }
+        });
+      });
+
       describe('SignTransaction', () => {
         test('sign transaction', async () => {
           const serialized =

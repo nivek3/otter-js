@@ -37,7 +37,12 @@ export class AppError extends Error {
     const options = Object.assign({}, errors.INTERNAL, { details: err.message || err });
     // ethers.js error
     if (err.reason && err.code) {
-      Object.assign(options, { details: err.reason, errno: err.code });
+      const details: string = err.reason;
+      if (details.startsWith('execution reverted:')) {
+        Object.assign(options, errors.EXECUTION_REVERTED, { details });
+      } else {
+        Object.assign(options, errors.ETHERS_REVERTED, { details });
+      }
     }
     return new AppError(options);
   }

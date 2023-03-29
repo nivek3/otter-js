@@ -103,6 +103,18 @@ export const errors = {
     errno: '40016',
     details: 'request node failed',
   },
+  EXECUTION_REVERTED: {
+    code: GRpcStatus.UNKNOWN,
+    status: 400,
+    errno: '40017',
+    details: 'execution reverted',
+  },
+  ETHERS_REVERTED: {
+    code: GRpcStatus.UNKNOWN,
+    status: 400,
+    errno: '40018',
+    details: 'ethers call error',
+  },
   INTERNAL: {
     code: GRpcStatus.INTERNAL,
     status: 500,
