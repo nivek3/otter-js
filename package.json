@@ -70,6 +70,7 @@
     "@gnosis.pm/safe-deployments": "^1.8.0",
     "@grpc/grpc-js": "^1.8.13",
     "@grpc/proto-loader": "^0.7.5",
+    "@mycrypto/gas-estimation": "^1.1.1",
     "@polkadot/api": "^6.4.2",
     "@solana/spl-token": "^0.1.6",
     "@solana/web3.js": "^1.22.0",

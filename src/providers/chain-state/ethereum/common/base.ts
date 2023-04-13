@@ -1,8 +1,11 @@
 import { omit, pick } from 'lodash';
 import BigNumberJS from 'bignumber.js';
 import { UnsignedTransaction, utils, ethers, BigNumber } from 'ethers';
+import { calculateFees } from '@mycrypto/gas-estimation';
 import { getNetwork } from '@ethersproject/networks';
 import { errors, AppError } from '@src/error';
+import logger from '@src/logger';
+
 import { Network, TransactionParams } from '@src/__proto__/ethereum/common/types';
 import { isEip1559 } from './utils';
 
@@ -36,19 +39,23 @@ export abstract class BaseProvider {
     return BigNumber.from(gasLimit).toHexString();
   }
 
-  async getTxFeeData(
+  async getEip1559TxFeeData(
     provider: ethers.providers.BaseProvider,
     tx: ethers.providers.TransactionRequest,
     network: Network,
   ): Promise<Partial<ethers.providers.TransactionRequest>> {
-    if (tx['maxFeePerGas'] && tx['maxPriorityFeePerGas']) {
-      return tx;
-    }
+    if (tx['maxFeePerGas'] && tx['maxPriorityFeePerGas']) return tx;
+
     const block = await provider.getBlock('latest');
     const baseFeePerGas = block['baseFeePerGas']!;
     // unsupported baseFeePerGas
     if (!baseFeePerGas) return tx;
 
+    // use eth_feeHistory firstly
+    const fee = await this.getFeeDataByHistory(provider, block.number, baseFeePerGas.toHexString());
+    if (fee) return Object.assign(tx, fee);
+
+    // baseFeeRatio * baseFee + maxPriorityFeePerGas
     const baseFeeRatio = network?.baseFeeRatio || 1;
     if (!tx.maxPriorityFeePerGas) {
       tx.maxPriorityFeePerGas = await this.maxPriorityFeePerGas(provider);
@@ -64,6 +71,26 @@ export abstract class BaseProvider {
       maxFeePerGas: ethers.BigNumber.from(maxFeePerGas).toString(),
       maxPriorityFeePerGas,
     });
+  }
+
+  // gas-estimation
+  async getFeeDataByHistory(
+    provider: ethers.providers.BaseProvider,
+    blockNumber: number,
+    baseFeePerGas: string, //
+  ) {
+    try {
+      const history = await await provider['send']('eth_feeHistory', [utils.hexValue(10), utils.hexValue(blockNumber), [5]]);
+      const fee = calculateFees(ethers.BigNumber.from(baseFeePerGas).toBigInt(), history);
+      if (!fee.baseFee) return; // ignore the default fee data.
+      return {
+        maxFeePerGas: ethers.BigNumber.from(fee.maxFeePerGas).toString(),
+        maxPriorityFeePerGas: ethers.BigNumber.from(fee.maxPriorityFeePerGas).toString(),
+      };
+    } catch (error) {
+      logger.warn('eth_feeHistory is not supported', error);
+      return;
+    }
   }
 
   getReqProvider(network: Network): ethers.providers.BaseProvider {
@@ -114,7 +141,7 @@ export abstract class BaseProvider {
   ): Promise<ethers.providers.TransactionRequest> {
     delete txData.gasPrice;
     Object.assign(txData, pick(params, ['maxFeePerGas', 'maxPriorityFeePerGas']));
-    const newData = await this.getTxFeeData(provider, txData, network!);
+    const newData = await this.getEip1559TxFeeData(provider, txData, network!);
     return Object.assign(txData, newData);
   }
 

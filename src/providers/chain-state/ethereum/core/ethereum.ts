@@ -282,7 +282,7 @@ export class Provider extends BaseProvider {
     const provider = this.getReqProvider(network!);
     const txData = {};
     const [fee, gasPrice] = await Promise.all([
-      this.getTxFeeData(provider, txData, network!), // fallback to eip1559
+      this.getEip1559TxFeeData(provider, txData, network!), // fallback to eip1559
       provider.getGasPrice(), // fallback to legacy gasPrice
     ]);
     return {

@@ -358,6 +358,7 @@ describe('Ethereum Core service', () => {
             jest.spyOn(web3, 'estimateGas').mockResolvedValueOnce(BigNumber.from(35280));
             jest.spyOn(web3, 'getBlock').mockResolvedValueOnce({ baseFeePerGas: BigNumber.from('0x9b5') } as any);
             jest.spyOn(provider, 'maxPriorityFeePerGas').mockResolvedValueOnce('0x9502F900');
+            jest.spyOn(provider, 'getFeeDataByHistory').mockResolvedValueOnce(void 0);
 
             const serialized =
               '02f86c033f849502f9008495030c6a8289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c0';
@@ -435,6 +436,7 @@ describe('Ethereum Core service', () => {
             jest.spyOn(web3, 'estimateGas').mockResolvedValueOnce(BigNumber.from(35280));
             jest.spyOn(web3, 'getBlock').mockResolvedValueOnce({ baseFeePerGas: BigNumber.from('0x9b5') } as any);
             jest.spyOn(provider, 'maxPriorityFeePerGas').mockResolvedValueOnce('0x9502F900');
+            jest.spyOn(provider, 'getFeeDataByHistory').mockResolvedValueOnce(void 0);
             const serialized =
               '02f86c033f849502f9008495030c6a8289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c0';
             const Method = promisify(client.BuildContractTransaction.bind(client));
@@ -484,6 +486,7 @@ describe('Ethereum Core service', () => {
             jest.spyOn(web3, 'estimateGas').mockResolvedValueOnce(BigNumber.from(35280));
             jest.spyOn(web3, 'getBlock').mockResolvedValueOnce({ baseFeePerGas: BigNumber.from('0x9b5') } as any);
             jest.spyOn(provider, 'maxPriorityFeePerGas').mockResolvedValueOnce('0x9502F900');
+            jest.spyOn(provider, 'getFeeDataByHistory').mockResolvedValueOnce(void 0);
 
             const serialized =
               '02f86c033f849502f9008495030c6a8289d0945abe286f5ea6132b157cfd728834d493cbd4331480b844a9059cbb000000000000000000000000370ba1dc25c07d0c77ba9b83fcc75fcc2a0ac2430000000000000000000000000000000000000000000000000de0b6b3a7640000c0';
@@ -606,6 +609,7 @@ describe('Ethereum Core service', () => {
             jest.spyOn(web3, 'estimateGas').mockResolvedValueOnce(BigNumber.from(35280));
             jest.spyOn(web3, 'getBlock').mockResolvedValueOnce({ baseFeePerGas: BigNumber.from('0x275ec') } as any);
             jest.spyOn(provider, 'maxPriorityFeePerGas').mockResolvedValueOnce(BigNumber.from('0x9502F900').toString());
+            jest.spyOn(provider, 'getFeeDataByHistory').mockResolvedValueOnce(void 0);
 
             const Method = promisify(client.RebuildTransaction.bind(client));
             const response = await Method({
