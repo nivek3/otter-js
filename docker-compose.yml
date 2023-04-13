@@ -5,6 +5,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+    restart: 'unless-stopped'
     volumes:
       - '${PWD}/logs:/home/node/app/logs:rw'
       - '${PWD}/.env:/home/node/app/.env'
