@@ -1,8 +1,15 @@
+---
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
 BasedOnStyle: LLVM
 IndentWidth: 4
 
-# ---
+---
 Language: Proto
-BasedOnStyle:  google
+BasedOnStyle: Google
+IndentWidth: 4
+BreakBeforeBraces: Attach
+UseTab: Never
+AllowShortFunctionsOnASingleLine: Empty
 AlignConsecutiveAssignments: true
+SpacesBeforeTrailingComments: 2
 ColumnLimit: 0
