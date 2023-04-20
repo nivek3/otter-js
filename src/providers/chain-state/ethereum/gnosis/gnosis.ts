@@ -1,5 +1,5 @@
 import {
-  getSafeSingletonDeployment,
+  getSafeL2SingletonDeployment,
   getProxyFactoryDeployment,
   getCompatibilityFallbackHandlerDeployment,
   getMultiSendCallOnlyDeployment,
@@ -140,7 +140,7 @@ export function decodeSafeApproveHashAddress(approve: string) {
 export const version = '1.3.0';
 export const released = true;
 export const filter = { version, released };
-export const safeSingleton = getSafeSingletonDeployment(filter);
+export const safeSingleton = getSafeL2SingletonDeployment(filter);
 export const safeSingletonABI = safeSingleton?.abi!;
 
 export const compatHandler = getCompatibilityFallbackHandlerDeployment(filter);
