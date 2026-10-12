@@ -17,6 +17,7 @@
 coverage
 node_modules
 npm-debug.log
+pnpm-debug.log
 dist
 src/vendor
 src/dist

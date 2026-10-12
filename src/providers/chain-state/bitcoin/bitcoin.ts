@@ -12,7 +12,7 @@ import {
   Transaction,
   script,
   address,
-} from '@cryptoless/utxo-lib';
+} from '@nivek3/utxo-lib';
 import BigNumber from 'bignumber.js';
 import { finalize } from 'coinselect/utils';
 import { canonicalSignature } from '@src/utils/signature';
