@@ -33,3 +33,4 @@ logs
 !log/.gitkeep
 *.log
 pkg
+otter-rs/target/
